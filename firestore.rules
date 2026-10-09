@@ -1,0 +1,93 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════
+// คอร์สออนไลน์ KP Science — Firestore Security Rules
+// โปรเจกต์ Firebase ของเว็บคอร์ส (แยกจาก kp-science-f11ff ของเว็บ simulation)
+// deploy: firebase deploy --only firestore:rules --project <รหัสโปรเจกต์คอร์ส>
+//
+//   /students/{uid}                 — บัญชีนักเรียน · courses[] แก้ได้เฉพาะครู
+//   /courses/{cid}                  — ข้อมูลคอร์ส + สารบัญ (ทุกคนอ่านได้เมื่อ published)
+//   /courses/{cid}/lessons/{lid}    — เนื้อหาบท (เฉพาะคนที่มีสิทธิ์ หรือบท free)
+//   /course_progress/{uid}_{cid}    — ความคืบหน้า (นักเรียนเขียนของตัวเอง · ครูอ่านทั้งหมด)
+//   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ (นักเรียนสร้าง · ครูอนุมัติ/ลบ)
+// ═══════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    // ครู: อีเมลเจ้าของที่ยืนยันแล้ว (ล็อกอินด้วย Google) — กันคนสมัครอีเมลเดียวกันแบบรหัสผ่านโดยไม่ยืนยัน
+    function isTeacher() {
+      return signedIn()
+        && request.auth.token.email == 'komanepapato@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+    function me() {
+      return get(/databases/$(database)/documents/students/$(request.auth.uid)).data;
+    }
+    function hasCourse(cid) {
+      return isTeacher() || (signedIn()
+        && exists(/databases/$(database)/documents/students/$(request.auth.uid))
+        && me().get('courses', []).hasAny([cid, '*']));
+    }
+    // id ที่ขึ้นต้นด้วย uid ของผู้ใช้ (uid ของ Firebase ไม่มี '_')
+    function ownsId(id) { return signedIn() && id.split('_')[0] == request.auth.uid; }
+
+    // ── นักเรียน ─────────────────────────────────
+    match /students/{uid} {
+      allow read: if isTeacher() || (signedIn() && request.auth.uid == uid);
+      allow create: if isTeacher() || (signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'name', 'courses', 'createdAt'])
+        && request.resource.data.email == request.auth.token.get('email', '')
+        && request.resource.data.courses is list
+        && request.resource.data.courses.size() == 0);
+      allow update: if isTeacher() || (signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']));
+      allow delete: if isTeacher();
+    }
+
+    // ── คอร์ส + บทเรียน ──────────────────────────
+    match /courses/{cid} {
+      allow read: if isTeacher() || resource.data.published == true;
+      allow write: if isTeacher();
+
+      match /lessons/{lid} {
+        allow read: if hasCourse(cid)
+          || (resource.data.free == true
+              && get(/databases/$(database)/documents/courses/$(cid)).data.published == true);
+        allow write: if isTeacher();
+      }
+    }
+
+    // ── ความคืบหน้า: id = <uid>_<courseId> ─────────
+    match /course_progress/{pid} {
+      allow read: if isTeacher() || ownsId(pid);
+      allow create, update: if signedIn()
+        && pid == request.auth.uid + '_' + request.resource.data.courseId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'courseId', 'done', 'total',
+                                                 'last', 'lastAt', 'updatedAt'])
+        && request.resource.data.done is list
+        && request.resource.data.done.size() <= 500
+        && hasCourse(request.resource.data.courseId);
+      allow delete: if isTeacher();
+    }
+
+    // ── คำขอสิทธิ์: id = <uid>_<courseId> ─────────
+    match /course_requests/{rid} {
+      allow read: if isTeacher() || ownsId(rid);
+      allow create: if signedIn()
+        && rid == request.auth.uid + '_' + request.resource.data.courseId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'note', 'createdAt'])
+        && request.resource.data.get('note', '').size() <= 300
+        && exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId));
+      allow update: if isTeacher();
+      allow delete: if isTeacher() || ownsId(rid);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

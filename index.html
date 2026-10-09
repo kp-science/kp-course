@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2YTJBNHP6D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2YTJBNHP6D');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คอร์สออนไลน์ · KP Science</title>
+<meta name="description" content="คอร์สออนไลน์ฟิสิกส์ของ KP Science เรียนเป็นบท คลิป + Simulation โต้ตอบ + เอกสาร ติดตามความคืบหน้าได้">
+<script>
+/* KP Science — Frame Protection */
+(function(){
+  try{
+    if(window.self !== window.top){
+      window.top.location.href = window.self.location.href;
+    }
+  }catch(e){
+    document.documentElement.innerHTML = '<body style="background:#0a0e1a;color:#e2e8f0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:20px"><div><h1 style="color:#38bdf8">KP Science</h1><p>This page cannot be embedded on other websites.</p></div></body>';
+  }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+:root{
+  --bg:#06090f;--bg2:#0d1117;--bg3:#161b27;--bg4:#1c2333;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --accent:#38bdf8;--accent2:#818cf8;--accent3:#34d399;--accent4:#fb923c;--accent5:#f472b6;
+  --text:#f0f4f8;--text2:#c3cfdc;--muted:#7c8fa6;
+  --head:'IBM Plex Sans Thai',sans-serif;--mono:'Share Tech Mono',monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:16px/1.7 'IBM Plex Sans Thai Looped','IBM Plex Sans Thai',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.hide{display:none!important}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* KP topbar */
+.kp-topbar{position:sticky;top:0;z-index:200;background:rgba(6,9,15,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 4%;display:flex;align-items:center;height:50px;gap:1.2rem}
+.kp-topbar .tb-logo{display:flex;align-items:center;gap:.4rem;text-decoration:none;flex-shrink:0}
+.kp-topbar .tb-logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#38bdf8,#818cf8);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;color:#06090f}
+.kp-topbar .tb-logo-text{font-size:.9rem;font-weight:700}.kp-topbar .tb-kp{color:#38bdf8}.kp-topbar .tb-sc{color:#f0f4f8}
+.kp-topbar .tb-links{display:flex;gap:1.2rem;margin-left:auto}
+.kp-topbar .tb-links a{color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:600;transition:.2s}
+.kp-topbar .tb-links a:hover,.kp-topbar .tb-links a.on{color:var(--text)}
+#kp-login-btn{display:flex;align-items:center;gap:.3rem;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);color:#38bdf8;padding:5px 12px;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap}
+#kp-login-btn:hover{background:rgba(56,189,248,0.2)}
+#kp-user-menu{display:none;align-items:center;gap:.5rem}
+#kp-user-email{font-size:.75rem;color:#38bdf8;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#kp-user-menu button{font-size:.72rem;color:var(--muted);background:none;border:none;cursor:pointer}
+@media(max-width:768px){.kp-topbar .tb-links a:not(.keep){display:none}}
+
+/* ปุ่ม */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font:600 14px var(--head);padding:9px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);text-decoration:none;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.solid{background:var(--accent);border-color:var(--accent);color:#06090f}
+.btn.solid:hover{background:#7dd3fc;color:#06090f}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:default}
+
+/* หัวหน้ารายการคอร์ส */
+.hero{padding:46px 0 30px;border-bottom:1px solid var(--border)}
+.eyebrow{display:inline-block;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);color:var(--accent);padding:3px 12px;border-radius:6px;font-size:.72rem;font-weight:700;letter-spacing:.08em}
+.hero h1{font:700 clamp(1.8rem,4.6vw,3rem)/1.25 var(--head);margin:.6rem 0 .5rem}
+.hero h1 span{color:var(--accent)}
+.hero p{color:var(--muted);max-width:640px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin:30px 0 10px}
+.cc{display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;text-decoration:none;transition:transform .35s var(--ease),border-color .3s}
+.cc:hover{transform:translateY(-4px);border-color:rgba(56,189,248,.45)}
+.cc-cv{position:relative;aspect-ratio:16/8;background:linear-gradient(135deg,var(--a,#0ea5e9),var(--b,#6366f1));display:flex;align-items:flex-end;padding:16px}
+.cc-cv::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 90% at 85% 10%,rgba(255,255,255,.25),transparent 60%)}
+.cc-cv em{position:relative;font:700 12px var(--head);letter-spacing:.16em;font-style:normal;color:#fff;opacity:.9}
+.cc-cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cc-st{position:absolute;right:12px;top:12px;font:700 11px var(--head);padding:3px 9px;border-radius:99px;background:rgba(6,9,15,.82);color:#fff}
+.cc-st.ok{color:var(--accent3)}
+.cc-bd{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.cc-tags{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.cc-tags span{background:var(--bg3);padding:1px 8px;border-radius:5px}
+.cc h3{font:700 19px/1.45 var(--head)}
+.cc p{font-size:14.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cc-meta{margin-top:auto;padding-top:8px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.bar5{height:5px;border-radius:9px;background:var(--bg4);overflow:hidden;margin-top:6px}
+.bar5 i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width .5s var(--ease)}
+.empty{color:var(--muted);padding:44px 20px;text-align:center;border:1px dashed var(--border2);border-radius:14px;grid-column:1/-1}
+
+/* หน้าคอร์ส */
+.view{padding:26px 0 40px}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:14px;text-decoration:none;color:var(--muted);margin-bottom:16px;cursor:pointer;background:none;border:0}
+.back:hover{color:var(--text)}
+.c-head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.c-head h1{font:700 clamp(1.5rem,3.4vw,2.3rem)/1.3 var(--head);margin:6px 0 4px}
+.c-tags{display:flex;gap:8px;flex-wrap:wrap;font-size:13px}
+.c-tags span{border:1px solid var(--border2);padding:1px 10px;border-radius:99px;color:var(--text2)}
+.c-sum{color:var(--muted);max-width:760px}
+.c-by{font-size:13px;color:var(--muted)}
+.ctabs{display:flex;gap:22px;border-bottom:1px solid var(--border);margin:18px 0 0;overflow-x:auto;scrollbar-width:none}
+.ctabs a{flex:none;padding:9px 0;font:600 14px var(--head);color:var(--muted);text-decoration:none;position:relative;white-space:nowrap}
+.ctabs a.on{color:var(--text)}
+.ctabs a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+.course{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:26px;margin-top:20px}
+.player{position:relative;aspect-ratio:16/9;border:1px solid var(--border2);border-radius:12px;background:#000;overflow:hidden}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.player.ph{display:flex;align-items:flex-end;padding:22px;background:linear-gradient(135deg,var(--a,#0ea5e9),var(--b,#6366f1));color:#fff}
+.player.ph b{font:700 24px/1.4 var(--head)}
+.player.ph small{display:block;font:700 12px var(--head);letter-spacing:.12em;opacity:.85}
+.lock{position:relative;border:1px solid var(--border2);border-radius:12px;background:radial-gradient(70% 90% at 80% 0%,rgba(129,140,248,.18),transparent 60%),var(--bg2);padding:34px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:280px;justify-content:center}
+.lock .ic{font-size:40px;line-height:1}
+.lock h3{font:700 20px var(--head)}
+.lock p{color:var(--muted);max-width:480px;font-size:15px}
+.lock textarea{width:min(440px,100%);min-height:70px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:8px 10px;font:inherit;font-size:14px;resize:vertical}
+.lock .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pending{color:var(--accent4);font-weight:600}
+.ls-h{margin:18px 0 4px}
+.ls-h small{font-size:13px;color:var(--muted)}
+.ls-h h2{font:700 24px/1.4 var(--head);margin-top:2px}
+.ls-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--text2)}
+.ls-meta span{padding:1px 9px;background:var(--bg3);border-radius:5px}
+.ls-meta .free{color:var(--accent3)}
+.ltabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;border-bottom:1px solid var(--border);padding-bottom:12px}
+.ltabs button{border:1px solid var(--border2);background:var(--bg2);padding:6px 14px;border-radius:8px;font:600 14px var(--head);cursor:pointer}
+.ltabs button:hover{border-color:var(--accent)}
+.ltabs button.on{background:var(--accent);color:#06090f;border-color:var(--accent)}
+.lpanel{padding-top:18px}
+.lpanel[hidden]{display:none}
+.res{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid var(--border2);border-radius:10px;background:var(--bg2);padding:12px 14px;margin-bottom:10px}
+.res .ri{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06090f;font-size:18px}
+.res b{display:block;font:600 15px var(--head)}
+.res small{color:var(--muted);font-size:13px}
+.res .sp{flex:1}
+.ls-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid var(--border);padding-top:16px;margin-top:26px}
+.check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;user-select:none}
+.check input{width:18px;height:18px;accent-color:#34d399}
+.check.off{color:var(--muted);font-weight:400;font-size:14px;cursor:default}
+
+/* สารบัญ */
+.toc{position:sticky;top:64px;align-self:start;border:1px solid var(--border2);border-radius:12px;background:var(--bg2);max-height:calc(100vh - 84px);overflow:auto}
+.toc h4{padding:13px 16px 10px;font:700 15px var(--head);display:flex;justify-content:space-between;gap:10px}
+.toc h4 small{font:400 13px var(--head);color:var(--muted);white-space:nowrap}
+.toc .bar5{margin:0 16px 10px}
+.unit{border-top:1px solid var(--border)}
+.unit summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;font:600 14px var(--head);background:var(--bg3)}
+.unit summary::-webkit-details-marker{display:none}
+.unit summary .un{font:700 11px var(--mono);background:var(--accent);color:#06090f;padding:1px 6px;border-radius:4px}
+.unit summary .ut{flex:1}
+.unit summary small{font-size:12px;color:var(--muted);font-weight:400}
+.unit summary::after{content:"▾";color:var(--muted);transition:transform .25s}
+.unit:not([open]) summary::after{transform:rotate(-90deg)}
+.toc button{display:flex;gap:10px;width:100%;text-align:left;border:0;border-top:1px solid var(--border);background:none;padding:10px 16px;cursor:pointer;font-size:14.5px;line-height:1.45;align-items:center}
+.toc button:hover{background:var(--bg3)}
+.toc button.on{background:rgba(56,189,248,.1);box-shadow:inset 3px 0 0 var(--accent)}
+.toc .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font:600 11px var(--mono);color:var(--muted)}
+.toc .on .n{border-color:var(--accent);color:var(--accent)}
+.toc .done .n{background:var(--accent3);border-color:var(--accent3);color:#06090f}
+.toc .t{flex:1}
+.toc .d{font-size:12px;color:var(--muted);white-space:nowrap}
+.toc .lk{font-size:12px;opacity:.7}
+
+/* เนื้อหาบท */
+.prose{font-size:17px;line-height:1.9;min-width:0;color:var(--text2)}
+.prose>*:first-child{margin-top:0}
+.prose p{margin:0 0 1em}
+.prose b{color:var(--text)}
+.prose h2{font:700 23px/1.45 var(--head);color:var(--text);margin:1.5em 0 .5em;padding-top:.4em;border-top:1px solid var(--border)}
+.prose h3{font:700 19px/1.45 var(--head);color:var(--text);margin:1.3em 0 .4em}
+.prose ul,.prose ol{margin:0 0 1em;padding-left:1.4em}
+.prose li{margin:.25em 0}
+.prose li::marker{color:var(--accent)}
+.prose blockquote{margin:1.3em 0;padding:14px 18px;background:var(--bg3);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:16px}
+.prose figure{margin:1.5em 0}
+.prose figure img{width:100%;display:block;border-radius:10px;border:1px solid var(--border)}
+.prose figcaption{font-size:13px;color:var(--muted);margin-top:6px;text-align:center}
+.prose a{color:var(--accent);text-underline-offset:3px;word-break:break-word}
+.prose .math{overflow-x:auto;margin:1.1em 0;text-align:center}
+.embed{position:relative;margin:1.5em 0;border:1px solid var(--border2);border-radius:10px;overflow:hidden;background:#000}
+.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.embed.v{aspect-ratio:16/9}
+.embed.doc{aspect-ratio:3/4;max-height:85vh;background:var(--bg3)}
+.embed.web{aspect-ratio:4/3;background:#fff}
+.embed-cap{display:flex;justify-content:flex-end;font-size:13px;margin:-1.2em 0 1.5em}
+.lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid var(--accent);border-radius:8px;font:600 15px var(--head);text-decoration:none!important;color:var(--accent)!important}
+.lbtn:hover{background:rgba(56,189,248,.12)}
+.cintro{margin-top:16px;max-width:860px}
+.skel{height:18px;border-radius:6px;background:linear-gradient(90deg,var(--bg3),var(--bg4),var(--bg3));background-size:200% 100%;animation:sk 1.2s linear infinite;margin:12px 0}
+@keyframes sk{to{background-position:-200% 0}}
+footer{margin-top:60px;border-top:1px solid var(--border);padding:26px 0;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer a{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,80px);background:var(--bg4);border:1px solid var(--accent3);color:var(--text);padding:9px 18px;border-radius:9px;transition:.3s;z-index:60;opacity:0;font-weight:600}
+.toast.show{transform:translate(-50%,0);opacity:1}
+
+/* KP Auth Modal */
+#kp-auth-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:1rem}
+#kp-auth-modal.open{display:flex}
+.kp-modal-box{background:#0d1421;border:1px solid rgba(255,255,255,0.12);border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.5)}
+.kp-modal-head{padding:1.25rem 1.5rem 0;display:flex;justify-content:space-between;align-items:center}
+.kp-modal-head h3{font-size:1.05rem;font-weight:700}
+.kp-modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px}
+.kp-tabs{display:flex;padding:1rem 1.5rem 0;border-bottom:1px solid rgba(255,255,255,0.07)}
+.kp-tab{background:none;border:none;color:var(--muted);font-size:.9rem;font-weight:600;padding:.5rem 1rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.kp-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.kp-tab-pane{display:none;padding:1.5rem}
+.kp-tab-pane.active{display:block}
+.kp-field{margin-bottom:1rem}
+.kp-field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.35rem;font-weight:600}
+.kp-field input{width:100%;background:#161b27;border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:.65rem .9rem;border-radius:8px;font-family:inherit;font-size:.9rem;outline:none}
+.kp-field input:focus{border-color:var(--accent)}
+.kp-err{color:#f87171;font-size:.8rem;min-height:1.2rem;margin-bottom:.5rem}
+.kp-submit{width:100%;background:var(--accent);color:#06090f;border:none;padding:.75rem;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer}
+.kp-switch{text-align:center;margin-top:.75rem;font-size:.82rem;color:var(--muted)}
+.kp-switch button{background:none;border:none;color:var(--accent);font-size:.82rem;cursor:pointer;font-weight:600}
+.kp-google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:.6rem;background:#fff;color:#1f1f1f;border:none;padding:.72rem;border-radius:9px;font-size:.92rem;font-weight:600;cursor:pointer;margin-bottom:1rem}
+.kp-divider{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;color:var(--muted);font-size:.78rem}
+.kp-divider::before,.kp-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08)}
+#kp-quota-alert-unused{display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1e1b2e;border:1px solid var(--accent2);color:var(--text);padding:.75rem 1.5rem;border-radius:10px;font-size:.88rem;z-index:9998;align-items:center;gap:.5rem}
+
+@media (max-width:980px){
+  .course{grid-template-columns:1fr}
+  .toc{position:static;max-height:none;order:2}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .kp-topbar{padding:0 16px;gap:.8rem}
+  .hero{padding:32px 0 22px}
+  .cgrid{grid-template-columns:1fr}
+  .prose{font-size:16px}
+  .lock{padding:26px 16px}
+  .res .btn{flex:1}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!-- KP Topbar -->
+<nav class="kp-topbar">
+  <a href="#/" class="tb-logo"><div class="tb-logo-mark">KP</div><div class="tb-logo-text"><span class="tb-kp">KP</span><span class="tb-sc">Science</span></div></a>
+  <div class="tb-links"><a href="#/" class="on keep">📚 คอร์สออนไลน์</a><a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">Simulation ↗</a><a id="teacherLink" class="hide keep" href="admin.html">✏️ หน้าครู</a></div>
+  <button id="kp-login-btn" type="button" onclick="openLogin()">🔑 เข้าสู่ระบบ</button>
+  <div id="kp-user-menu"><span id="kp-user-email"></span><button type="button" onclick="KPC.logout()">ออก</button></div>
+</nav>
+
+<main class="wrap" id="app"><div class="view"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div></main>
+
+<footer><div class="wrap">
+  <span>KP Science · คอร์สออนไลน์</span>
+  <span><a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">KP Science Simulation ↗</a></span>
+</div></footer>
+<div class="toast" id="toast"></div>
+
+<div id="kp-auth-modal">
+  <div class="kp-modal-box">
+    <div class="kp-modal-head">
+      <h3>👋 คอร์สออนไลน์ — บัญชีนักเรียน</h3>
+      <button class="kp-modal-close" onclick="closeLogin()">✕</button>
+    </div>
+    <div class="kp-tabs">
+      <button class="kp-tab active" id="tab-login" onclick="loginTab('login')">เข้าสู่ระบบ</button>
+      <button class="kp-tab" id="tab-register" onclick="loginTab('register')">สมัครสมาชิก</button>
+    </div>
+    <div class="kp-tab-pane active" id="pane-login">
+      <button class="kp-google-btn" onclick="doGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        เข้าสู่ระบบด้วย Google
+      </button>
+      <div class="kp-divider">หรือ</div>
+      <div class="kp-field"><label>อีเมล</label><input type="email" id="kp-login-email" placeholder="your@email.com"></div>
+      <div class="kp-field"><label>รหัสผ่าน</label><input type="password" id="kp-login-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="kp-err" id="kp-login-err"></div>
+      <button class="kp-submit" onclick="doLogin()">เข้าสู่ระบบ</button>
+      <div class="kp-switch">ยังไม่มีบัญชี? <button onclick="loginTab('register')">สมัครฟรี</button> · <button onclick="doReset()">ลืมรหัสผ่าน</button></div>
+    </div>
+    <div class="kp-tab-pane" id="pane-register">
+      <button class="kp-google-btn" onclick="doGoogle()">สมัครด้วย Google</button>
+      <div class="kp-divider">หรือสมัครด้วยอีเมล</div>
+      <div class="kp-field"><label>ชื่อ-สกุล (ให้ครูรู้ว่าเป็นใคร)</label><input type="text" id="kp-reg-name" placeholder="ด.ญ. ใจดี เรียนดี"></div>
+      <div class="kp-field"><label>อีเมล</label><input type="email" id="kp-reg-email" placeholder="your@email.com"></div>
+      <div class="kp-field"><label>รหัสผ่าน</label><input type="password" id="kp-reg-pass" placeholder="อย่างน้อย 6 ตัวอักษร"></div>
+      <div class="kp-field"><label>ยืนยันรหัสผ่าน</label><input type="password" id="kp-reg-pass2" placeholder="••••••" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <div class="kp-err" id="kp-reg-err"></div>
+      <button class="kp-submit" onclick="doRegister()">สมัครบัญชีนักเรียน</button>
+      <div class="kp-switch">มีบัญชีแล้ว? <button onclick="loginTab('login')">เข้าสู่ระบบ</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js?v=1"></script>
+<script src="course-core.js?v=1"></script>
+<script>
+(function () {
+const { esc, safeUrl, ytId, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
+const $ = id => document.getElementById(id);
+const SUBJ = { 'ฟิสิกส์': ['#0ea5e9', '#6366f1', 'PHYSICS'], 'ดาราศาสตร์': ['#7c3aed', '#f97316', 'ASTRONOMY'], 'เคมี': ['#0d9488', '#65a30d', 'CHEMISTRY'], 'ชีววิทยา': ['#16a34a', '#ca8a04', 'BIOLOGY'] };
+const subjOf = s => SUBJ[s] || ['#475569', '#0ea5e9', 'SCIENCE'];
+const fmtTime = ts => { try { const d = ts && ts.toDate ? ts.toDate() : null; return d ? d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : ''; } catch (e) { return ''; } };
+function toast(m) { const t = $('toast'); t.textContent = m; t.className = 'toast show'; clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 2600); }
+const isAdmin = () => KPC.isTeacher();
+
+/* ===================== สถานะ ===================== */
+const S = { courses: null, listErr: '', progress: {}, request: {}, lessonCache: {} };
+let renderSeq = 0;
+
+async function loadCourses() {
+  try { S.courses = await KPC.listCourses(isAdmin()); S.listErr = ''; }
+  catch (e) { S.courses = []; S.listErr = e.code === 'permission-denied' ? 'ยังเปิดอ่านคอร์สไม่ได้ (ตั้งค่า Firestore rules ของคอร์สยังไม่เสร็จ)' : 'โหลดรายการคอร์สไม่สำเร็จ: ' + (e.message || e); }
+}
+async function loadUserCourseState(cids) {
+  if (!KPC.user()) return;
+  await Promise.all(cids.map(async cid => {
+    if (KPC.canCourse(cid)) S.progress[cid] = await KPC.getProgress(cid);
+    else S.request[cid] = await KPC.getMyRequest(cid);
+  }));
+}
+const pctOf = c => { const p = S.progress[c.id]; const n = (c.outline || []).length; if (!p || !n) return 0; return Math.round((p.done || []).filter(x => c.outline.some(l => l.id === x)).length / n * 100); };
+
+/* ===================== รายการคอร์ส ===================== */
+function renderList() {
+  document.title = 'คอร์สออนไลน์ · KP Science';
+  const L = S.courses || [];
+  $('app').innerHTML = `
+    <section class="hero">
+      <span class="eyebrow">KP SCIENCE · ONLINE COURSE</span>
+      <h1>คอร์ส<span>ออนไลน์</span></h1>
+      <p>เรียนเป็นบท ตามจังหวะตัวเอง — คลิปบรรยาย + Simulation โต้ตอบ + เอกสารประกอบ ครูอนุญาตสิทธิ์เข้าเรียนรายคน และเห็นความคืบหน้าของทุกบท</p>
+    </section>
+    <div class="cgrid">${L.map(card).join('') || `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน — เร็ว ๆ นี้')}</div>`}</div>`;
+}
+function card(c) {
+  const [a, b, en] = subjOf(c.subject), n = (c.outline || []).length, free = (c.outline || []).filter(l => l.free).length;
+  const ok = KPC.canCourse(c.id), pct = pctOf(c);
+  const st = ok ? '<span class="cc-st ok">✅ เข้าเรียนได้</span>' : S.request[c.id] ? '<span class="cc-st">⏳ รอครูอนุมัติ</span>' : '<span class="cc-st">🔒 ต้องขอสิทธิ์</span>';
+  return `<a class="cc" href="#/c/${encodeURIComponent(c.id)}" style="--a:${a};--b:${b}">
+    <div class="cc-cv">${safeUrl(c.cover) ? `<img src="${esc(c.cover)}" alt="" loading="lazy">` : `<em>${esc(en)}</em>`}${st}${c.published === false ? '<span class="cc-st" style="left:12px;right:auto">ร่าง (ครูเห็นคนเดียว)</span>' : ''}</div>
+    <div class="cc-bd">
+      <div class="cc-tags">${[c.subject, c.level].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('')}</div>
+      <h3>${esc(c.title)}</h3>
+      ${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
+      <div class="cc-meta"><span>${n} บทเรียน${free ? ` · ทดลองเรียนฟรี ${free} บท` : ''}</span><span>${esc(c.author || '')}</span></div>
+      ${ok && KPC.user() ? `<div class="bar5" title="เรียนแล้ว ${pct}%"><i style="width:${pct}%"></i></div>` : ''}
+    </div></a>`;
+}
+
+/* ===================== หน้าคอร์ส ===================== */
+const L_ICON = { text: '📄', sim: '🧪', doc: '📑', quiz: '✅' };
+
+function tocHtml(c, i) {
+  const outline = c.outline || [], done = (S.progress[c.id] || {}).done || [], ok = KPC.canCourse(c.id);
+  const base = '#/c/' + encodeURIComponent(c.id) + '/', pct = pctOf(c);
+  const units = [];
+  outline.forEach((l, j) => { const u = l.unit || ''; if (!units.length || units[units.length - 1].name !== u) units.push({ name: u, items: [] }); units[units.length - 1].items.push([l, j]); });
+  const row = ([l, j]) => {
+    const d = done.includes(l.id), locked = !ok && !l.free;
+    return `<button type="button" class="${j === i ? 'on' : ''}${d ? ' done' : ''}" data-go="${base}${j + 1}"><span class="n">${d ? '✓' : j + 1}</span><span class="t">${esc(l.title)}</span>${locked ? '<span class="lk">🔒</span>' : !ok && l.free ? '<span class="d" style="color:var(--accent3)">ฟรี</span>' : l.dur ? `<span class="d">${esc(l.dur)}</span>` : ''}</button>`;
+  };
+  return `<h4><span>สารบัญ · ${outline.length} บท</span>${ok && KPC.user() ? `<small>เรียนแล้ว ${pct}%</small>` : ''}</h4>
+    ${ok && KPC.user() ? `<div class="bar5"><i style="width:${pct}%"></i></div>` : ''}
+    ${units.map((u, ui) => u.name ? `<details class="unit"${u.items.some(([, j]) => j === i) || units.length < 4 ? ' open' : ''}><summary><span class="un">${String(ui + 1).padStart(2, '0')}</span><span class="ut">${esc(u.name.replace(/^\d+\s*[.·:-]?\s*/, ''))}</span><small>${u.items.length} บท</small></summary>${u.items.map(row).join('')}</details>` : u.items.map(row).join('')).join('')}`;
+}
+
+function lockPanel(c, L) {
+  const user = KPC.user(), req = S.request[c.id];
+  let inner;
+  if (!user) inner = `<div class="ic">🔑</div><h3>เข้าสู่ระบบเพื่อเรียนบทนี้</h3><p>คอร์สนี้เปิดให้นักเรียนที่ครูอนุญาตเท่านั้น สมัครบัญชีนักเรียนฟรีด้วยอีเมลหรือ Google แล้วกด “ขอสิทธิ์จากครู”</p><div class="row"><button class="btn solid" type="button" onclick="openLogin()">เข้าสู่ระบบ / สมัครฟรี</button></div>`;
+  else if (req) inner = `<div class="ic">⏳</div><h3>ส่งคำขอแล้ว — รอครูอนุมัติ</h3><p>ส่งเมื่อ ${esc(fmtTime(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b> เมื่อครูอนุมัติแล้วกลับมาที่หน้านี้ บทเรียนจะเปิดเอง</p><div class="row"><button class="btn sm" type="button" data-recheck>🔄 ตรวจสิทธิ์อีกครั้ง</button></div>`;
+  else inner = `<div class="ic">🔒</div><h3>บทนี้สำหรับนักเรียนในคอร์ส</h3><p>บอกครูสั้น ๆ ว่าเป็นใคร (ชื่อ · ห้อง · โรงเรียน) แล้วกดขอสิทธิ์ ครูจะอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
+    <textarea id="reqNote" maxlength="300" placeholder="เช่น ด.ญ. ใจดี เรียนดี ม.4/2"></textarea>
+    <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">🙋 ขอสิทธิ์จากครู</button></div>`;
+  return `<div class="lock">${inner}</div>`;
+}
+
+async function renderCourse(cid, n) {
+  const seq = ++renderSeq;
+  let c = (S.courses || []).find(x => x.id === cid);
+  if (!c) {
+    $('app').innerHTML = '<div class="view"><div class="skel" style="width:40%"></div><div class="skel"></div></div>';
+    try { c = await KPC.getCourse(cid); } catch (e) { c = null; }
+    if (seq !== renderSeq) return;
+    if (!c) { $('app').innerHTML = `<div class="view"><button class="back" data-back>← คอร์สทั้งหมด</button><div class="empty">ไม่พบคอร์สนี้ หรือคอร์สยังไม่เปิด</div></div>`; return; }
+  }
+  if (KPC.user() && !(cid in S.progress) && !(cid in S.request)) await loadUserCourseState([cid]);
+  const outline = c.outline || [];
+  const i = Math.min(Math.max(0, (Number(n) || 1) - 1), Math.max(0, outline.length - 1));
+  const meta = outline[i];
+  const ok = KPC.canCourse(cid);
+  let L = null;
+  if (meta && (ok || meta.free)) {
+    const key = cid + '/' + meta.id;
+    L = S.lessonCache[key];
+    if (!L) {
+      $('app').innerHTML = `<div class="view">${head(c)}<div class="skel" style="margin-top:30px;height:260px"></div></div>`;
+      try { L = await KPC.getLesson(cid, meta.id); } catch (e) { L = null; }
+      if (seq !== renderSeq) return;
+      if (L) S.lessonCache[key] = L;
+    }
+  }
+  document.title = c.title + ' · KP Science';
+  $('app').innerHTML = `<div class="view">${viewCourse(c, i, meta, L, ok)}</div>`;
+  typeset($('app'));
+  // บันทึกว่าเรียนถึงบทไหน (ครูดูในหน้าครู)
+  if (ok && L && KPC.user()) {
+    const p = S.progress[cid] = S.progress[cid] || { done: [] };
+    if (p.last !== meta.id) { p.last = meta.id; KPC.saveProgress(cid, { last: meta.id, lastAt: firebase.firestore.FieldValue.serverTimestamp(), total: outline.length, done: p.done || [] }).catch(() => {}); }
+  }
+}
+
+function head(c) {
+  return `<button class="back" data-back>← คอร์สทั้งหมด</button>
+    <div class="c-head"><div>
+      <div class="c-tags">${[c.subject, c.level].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('')}${c.published === false ? '<span style="color:var(--accent4)">ร่าง</span>' : ''}</div>
+      <h1>${esc(c.title)}</h1>
+      ${c.summary ? `<p class="c-sum">${esc(c.summary)}</p>` : ''}
+      <div class="c-by">${c.author ? 'โดย ' + esc(c.author) + ' · ' : ''}${(c.outline || []).length} บทเรียน</div>
+    </div>${isAdmin() ? `<a class="btn sm" href="admin.html#c/${encodeURIComponent(c.id)}">✏️ แก้คอร์สนี้</a>` : ''}</div>`;
+}
+
+function viewCourse(c, i, meta, L, ok) {
+  const [a, b] = subjOf(c.subject);
+  const others = (S.courses || []).filter(x => x.id !== c.id);
+  const ctabs = others.length ? `<nav class="ctabs">${[c].concat(others).sort((x, y) => (x.order || 0) - (y.order || 0)).map(x => `<a href="#/c/${encodeURIComponent(x.id)}" class="${x.id === c.id ? 'on' : ''}">${esc(x.title)}</a>`).join('')}</nav>` : '';
+  const intro = i === 0 && c.body ? `<div class="prose cintro">${renderBody(c.body)}</div>` : '';
+  if (!meta) return `${head(c)}${ctabs}${intro}<div class="empty" style="margin-top:20px">คอร์สนี้ยังไม่มีบทเรียน</div>`;
+  const outline = c.outline, base = '#/c/' + encodeURIComponent(c.id) + '/';
+  const nav = `<span style="display:flex;gap:10px">${i > 0 ? `<a class="btn sm" href="${base}${i}">← บทก่อนหน้า</a>` : ''}${i < outline.length - 1 ? `<a class="btn sm solid" href="${base}${i + 2}">บทถัดไป →</a>` : ''}</span>`;
+  const lh = `<div class="ls-h"><small>บทที่ ${i + 1} / ${outline.length}${meta.unit ? ' · ' + esc(meta.unit) : ''}</small><h2>${esc(meta.title)}</h2></div>`;
+  let main;
+  if (!L) {
+    main = `${lockPanel(c, meta)}${lh}<div class="ls-nav"><span></span>${nav}</div>`;
+  } else {
+    const { sims, text } = splitSims(L.body);
+    const embSims = sims.filter(s => !KPC.noEmbed(s.url));
+    const file = safeUrl(L.file), quiz = safeUrl(L.quiz);
+    const player = L.video && ytId(L.video) ? `<div class="player"><iframe src="${esc(embedSrc(L.video))}" allow="fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(L.title)}"></iframe></div>`
+      : embSims.length ? `<div class="player"><iframe src="${esc(embedSrc(embSims[0].url))}" loading="lazy" allowfullscreen title="${esc(L.title)}"></iframe></div>`
+      : `<div class="player ph" style="--a:${a};--b:${b}"><div><small>บทที่ ${i + 1}</small><b>${esc(L.title)}</b></div></div>`;
+    const tabs = [['text', 'เนื้อหา', true], ['sim', `Simulation${sims.length > 1 ? ' (' + sims.length + ')' : ''}`, sims.length], ['doc', 'เอกสาร', file], ['quiz', 'แบบทดสอบ', quiz]].filter(t => t[2]);
+    const first = text ? 'text' : (tabs.find(t => t[0] !== 'text') || ['text'])[0];
+    const panel = {
+      text: `<div class="prose">${renderBody(text) || '<p style="color:var(--muted)">บทนี้เรียนจากคลิป/ซิมูเลชันด้านบน</p>'}</div>`,
+      sim: sims.map((x, j) => `<div class="res"><span class="ri">${L_ICON.sim}</span><span><b>${esc(x.label || 'Simulation ' + (j + 1))}</b><small>${KPC.noEmbed(x.url) ? 'Virtual Lab · เปิดในแท็บใหม่' : 'ซิมูเลชันโต้ตอบ ปรับค่าได้เอง'}</small></span><span class="sp"></span>
+        ${KPC.noEmbed(x.url) ? '' : `<button type="button" class="btn sm" data-play="${esc(embedSrc(x.url))}">แสดงบนจอ</button>`}<a class="btn sm" href="${esc(x.url)}" target="_blank" rel="noopener">เต็มจอ ${ICON.out}</a></div>`).join(''),
+      doc: file ? `<div class="embed doc" style="margin-top:0"><iframe src="${esc(embedSrc(file))}" loading="lazy" title="เอกสารประกอบ"></iframe></div><div class="embed-cap"><a href="${esc(file)}" target="_blank" rel="noopener">เปิดเอกสารในแท็บใหม่ ${ICON.out}</a></div>` : '',
+      quiz: quiz ? `<div class="res"><span class="ri">${L_ICON.quiz}</span><span><b>แบบทดสอบท้ายบท</b><small>ทำแล้วส่งได้ทันที</small></span><span class="sp"></span><a class="btn sm solid" href="${esc(quiz)}" target="_blank" rel="noopener">ทำแบบทดสอบ ${ICON.out}</a></div>` : '',
+    };
+    const done = ((S.progress[c.id] || {}).done || []).includes(L.id);
+    const check = ok && KPC.user()
+      ? `<label class="check"><input type="checkbox" data-done="${esc(L.id)}"${done ? ' checked' : ''}> เรียนบทนี้แล้ว</label>`
+      : `<span class="check off">${KPC.user() ? '🎁 บทเรียนทดลองฟรี' : '🎁 บทเรียนทดลองฟรี · เข้าสู่ระบบเพื่อบันทึกความคืบหน้า'}</span>`;
+    main = `${player}${lh}
+      <div class="ls-meta">${[c.subject, c.level, L.dur].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('')}${!ok && L.free ? '<span class="free">ทดลองเรียนฟรี</span>' : ''}</div>
+      ${tabs.length > 1 ? `<div class="ltabs">${tabs.map(t => `<button type="button" data-ltab="${t[0]}" class="${t[0] === first ? 'on' : ''}">${L_ICON[t[0]]} ${esc(t[1])}</button>`).join('')}</div>` : ''}
+      ${tabs.map(t => `<div class="lpanel" data-lpanel="${t[0]}"${t[0] === first ? '' : ' hidden'}>${panel[t[0]]}</div>`).join('')}
+      <div class="ls-nav">${check}${nav}</div>`;
+  }
+  CUR = { c, i };
+  return `${head(c)}${ctabs}${intro}<div class="course"><div>${main}</div><nav class="toc" id="toc">${tocHtml(c, i)}</nav></div>`;
+}
+let CUR = null;
+
+/* ===================== เหตุการณ์ ===================== */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-ltab]');
+  if (t) {
+    document.querySelectorAll('[data-ltab]').forEach(x => x.classList.toggle('on', x === t));
+    document.querySelectorAll('[data-lpanel]').forEach(p => { p.hidden = p.dataset.lpanel !== t.dataset.ltab; });
+    typeset(document.querySelector(`[data-lpanel="${t.dataset.ltab}"]`));
+    return;
+  }
+  const pl = e.target.closest('[data-play]');
+  if (pl) {
+    const box = document.querySelector('.player');
+    box.className = 'player'; box.removeAttribute('style');
+    box.innerHTML = `<iframe src="${esc(pl.dataset.play)}" allowfullscreen title="Simulation"></iframe>`;
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (e.target.closest('[data-back]')) { location.hash = '#/'; return; }
+  const go = e.target.closest('[data-go]'); if (go) { location.hash = go.dataset.go; return; }
+  const rq = e.target.closest('[data-request]');
+  if (rq) {
+    rq.disabled = true; rq.textContent = 'กำลังส่ง…';
+    const cid = rq.dataset.request;
+    try {
+      await KPC.requestAccess(cid, ($('reqNote') || {}).value || '');
+      S.request[cid] = await KPC.getMyRequest(cid) || { createdAt: null };
+      toast('ส่งคำขอถึงครูแล้ว');
+      route();
+    } catch (err) { rq.disabled = false; rq.textContent = '🙋 ขอสิทธิ์จากครู'; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message)); }
+    return;
+  }
+  if (e.target.closest('[data-recheck]')) { await KPC.refreshMe(); S.progress = {}; S.request = {}; S.lessonCache = {}; await loadUserCourseState((S.courses || []).map(c => c.id)); route(); toast(KPC.canCourse((CUR || {}).c ? CUR.c.id : '') ? 'ครูอนุมัติแล้ว เข้าเรียนได้เลย' : 'ยังรอครูอนุมัติอยู่'); }
+});
+
+document.addEventListener('change', e => {
+  const cb = e.target.closest('[data-done]'); if (!cb || !CUR) return;
+  const c = CUR.c, lid = cb.dataset.done;
+  const p = S.progress[c.id] = S.progress[c.id] || { done: [] };
+  const list = (p.done || []).filter(x => x !== lid);
+  if (cb.checked) list.push(lid);
+  p.done = list;
+  KPC.saveProgress(c.id, { done: list, total: (c.outline || []).length })
+    .then(() => { if (cb.checked) toast(list.length >= (c.outline || []).length ? '🎉 เรียนครบทุกบทแล้ว!' : 'บันทึกแล้ว — เก่งมาก!'); })
+    .catch(err => toast('บันทึกไม่สำเร็จ: ' + (err.code || err.message)));
+  if ($('toc')) $('toc').innerHTML = tocHtml(c, CUR.i);
+});
+
+/* ---------- เส้นทาง: #/  ·  #/c/รหัส  ·  #/c/รหัส/บทที่ ---------- */
+function route() {
+  const h = decodeURIComponent(location.hash.replace(/^#/, ''));
+  const m = /^[/]c[/]([^/]+)(?:[/](\d+))?/.exec(h);
+  if (m) renderCourse(m[1], m[2]);
+  else { renderSeq++; renderList(); }
+  window.scrollTo(0, 0);
+}
+addEventListener('hashchange', route);
+
+/* ===================== ล็อกอิน ===================== */
+const errBox = id => $(id);
+window.openLogin = () => { $('kp-auth-modal').classList.add('open'); loginTab('login'); };
+window.closeLogin = () => { $('kp-auth-modal').classList.remove('open'); ['kp-login-err', 'kp-reg-err'].forEach(i => $(i).textContent = ''); };
+window.loginTab = tab => {
+  ['login', 'register'].forEach(t => { $('tab-' + t).classList.toggle('active', t === tab); $('pane-' + t).classList.toggle('active', t === tab); });
+};
+async function run(errId, fn) {
+  const el = errBox(errId); el.style.color = ''; el.textContent = 'กำลังดำเนินการ…';
+  try { await fn(); el.textContent = ''; closeLogin(); }
+  catch (e) { el.textContent = e.code === 'auth/popup-closed-by-user' ? '' : KPC.authError(e.code || e.message); }
+}
+window.doGoogle = () => run($('pane-register').classList.contains('active') ? 'kp-reg-err' : 'kp-login-err', KPC.loginGoogle);
+window.doLogin = () => {
+  const em = $('kp-login-email').value.trim(), pw = $('kp-login-pass').value;
+  if (!em || !pw) { $('kp-login-err').textContent = 'กรุณากรอกอีเมลและรหัสผ่าน'; return; }
+  run('kp-login-err', () => KPC.loginEmail(em, pw));
+};
+window.doRegister = () => {
+  const name = $('kp-reg-name').value.trim(), em = $('kp-reg-email').value.trim(), pw = $('kp-reg-pass').value, pw2 = $('kp-reg-pass2').value;
+  const err = $('kp-reg-err');
+  if (!em || !pw) { err.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
+  if (pw !== pw2) { err.textContent = 'รหัสผ่านไม่ตรงกัน'; return; }
+  if (pw.length < 6) { err.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'; return; }
+  run('kp-reg-err', () => KPC.register(em, pw, name));
+};
+window.doReset = async () => {
+  const em = $('kp-login-email').value.trim(), err = $('kp-login-err');
+  if (!em) { err.textContent = 'พิมพ์อีเมลในช่องด้านบนก่อน แล้วกด “ลืมรหัสผ่าน” อีกครั้ง'; return; }
+  try { await KPC.resetPassword(em); err.style.color = 'var(--accent3)'; err.textContent = 'ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ' + em + ' แล้ว'; }
+  catch (e) { err.style.color = ''; err.textContent = KPC.authError(e.code); }
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLogin(); });
+$('kp-auth-modal').addEventListener('click', e => { if (e.target.id === 'kp-auth-modal') closeLogin(); });
+
+function updateTopbar(user) {
+  $('kp-login-btn').style.display = user ? 'none' : 'flex';
+  $('kp-user-menu').style.display = user ? 'flex' : 'none';
+  $('kp-user-email').textContent = user ? (user.displayName || (user.email || '').split('@')[0]) : '';
+  $('teacherLink').classList.toggle('hide', !isAdmin());
+}
+
+// เริ่ม + เมื่อเข้า/ออกจากระบบ → โหลดสิทธิ์และวาดใหม่
+if (!KPC.configured) {
+  $('app').innerHTML = '<section class="hero"><span class="eyebrow">ตั้งค่าเว็บ</span><h1>คอร์ส<span>ออนไลน์</span></h1><p>ยังไม่ได้ใส่ค่า Firebase ของเว็บคอร์ส — เปิดไฟล์ <b>firebase-config.js</b> แล้ววาง firebaseConfig ของโปรเจกต์คอร์ส</p></section>';
+} else {
+  let firstAuth = true;
+  KPC.onUser(async user => {
+    updateTopbar(user);
+    if (!firstAuth) { S.progress = {}; S.request = {}; S.lessonCache = {}; }
+    firstAuth = false;
+    await loadCourses();
+    await loadUserCourseState((S.courses || []).map(c => c.id));
+    route();
+  });
+}
+})();
+</script>
+</body>
+</html>
