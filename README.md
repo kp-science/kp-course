@@ -74,7 +74,7 @@
 5. Project settings → Your apps → `</>` Web → คัดลอก firebaseConfig มาวางใน `firebase-config.js`
 6. deploy rules: `npm i -g firebase-tools` → `firebase login` → ในโฟลเดอร์นี้ `firebase deploy --only firestore:rules --project <รหัสโปรเจกต์>` (หรือคัดลอก `firestore.rules` ไปวางใน Console → Firestore → Rules → Publish)
 7. เปิด `admin.html` → ล็อกอิน Google → 📥 นำเข้า `prototype/courses.js` → ใส่คลิป → ติ๊กเผยแพร่
-8. วางเว็บ: repo GitHub ใหม่ + GitHub Pages (ยังไม่ได้สร้าง)
+8. วางเว็บ: ✅ repo https://github.com/kp-science/kp-course (public) · GitHub Pages จาก main → **https://kp-science.github.io/kp-course/** · แก้ไฟล์แล้ว commit + push เว็บอัปเดตเอง · `prototype/` อยู่ใน .gitignore (ไม่ขึ้นเว็บ)
 
 ### ทดสอบแล้ว (ด้วยข้อมูลจำลอง เพราะยังไม่มีโปรเจกต์ Firebase)
 หน้าเรียน: ผู้เข้าชม / ล็อกอินไม่มีสิทธิ์ → ส่งคำขอ / มีสิทธิ์ → คลิป แท็บ ติ๊กเรียนแล้ว · หน้าต่างล็อกอิน (ตรวจช่องว่าง รหัสไม่ตรง ลืมรหัสผ่าน) · หน้าครู: สร้างคอร์ส เพิ่ม/เรียงบท อนุมัติคำขอ ให้สิทธิ์ด้วยอีเมล ความคืบหน้า · ยังไม่ได้ใส่ค่า config → ขึ้นข้อความให้ตั้งค่า ไม่มี error
