@@ -23,3 +23,25 @@
 
 ### หมายเหตุ
 - ยังไม่มีลิงก์จากเว็บ KP Science / เว็บโรงเรียน มาที่เว็บคอร์ส
+
+## [2026-10-10] — [เครื่อง: ไม่ระบุ] — เชื่อม Firebase `kp-course` + ทดสอบกับ Firestore จริงครบทุกขั้น
+
+### ทำอะไรไปบ้าง
+- ครูสร้าง Firebase โปรเจกต์ `kp-course` (Spark plan ฟรี · ปิด Analytics) — Firestore Standard · `(default)` · **asia-southeast3 (Bangkok)** · production mode · ไม่มี scheduled backup (ต้อง Blaze)
+- วาง `firestore.rules` ผ่าน Console (ไม่ใช้ CLI — เครื่องนี้ไม่มี `firebase`)
+- Authentication: Google + Email/Password (Email/Password ตกหล่นรอบแรก → เว็บขึ้น `auth/operation-not-allowed` → เปิดเพิ่มแล้ว) · Authorized domains เพิ่ม `kp-science.github.io`
+- ใส่ config ใน `firebase-config.js` · bump `?v=2` · push (0196855) · GitHub Pages อัปเดตแล้ว
+- หน้าครู: นำเข้า `prototype/courses.js` → คอร์ส `kp-mechanics-m4` (4 บท) · บท 1 ใส่คลิป + ทดลองเรียนฟรี · เผยแพร่แล้ว
+- ทดสอบจริง: คนไม่ล็อกอินเปิดได้แค่บท 1 (บท 2–4 DENIED) · นักเรียนทดสอบ `komane@satriwit.ac.th` สมัครอีเมล/รหัสผ่าน → ขอสิทธิ์ → ครูอนุมัติ → เปิดบทได้ · ติ๊กเรียนแล้ว → ครูเห็นความคืบหน้า + CSV
+
+### ไฟล์ที่แก้
+- `firebase-config.js` (ค่า kp-course) · `index.html` + `admin.html` (`firebase-config.js?v=2`) · `SESSION_LOG.md`
+
+### ค้างไว้ที่ไหน / ต้องทำต่อ
+- ใส่คลิป/ความยาวคลิปบท 2–4
+- บัญชีทดสอบ `komane@satriwit.ac.th` ยังมีสิทธิ์คอร์สอยู่ — ถอนสิทธิ์/ลบในหน้าครูถ้าไม่ใช้
+- ยังไม่มีลิงก์จากเว็บ KP Science / เว็บโรงเรียน มาที่เว็บคอร์ส
+
+### หมายเหตุ
+- Console: ถ้าเผลอกดไอคอน `>_` แถบขวา Cloud Shell จะบังเนื้อหา (ขึ้น "could not be loaded") → กด `>_` อีกครั้ง หรือเปิด URL หน้าที่ต้องการตรงๆ
+- `pbcopy` ภาษาไทยต้องใช้ `LANG=en_US.UTF-8 pbcopy` ไม่งั้นตัวอักษรเพี้ยน
