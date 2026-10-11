@@ -45,3 +45,22 @@
 ### หมายเหตุ
 - Console: ถ้าเผลอกดไอคอน `>_` แถบขวา Cloud Shell จะบังเนื้อหา (ขึ้น "could not be loaded") → กด `>_` อีกครั้ง หรือเปิด URL หน้าที่ต้องการตรงๆ
 - `pbcopy` ภาษาไทยต้องใช้ `LANG=en_US.UTF-8 pbcopy` ไม่งั้นตัวอักษรเพี้ยน
+
+## [2026-10-11] — [เครื่อง: ไม่ระบุ] — 4 บทบาท (แอดมิน/ครู/นักเรียน/ผู้เยี่ยมชม) + UI ใหม่
+
+### ทำอะไรไปบ้าง
+- ครูเลือก: ครูดูแลเฉพาะคอร์สตัวเอง · ธีมมืดเดิมแต่ปรับให้ดีขึ้น · หน้าแรกผู้เยี่ยมชมเน้นแนะนำคอร์ส + ลองบทฟรี
+- Firestore ใหม่: `staff/{email}` (ครู) · `courses.owner` · `enrollments/{uid}_{cid}` แทน `students.courses` · progress/requests/enrollments เก็บ `owner`
+- `firestore.rules` เขียนใหม่ — ทดสอบด้วย Firebase Emulator 13 ชุด ผ่านทั้งหมด (`tests/rules.test.mjs`)
+- `course-core.js`: `KPC.role` · `ownsCourse` · `canCourse(cid, c)` · `saveProgress(c, …)` / `requestAccess(c, …)` รับเอกสารคอร์ส · admin API ใหม่ (staff, reassign, migrate) · โหมด emulator (`?emu` บน localhost)
+- `course-ui.css` ใหม่ (สไตล์กลาง + สีประจำบทบาท) · `index.html` เขียนใหม่ (หน้าแรกผู้เยี่ยมชม / แดชบอร์ดนักเรียน “เรียนต่อ” / แถบครู · เมนูผู้ใช้ · ปุ่มเรียนแล้ว · ยกเลิกคำขอ) · `admin.html` → “ห้องครู” (ภาพรวม · คำขอ · จัดการครู · โอนคอร์ส · ย้ายข้อมูลอัตโนมัติ)
+- ทดสอบ end-to-end กับ emulator ครบ 4 บทบาท + ย้ายข้อมูลระบบเดิม + โอนคอร์ส · จอ 1280 และ 375 px ไม่มี scroll แนวนอน
+- ติดตั้ง openjdk (Homebrew) สำหรับ emulator
+
+### ไฟล์ที่แก้
+- `firestore.rules` · `course-core.js` · `index.html` · `admin.html` · `course-ui.css` (ใหม่) · `firebase.json` (+emulators) · `tests/` (ใหม่) · `.gitignore` · `CLAUDE.md`
+
+### ค้างไว้ที่ไหน / ต้องทำต่อ
+- **ลำดับขึ้นเว็บ (สำคัญ)**: 1) ครู Publish `firestore.rules` ใหม่ใน Console → 2) push โค้ด → 3) แอดมินเปิดห้องครู 1 ครั้ง (ย้ายข้อมูลอัตโนมัติ)
+  - โค้ดใหม่ + rules เก่า = นักเรียนบันทึกความคืบหน้า/ขอสิทธิ์ไม่ได้ · rules ใหม่ + โค้ดเก่า ใช้ได้ชั่วคราว
+- ยังไม่ได้ทดสอบกับ Firestore จริงหลังขึ้นเว็บ

@@ -3,28 +3,35 @@
 //  เว็บนี้แยกจากเว็บ simulation: มี Firebase โปรเจกต์ของตัวเอง (firebase-config.js)
 //  ต้องโหลดหลัง firebase-*-compat.js และ firebase-config.js
 //
-//  Firestore:
-//    students/{uid}                { email, name, courses:[cid | '*'], createdAt }  ครูเป็นคนเติม courses
-//    courses/{cid}                 ข้อมูลคอร์ส + outline (สารบัญ) · อ่านได้เมื่อ published
+//  บทบาท: แอดมิน (ADMIN_EMAIL) · ครู (staff/{email} active) · นักเรียน (ล็อกอิน) · ผู้เยี่ยมชม
+//  Firestore (ดู firestore.rules):
+//    staff/{email}                 { email, name, active }  แอดมินเขียน
+//    students/{uid}                { email, name, courses:[] (ระบบเดิม), createdAt }
+//    courses/{cid}                 ข้อมูลคอร์ส + outline + owner (อีเมลครูเจ้าของ) · อ่านได้เมื่อ published
 //    courses/{cid}/lessons/{lid}   เนื้อหาบท · อ่านได้เมื่อมีสิทธิ์ หรือบท free
-//    course_progress/{uid}_{cid}   { uid, email, courseId, done:[lid], total, last, lastAt, updatedAt }
-//    course_requests/{uid}_{cid}   { uid, email, name, courseId, note, createdAt }
+//    enrollments/{uid}_{cid}       { uid, email, name, courseId, owner, by, createdAt }  สิทธิ์เข้าเรียน
+//    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
+//    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, createdAt }
 // ============================================================
 (function (W) {
 'use strict';
 
 const KPC = W.KPC = {};
-KPC.TEACHER_EMAIL = 'komanepapato@gmail.com';
+KPC.ADMIN_EMAIL = 'komanepapato@gmail.com';
 KPC.SIM_SITE = 'https://kp-science.github.io/physics-simulations/';
 
 /* ===================== Firebase ===================== */
-const cfg = W.KPC_FIREBASE_CONFIG || {};
+let cfg = W.KPC_FIREBASE_CONFIG || {};
 KPC.configured = !!(cfg.apiKey && cfg.projectId);
+// ทดสอบในเครื่องกับ Firebase Emulator: เปิด http://localhost:…/?emu (จำไว้ในแท็บนั้น) — ไม่แตะฐานข้อมูลจริง
+const EMU = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && (/[?&]emu\b/.test(location.search) || sessionStorage.getItem('kpc-emu') === '1');
 let auth = null, db = null;
 if (KPC.configured) {
+  if (EMU) { sessionStorage.setItem('kpc-emu', '1'); cfg = Object.assign({}, cfg, { projectId: 'demo-kp-course' }); }
   firebase.initializeApp(cfg);
   auth = KPC.auth = firebase.auth();
   db = KPC.db = firebase.firestore();
+  if (EMU) { auth.useEmulator('http://127.0.0.1:9099'); db.useEmulator('127.0.0.1', 8080); }
 }
 const FS = () => firebase.firestore.FieldValue;
 
@@ -137,16 +144,33 @@ KPC.splitSims = function (body) {
   return { sims, text: rest.join('\n').replace(/\n{3,}/g, '\n\n').trim() };
 };
 
-/* ===================== บัญชี + สิทธิ์ ===================== */
+/* ===================== บัญชี + บทบาท =====================
+   role: 'admin' | 'teacher' | 'student' | 'guest'  (rules ตรวจแบบเดียวกัน) */
 const col = name => db.collection(name);
 const pid = (uid, cid) => uid + '_' + cid;
+const lower = s => String(s || '').trim().toLowerCase();
 
-KPC.me = null;    // students/{uid} ของคนที่ล็อกอิน
+KPC.me = null;         // students/{uid} ของคนที่ล็อกอิน
+KPC.staff = null;      // staff/{email} ถ้าเป็นครู
+KPC.enrolled = [];     // รหัสคอร์สที่มีสิทธิ์เรียน (enrollments + ระบบเดิม students.courses)
+KPC.role = 'guest';
 KPC.user = () => (auth && auth.currentUser) || null;
 KPC.uid = () => (KPC.user() || {}).uid || '';
-// ครู = อีเมลเจ้าของ + ยืนยันอีเมลแล้ว (ล็อกอินด้วย Google) — rules ตรวจแบบเดียวกัน
-KPC.isTeacher = () => { const u = KPC.user(); return !!(u && u.email === KPC.TEACHER_EMAIL && u.emailVerified); };
-KPC.canCourse = cid => KPC.isTeacher() || !!(KPC.me && (KPC.me.courses || []).some(c => c === cid || c === '*'));
+KPC.email = () => lower((KPC.user() || {}).email);
+KPC.ROLE = {
+  admin:   { label: 'แอดมิน', icon: '👑' },
+  teacher: { label: 'ครู', icon: '🧑‍🏫' },
+  student: { label: 'นักเรียน', icon: '🎓' },
+  guest:   { label: 'ผู้เยี่ยมชม', icon: '👀' },
+};
+// แอดมิน = อีเมลเจ้าของ + ยืนยันอีเมลแล้ว (ล็อกอินด้วย Google)
+KPC.isAdmin = () => { const u = KPC.user(); return !!(u && u.emailVerified && lower(u.email) === KPC.ADMIN_EMAIL); };
+KPC.isTeacher = () => KPC.role === 'teacher';
+KPC.isStaff = () => KPC.role === 'admin' || KPC.role === 'teacher';
+// จัดการคอร์สนี้ได้ไหม (แอดมิน หรือครูเจ้าของ) — c = เอกสารคอร์ส
+KPC.ownsCourse = c => KPC.role === 'admin' || (KPC.role === 'teacher' && !!c && c.owner === KPC.email());
+KPC.canCourse = (cid, c) => KPC.ownsCourse(c) || KPC.enrolled.includes(cid) || KPC.enrolled.includes('*');
+KPC.displayName = () => { const u = KPC.user(); return u ? ((KPC.staff && KPC.staff.name) || (KPC.me && KPC.me.name) || u.displayName || (u.email || '').split('@')[0]) : ''; };
 
 // สร้าง students/{uid} ให้ครั้งแรกที่ล็อกอิน (courses ว่าง — ครูเป็นคนให้สิทธิ์)
 async function ensureStudent(u) {
@@ -159,16 +183,31 @@ async function ensureStudent(u) {
     return data;
   } catch (e) { console.warn('ensureStudent', e); return null; }
 }
+async function loadStaff(u) {
+  if (!u.emailVerified || !u.email) return null;
+  try { const s = await col('staff').doc(lower(u.email)).get(); return s.exists && s.data().active ? s.data() : null; }
+  catch (e) { return null; }
+}
+async function loadEnrolled(u) {
+  try {
+    const s = await col('enrollments').where('uid', '==', u.uid).get();
+    return s.docs.map(d => d.data().courseId);
+  } catch (e) { console.warn('enrollments', e); return []; }
+}
+async function loadUser(u) {
+  if (!u) { KPC.me = KPC.staff = null; KPC.enrolled = []; KPC.role = 'guest'; return; }
+  const [me, staff, en] = await Promise.all([ensureStudent(u), loadStaff(u), loadEnrolled(u)]);
+  KPC.me = me; KPC.staff = staff;
+  KPC.enrolled = Array.from(new Set(en.concat((me && me.courses) || [])));
+  KPC.role = KPC.isAdmin() ? 'admin' : staff ? 'teacher' : 'student';
+}
 
-// เรียก cb(user) ทุกครั้งที่สถานะล็อกอินเปลี่ยน — หลังโหลดข้อมูลนักเรียน (KPC.me) แล้ว
+// เรียก cb(user) ทุกครั้งที่สถานะล็อกอินเปลี่ยน — หลังโหลดบทบาท + สิทธิ์แล้ว
 KPC.onUser = function (cb) {
   if (!auth) { cb(null); return; }
-  auth.onAuthStateChanged(async u => {
-    KPC.me = u ? await ensureStudent(u) : null;
-    cb(u || null);
-  });
+  auth.onAuthStateChanged(async u => { await loadUser(u); cb(u || null); });
 };
-KPC.refreshMe = async () => { const u = KPC.user(); KPC.me = u ? await ensureStudent(u) : null; return KPC.me; };
+KPC.refreshMe = async () => { await loadUser(KPC.user()); return KPC.me; };
 
 KPC.loginGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
 KPC.loginEmail = (email, pass) => auth.signInWithEmailAndPassword(String(email).trim(), pass);
@@ -198,12 +237,17 @@ KPC.authError = function (code) {
 };
 
 /* ===================== ข้อมูลคอร์ส ===================== */
-// รายการคอร์ส (นักเรียน: เฉพาะที่เผยแพร่ · ครู: all = true)
-KPC.listCourses = async function (all) {
-  const q = all ? col('courses') : col('courses').where('published', '==', true);
-  const snap = await q.get();
-  return snap.docs.map(d => Object.assign({ id: d.id }, d.data()))
-    .sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.title).localeCompare(String(b.title), 'th'));
+const byOrder = (a, b) => (a.order || 0) - (b.order || 0) || String(a.title).localeCompare(String(b.title), 'th');
+const docs = snap => snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+
+// รายการคอร์ส — นักเรียน/ผู้เยี่ยมชม: ที่เผยแพร่ · ครู: ที่เผยแพร่ + ร่างของตัวเอง · แอดมิน: ทั้งหมด
+KPC.listCourses = async function () {
+  if (KPC.role === 'admin') return docs(await col('courses').get()).sort(byOrder);
+  const qs = [col('courses').where('published', '==', true).get()];
+  if (KPC.role === 'teacher') qs.push(col('courses').where('owner', '==', KPC.email()).get());
+  const map = {};
+  (await Promise.all(qs)).forEach(s => docs(s).forEach(c => { map[c.id] = c; }));
+  return Object.values(map).sort(byOrder);
 };
 
 KPC.getCourse = async function (cid) {
@@ -224,7 +268,7 @@ KPC.getLesson = async function (cid, lid) {
 
 KPC.listLessons = async function (cid) {
   const snap = await col('courses').doc(cid).collection('lessons').get();
-  return snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => (a.order || 0) - (b.order || 0));
+  return docs(snap).sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 
 /* ---------- ความคืบหน้า ---------- */
@@ -236,10 +280,11 @@ KPC.getProgress = async function (cid) {
   } catch (e) { return null; }
 };
 
-KPC.saveProgress = function (cid, patch) {
+// c = เอกสารคอร์ส (ต้องมี owner — rules ตรวจว่าตรงกับคอร์ส)
+KPC.saveProgress = function (c, patch) {
   const u = KPC.user(); if (!u) return Promise.resolve();
-  const data = Object.assign({ uid: u.uid, email: u.email || '', courseId: cid, updatedAt: FS().serverTimestamp() }, patch);
-  return col('course_progress').doc(pid(u.uid, cid)).set(data, { merge: true });
+  const data = Object.assign({ uid: u.uid, email: u.email || '', courseId: c.id, owner: c.owner || '', updatedAt: FS().serverTimestamp() }, patch);
+  return col('course_progress').doc(pid(u.uid, c.id)).set(data, { merge: true });
 };
 
 /* ---------- คำขอสิทธิ์ ---------- */
@@ -251,15 +296,20 @@ KPC.getMyRequest = async function (cid) {
   } catch (e) { return null; }
 };
 
-KPC.requestAccess = function (cid, note) {
+KPC.requestAccess = function (c, note) {
   const u = KPC.user(); if (!u) return Promise.reject(new Error('ยังไม่ได้เข้าสู่ระบบ'));
-  return col('course_requests').doc(pid(u.uid, cid)).set({
-    uid: u.uid, email: u.email || '', name: u.displayName || '', courseId: cid,
+  return col('course_requests').doc(pid(u.uid, c.id)).set({
+    uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '',
     note: String(note || '').slice(0, 300), createdAt: FS().serverTimestamp()
   });
 };
+KPC.cancelRequest = cid => col('course_requests').doc(pid(KPC.uid(), cid)).delete();
 
-/* ===================== ฝั่งครู ===================== */
+/* ===================== ฝั่งครู / แอดมิน =====================
+   ครู: ทุกคำค้นใส่ where('owner','==',อีเมลตัวเอง) — rules อนุญาตเฉพาะแบบนี้
+   แอดมิน: ค้นได้ทั้งหมด */
+const mine = q => KPC.role === 'admin' ? q : q.where('owner', '==', KPC.email());
+
 KPC.admin = {
   saveCourse: (cid, data) => col('courses').doc(cid).set(Object.assign({}, data, { updatedAt: FS().serverTimestamp() }), { merge: true }),
   deleteCourse: async cid => {
@@ -282,37 +332,74 @@ KPC.admin = {
     return outline;
   },
 
-  allStudents: async () => {
-    const s = await col('students').get();
-    return s.docs.map(d => Object.assign({ id: d.id }, d.data()));
-  },
-  studentsOf: async cid => {
-    const [one, all] = await Promise.all([
-      col('students').where('courses', 'array-contains', cid).get(),
-      col('students').where('courses', 'array-contains', '*').get()
-    ]);
-    const map = {};
-    one.docs.forEach(d => { map[d.id] = Object.assign({ id: d.id, via: cid }, d.data()); });
-    all.docs.forEach(d => { if (!map[d.id]) map[d.id] = Object.assign({ id: d.id, via: '*' }, d.data()); });
-    return Object.values(map);
-  },
+  // ---- นักเรียน / สิทธิ์ ----
+  enrollments: async cid => docs(await (cid ? mine(col('enrollments')).where('courseId', '==', cid) : mine(col('enrollments'))).get()),
   findStudentByEmail: async email => {
     const s = await col('students').where('email', '==', String(email).trim()).limit(1).get();
     return s.empty ? null : Object.assign({ id: s.docs[0].id }, s.docs[0].data());
   },
-  grant: (uid, cid) => col('students').doc(uid).update({ courses: FS().arrayUnion(cid) }),
-  revoke: (uid, cid) => col('students').doc(uid).update({ courses: FS().arrayRemove(cid) }),
-
-  requests: async () => {
-    const s = await col('course_requests').get();
-    return s.docs.map(d => Object.assign({ id: d.id }, d.data()))
-      .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+  // st = { uid|id, email, name } · c = เอกสารคอร์ส
+  grant: (st, c) => {
+    const uid = st.uid || st.id;
+    return col('enrollments').doc(pid(uid, c.id)).set({ uid, email: st.email || '', name: st.name || '', courseId: c.id,
+      owner: c.owner || '', by: KPC.email(), createdAt: FS().serverTimestamp() });
   },
+  revoke: (uid, cid) => col('enrollments').doc(pid(uid, cid)).delete(),
+
+  requests: async cid => docs(await (cid ? mine(col('course_requests')).where('courseId', '==', cid) : mine(col('course_requests'))).get())
+    .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0)),
   dropRequest: rid => col('course_requests').doc(rid).delete(),
 
-  progressOf: async cid => {
-    const s = await col('course_progress').where('courseId', '==', cid).get();
-    return s.docs.map(d => Object.assign({ id: d.id }, d.data()));
+  progress: async cid => docs(await (cid ? mine(col('course_progress')).where('courseId', '==', cid) : mine(col('course_progress'))).get()),
+
+  // ---- เฉพาะแอดมิน ----
+  staffList: async () => docs(await col('staff').get()).sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id), 'th')),
+  saveStaff: (email, data) => col('staff').doc(lower(email)).set(Object.assign({ email: lower(email) }, data, { updatedAt: FS().serverTimestamp() }), { merge: true }),
+  deleteStaff: email => col('staff').doc(lower(email)).delete(),
+
+  // โอนคอร์สให้ครูคนอื่น — ย้าย owner ของสิทธิ์/ความคืบหน้า/คำขอ ตามไปด้วย
+  reassign: async (cid, owner) => {
+    owner = lower(owner);
+    const refs = [col('courses').doc(cid)];
+    for (const name of ['enrollments', 'course_progress', 'course_requests']) {
+      (await col(name).where('courseId', '==', cid).get()).docs.forEach(d => refs.push(d.ref));
+    }
+    for (let i = 0; i < refs.length; i += 400) {
+      const batch = db.batch();
+      refs.slice(i, i + 400).forEach(r => batch.update(r, { owner }));
+      await batch.commit();
+    }
+    return refs.length - 1;
+  },
+
+  // ย้ายข้อมูลจากระบบเดิม (ครูคนเดียว) → 4 บทบาท · ทำซ้ำได้ ไม่มีอะไรให้ทำก็ไม่เขียน
+  migrate: async () => {
+    let n = 0;
+    const courses = docs(await col('courses').get());
+    const ownerOf = {};
+    for (const c of courses) {
+      if (!c.owner) { await col('courses').doc(c.id).update({ owner: KPC.ADMIN_EMAIL }); c.owner = KPC.ADMIN_EMAIL; n++; }
+      ownerOf[c.id] = c.owner;
+    }
+    // students.courses → enrollments
+    const st = docs(await col('students').get());
+    for (const s of st) {
+      const list = (s.courses || []).filter(cid => cid !== '*' && ownerOf[cid]);
+      for (const cid of list) {
+        await col('enrollments').doc(pid(s.id, cid)).set({ uid: s.id, email: s.email || '', name: s.name || '', courseId: cid,
+          owner: ownerOf[cid], by: KPC.email(), createdAt: FS().serverTimestamp() });
+        await col('students').doc(s.id).update({ courses: FS().arrayRemove(cid) });
+        n++;
+      }
+    }
+    // owner ของความคืบหน้า/คำขอ ให้ตรงกับคอร์ส
+    for (const name of ['course_progress', 'course_requests', 'enrollments']) {
+      for (const d of docs(await col(name).get())) {
+        const o = ownerOf[d.courseId];
+        if (o && d.owner !== o) { await col(name).doc(d.id).update({ owner: o }); n++; }
+      }
+    }
+    return n;
   },
 };
 
