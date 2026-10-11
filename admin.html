@@ -12,138 +12,142 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#faf7f1">
+<meta name="theme-color" content="#f5f5f7">
 <title>ห้องครู · คอร์สออนไลน์ KP Science</title>
 <script>
 /* KP Science — Frame Protection */
 (function(){ try{ if(window.self !== window.top){ window.top.location.href = window.self.location.href; } }catch(e){ document.documentElement.innerHTML = ''; } })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Itim&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=4">
+<link rel="stylesheet" href="course-ui.css?v=5">
 <style>
-body{font-size:15px;line-height:1.6}
+body{font-size:15px;line-height:1.55}
+.topbar{padding:0 22px}
 /* ---------- ประตูเข้า ---------- */
-.gate{max-width:440px;margin:10vh auto;padding:34px 30px;border:1px solid var(--line);border-radius:18px;background:var(--surface);text-align:center;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.gate{max-width:440px;margin:12vh auto;padding:40px 34px;border-radius:24px;background:var(--surface);text-align:center;display:flex;flex-direction:column;gap:14px}
 .gate .ic{width:64px;height:64px;margin:0 auto;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--surface2)}
-.gate h1{font:700 23px var(--head)}
-.gate p{color:var(--text2);font-size:15px}
-.gate .email{font:600 15px var(--mono);background:var(--surface2);border:1px dashed var(--line2);border-radius:9px;padding:8px 12px;word-break:break-all}
+.gate h1{font:700 28px/1.32 var(--head)}
+.gate p{color:var(--muted);font-size:16px}
+.gate .email{font:500 15px var(--mono);background:var(--surface2);border-radius:12px;padding:10px 14px;word-break:break-all}
 .gate .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid var(--line2);box-shadow:var(--shadow-s);padding:12px;border-radius:10px;font:600 15px var(--head);cursor:pointer;width:100%}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #d2d2d7;padding:12px;border-radius:980px;font:500 16px var(--body);cursor:pointer;width:100%}
 .gbtn:hover{background:var(--surface2)}
 
 /* ---------- โครงหน้า ---------- */
-.layout{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:calc(100vh - 60px)}
-.side{border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:4px;background:var(--surface);position:sticky;top:60px;height:calc(100vh - 60px);overflow:auto}
-.me{display:flex;align-items:center;gap:11px;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--role) 8%,#fff);border:1px solid color-mix(in srgb,var(--role) 28%,transparent);margin-bottom:12px}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 52px)}
+.side{padding:20px 12px;display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.6);border-right:1px solid var(--line);position:sticky;top:52px;height:calc(100vh - 52px);overflow:auto}
+.me{display:flex;align-items:center;gap:11px;padding:10px 12px 16px;margin-bottom:6px;border-bottom:1px solid var(--line)}
 .me .avatar{width:38px;height:38px;font-size:16px}
-.me b{display:block;font:600 14.5px/1.3 var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px}
-.side h4{font:700 11.5px var(--head);letter-spacing:.1em;color:var(--muted);margin:14px 10px 6px;display:flex;align-items:center;justify-content:space-between}
-.side h4 button{font:600 12px var(--head);letter-spacing:0;color:var(--accent);background:none;border:0;cursor:pointer}
-.nv{display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border-radius:9px;border:0;background:none;text-decoration:none;font:600 14.5px var(--head);color:var(--text2);cursor:pointer;text-align:left}
-.nv:hover{background:var(--surface2);color:var(--text)}
-.nv.on{background:var(--surface3);color:var(--text);box-shadow:inset 3px 0 0 var(--role)}
-.nv .i{width:22px;text-align:center}
+.me b{display:block;font:600 15px/1.3 var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px}
+.side h4{font:600 12px var(--head);color:var(--muted);margin:16px 12px 6px;display:flex;align-items:center;justify-content:space-between}
+.side h4 button{font:400 13px var(--body);color:var(--link);background:none;border:0;cursor:pointer}
+.nv{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:10px;border:0;background:none;text-decoration:none;font:400 15px var(--body);color:var(--text);cursor:pointer;text-align:left}
+.nv:hover{background:rgba(0,0,0,.04)}
+.nv.on{background:rgba(0,0,0,.07);font-weight:600}
+.nv .i{width:22px;display:grid;place-items:center;color:var(--muted)}
+.nv.on .i{color:var(--accent)}
 .nv .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nv .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted)}
+.nv .dot{width:8px;height:8px;border-radius:50%;flex:none;background:#c7c7cc}
 .nv .dot.pub{background:var(--ok)}
-.side .foot{margin-top:auto;padding-top:14px;display:flex;flex-direction:column;gap:6px}
-.main{padding:28px 32px 70px;min-width:0;max-width:1180px}
+.side .foot{margin-top:auto;padding-top:14px;display:flex;flex-direction:column;gap:2px}
+.main{padding:36px 40px 80px;min-width:0;max-width:1120px}
 
 /* ---------- หัวหน้า ---------- */
-.ph{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:22px}
-.ph h1{font:700 26px/1.3 var(--head)}
-.ph .hand{display:block;font-size:19px;color:var(--orange)}
-.ph p{color:var(--muted)}
+.ph{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+.ph h1{font:700 32px/1.32 var(--head)}
+.ph .hand{display:block;font-size:15px;margin-bottom:2px}
+.ph p{color:var(--muted);font-size:16px;margin-top:4px}
 .ph .sp{flex:1}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
-.stat{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px 18px;box-shadow:var(--shadow-s)}
-.stat small{display:block;font:600 13px var(--head);color:var(--muted)}
-.stat b{display:block;font:700 30px/1.25 var(--mono);margin-top:4px}
-.stat span{font-size:12.5px;color:var(--muted)}
-.stat.warn b{color:var(--warn)}
+.stat{border-radius:var(--r);background:var(--surface);padding:18px 20px}
+.stat small{display:block;font:500 13px var(--body);color:var(--muted)}
+.stat b{display:block;font:700 34px/1.2 var(--head);margin-top:4px}
+.stat span{font-size:13px;color:var(--muted)}
+.stat.warn b{color:var(--bad)}
 .grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:18px;align-items:start}
 .stack{display:flex;flex-direction:column;gap:18px}
 
 /* ---------- ตาราง / รายการ ---------- */
-table{width:100%;border-collapse:collapse;font-size:14.5px}
-th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-th{font:600 12.5px var(--head);color:var(--muted);white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font:500 13px var(--body);color:var(--muted);white-space:nowrap}
 tr:last-child td{border-bottom:0}
 td small{color:var(--muted)}
 .tw{overflow-x:auto;margin:0 -4px;padding:0 4px}
 .acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.req{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.req{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
 .req:last-child{border-bottom:0}
 .req .avatar{background:var(--student);width:34px;height:34px;font-size:14px}
 .req .bd{flex:1;min-width:0}
-.req b{font:600 14.5px var(--head)}
-.req .q{font-size:13.5px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px;margin-top:6px}
-.req small{color:var(--muted);font-size:12.5px}
-.crow{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:8px;text-decoration:none;cursor:pointer}
-.crow:hover{border-color:var(--line2)}
+.req b{font:600 15px var(--head)}
+.req .q{font-size:14px;color:var(--text2);background:var(--surface2);border-radius:10px;padding:7px 12px;margin-top:6px}
+.req small{color:var(--muted);font-size:13px}
+.crow{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);text-decoration:none;cursor:pointer}
+.crow:last-child{border-bottom:0}
+.crow:hover b{color:var(--link)}
 .crow .bd{flex:1;min-width:0}
-.crow b{display:block;font:600 14.5px var(--head)}
-.crow small{color:var(--muted);font-size:12.5px}
+.crow b{display:block;font:600 15px var(--head)}
+.crow small{color:var(--muted);font-size:13px}
 .crow .bar{width:90px}
-.crow .pc{font:600 13px var(--mono);color:var(--text2);width:40px;text-align:right}
+.crow .pc{font:600 13px var(--head);color:var(--text2);width:40px;text-align:right}
 
 /* ---------- หน้าคอร์ส ---------- */
-.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:20px;width:fit-content;max-width:100%}
-.tabs button{border:0;background:none;border-radius:8px;padding:7px 14px;font:600 14px var(--head);cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
-.tabs button:hover{color:var(--text)}
-.tabs button.on{background:var(--accent-soft);color:var(--accent)}
-.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.tabs{display:inline-flex;gap:2px;flex-wrap:wrap;padding:3px;background:var(--surface3);border-radius:10px;margin-bottom:22px;max-width:100%}
+.tabs button{border:0;background:none;border-radius:8px;padding:6px 16px;font:500 14px var(--body);cursor:pointer;color:var(--text);display:inline-flex;align-items:center;gap:6px}
+.tabs button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
 .form .full{grid-column:1/-1}
-.field textarea{min-height:100px;resize:vertical;font-family:var(--mono),monospace;font-size:14px;line-height:1.6}
+.field textarea{min-height:100px;resize:vertical;font-family:var(--mono);font-size:14px;line-height:1.6}
 .field textarea.tall{min-height:280px}
-.chk{display:inline-flex;align-items:center;gap:9px;font-weight:600;cursor:pointer}
-.chk input{width:18px;height:18px;accent-color:var(--ok)}
-.switchrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line2);border-radius:10px;background:var(--surface2)}
+.chk{display:inline-flex;align-items:center;gap:9px;font-weight:500;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.switchrow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;background:var(--surface2);cursor:pointer}
+.switchrow input{accent-color:var(--accent)!important}
 .switchrow .bd{flex:1}
-.switchrow small{display:block;color:var(--muted);font-size:13px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.switchrow small{display:block;color:var(--muted);font-size:13.5px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .row .sp{flex:1}
-.lrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:6px}
-.lrow .n{font:700 12px var(--mono);color:var(--muted);width:26px;text-align:center}
+.lrow{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow .n{font:600 13px var(--head);color:var(--muted);width:26px;text-align:center}
 .lrow .t{flex:1;min-width:0}
-.lrow .t b{display:block;font:600 14.5px var(--head)}
-.lrow .t small{color:var(--muted);font-size:12.5px;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
-.lrow.on{border-color:var(--accent)}
+.lrow .t b{display:block;font:600 15px var(--head)}
+.lrow .t small{color:var(--muted);font-size:13px;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.lrow.on{background:var(--accent-soft);border-radius:10px}
 .lrow .bar{width:110px}
-.prev{border:1px dashed var(--line2);border-radius:10px;padding:14px 16px;margin-top:12px;font-size:15px;line-height:1.8;color:var(--text2)}
-.prev h2{font:700 19px var(--head);margin:.8em 0 .3em;color:var(--text)}
-.prev h3{font:700 16px var(--head);margin:.8em 0 .3em;color:var(--text)}
+.prev{border-radius:14px;background:var(--surface2);padding:16px 18px;margin-top:14px;font-size:15px;line-height:1.75;color:var(--text2)}
+.prev h2{font:700 20px var(--head);margin:.8em 0 .3em;color:var(--text)}
+.prev h3{font:600 17px var(--head);margin:.8em 0 .3em;color:var(--text)}
 .prev ul,.prev ol{padding-left:1.3em;margin:0 0 .8em}
-.prev blockquote{padding:8px 12px;border-left:3px solid var(--accent);background:var(--surface2);margin:.8em 0}
+.prev blockquote{padding:10px 14px;background:#fff;border-radius:10px;margin:.8em 0}
 .prev p{margin:0 0 .8em}
-.prev .embed{position:relative;aspect-ratio:16/9;border:1px solid var(--line2);border-radius:8px;overflow:hidden;margin:.8em 0;background:#fff}
+.prev .embed{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin:.8em 0;background:#fff}
 .prev .embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .prev .embed-cap{font-size:12px;text-align:right;margin-top:-.4em}
-.prev .lbtn{display:inline-block;padding:6px 12px;border:1px solid var(--accent);border-radius:7px;text-decoration:none}
+.prev .lbtn{display:inline-block;padding:6px 14px;background:var(--accent);color:#fff;border-radius:980px;text-decoration:none}
 .prev img{max-width:100%}
-.paybox{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:16px;align-items:start}
-.payqr{border:1px solid var(--line2);border-radius:12px;background:#fff;padding:10px;text-align:center;font-size:12.5px;color:var(--muted)}
+.paybox{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:18px;align-items:start}
+.payqr{border-radius:14px;background:#fff;padding:10px;text-align:center;font-size:12.5px;color:var(--muted);box-shadow:0 0 0 1px var(--line)}
 .payqr svg{width:100%;height:auto;display:block}
-.payqr .qh{background:#113566;color:#fff;border-radius:6px;font:600 12px var(--head);padding:4px;margin-bottom:6px}
-.paid{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13px;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:4px 10px}
+.payqr .qh{background:#113566;color:#fff;border-radius:8px;font:600 12px var(--head);padding:4px;margin-bottom:6px}
+.paid{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13.5px;background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:5px 12px}
 .paid b{color:var(--text)}
 @media (max-width:640px){.paybox{grid-template-columns:1fr}.payqr{max-width:200px}}
-.danger-zone{border-color:rgba(197,59,59,.28)}
+.danger-zone h3{color:var(--bad)}
 
 @media (max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
 @media (max-width:860px){
   .layout{grid-template-columns:1fr}
   .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}
   .side .clist{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
-  .side .clist .nv{flex:none;width:auto;max-width:240px;background:var(--surface2)}
-  .main{padding:20px 16px 60px}
+  .side .clist .nv{flex:none;width:auto;max-width:240px;background:var(--surface)}
+  .main{padding:24px 16px 60px}
   .form{grid-template-columns:1fr}
-  .ph h1{font-size:22px}
+  .ph h1{font-size:26px}
 }
-@media (max-width:480px){.gate{margin:8vh 16px;padding:28px 20px}.stats{gap:10px}.stat{padding:12px 14px}.stat b{font-size:24px}}
+@media (max-width:480px){.gate{margin:8vh 16px;padding:30px 20px}.stats{gap:10px}.stat{padding:14px 16px}.stat b{font-size:26px}}
 </style>
 </head>
 <body data-role="guest">
@@ -274,17 +278,24 @@ async function refreshAll() {
 }
 
 /* ===================== แถบซ้าย ===================== */
+const SVGI = (d) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const IC = {
+  home: SVGI('<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>'),
+  inbox: SVGI('<path d="M4 13l2-8h12l2 8"/><path d="M4 13v6h16v-6h-5a3 3 0 0 1-6 0z"/>'),
+  people: SVGI('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.4 5 2.8 5 5.8"/>'),
+  import: SVGI('<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>'),
+};
 function drawSide() {
   const h = location.hash, name = KPC.displayName(), R = KPC.ROLE[KPC.role];
   const nv = (href, i, t, extra, on) => `<a class="nv${on ? ' on' : ''}" href="${href}"><span class="i">${i}</span><span class="t">${t}</span>${extra || ''}</a>`;
   $('side').innerHTML = `
     <div class="me"><span class="avatar">${esc(initial(name))}</span><div><b>${esc(name)}</b><span class="pill role">${R.icon} ${R.label}</span></div></div>
-    ${nv('#/', '🏠', 'ภาพรวม', '', h === '' || h === '#/' || h === '#')}
-    ${nv('#/requests', '🙋', 'คำขอสิทธิ์', S.requests.length ? `<span class="count">${S.requests.length}</span>` : '', h === '#/requests')}
-    ${isAdmin() ? nv('#/teachers', '🧑‍🏫', 'จัดการครู', `<span class="sub">${S.staff.filter(s => s.active).length}</span>`, h === '#/teachers') : ''}
+    ${nv('#/', IC.home, 'ภาพรวม', '', h === '' || h === '#/' || h === '#')}
+    ${nv('#/requests', IC.inbox, 'คำขอสิทธิ์', S.requests.length ? `<span class="count">${S.requests.length}</span>` : '', h === '#/requests')}
+    ${isAdmin() ? nv('#/teachers', IC.people, 'จัดการครู', `<span class="sub">${S.staff.filter(s => s.active).length}</span>`, h === '#/teachers') : ''}
     <h4>${isAdmin() ? 'คอร์สทั้งหมด' : 'คอร์สของฉัน'} <button type="button" data-act="new-course">＋ ใหม่</button></h4>
     <div class="clist">${S.courses.map(c => `<a class="nv${S.cur && S.cur.id === c.id && h.startsWith('#/c/') ? ' on' : ''}" href="#/c/${encodeURIComponent(c.id)}" title="${esc(c.title)}"><span class="dot${c.published ? ' pub' : ''}"></span><span class="t">${esc(c.title || c.id)}</span>${courseStats(c).req ? `<span class="count">${courseStats(c).req}</span>` : ''}</a>`).join('') || '<div class="sub" style="padding:4px 11px">ยังไม่มีคอร์ส</div>'}</div>
-    <div class="foot"><button class="nv" type="button" data-act="import"><span class="i">📥</span><span class="t">นำเข้า courses.js / JSON</span></button></div>`;
+    <div class="foot"><button class="nv" type="button" data-act="import"><span class="i">${IC.import}</span><span class="t">นำเข้า courses.js / JSON</span></button></div>`;
 }
 
 /* ===================== เส้นทาง ===================== */
@@ -423,7 +434,7 @@ function courseForm(c, isNew) {
       </div>
       <div class="payqr" id="payPreview"><div class="qh">ตัวอย่าง QR</div><span>ใส่เลขพร้อมเพย์</span></div>
     </div>
-    <label class="switchrow full"><input type="checkbox" name="published" class="chk"${c.published ? ' checked' : ''} style="width:20px;height:20px;accent-color:var(--ok)"><span class="bd"><b>เผยแพร่คอร์สนี้</b><small>นักเรียนเห็นคอร์สในหน้ารายการ และกดขอสิทธิ์ได้</small></span></label>
+    <label class="switchrow full"><input type="checkbox" name="published" class="chk"${c.published ? ' checked' : ''} style="width:20px;height:20px;accent-color:var(--accent)"><span class="bd"><b>เผยแพร่คอร์สนี้</b><small>นักเรียนเห็นคอร์สในหน้ารายการ และกดขอสิทธิ์ได้</small></span></label>
   </div>`;
 }
 function readCourseForm() {
@@ -503,7 +514,7 @@ function lessonForm(l) {
     <div class="field"><label>แบบทดสอบ (ลิงก์ Google Form ฯลฯ)</label><input type="url" name="quiz" value="${esc(l.quiz || '')}"></div>
     <div class="field full"><label>เนื้อหา</label><textarea class="tall" name="body">${esc(l.body || '')}</textarea>
       <span class="hint">## หัวข้อ · - รายการ · &gt; กล่องเน้น · **หนา** · $สมการ$ · [ฝัง: ลิงก์ซิมูเลชัน | ชื่อ] · [รูป: ลิงก์ | คำบรรยาย] · [ลิงก์: ข้อความ | ลิงก์] — ซิม Demo ฝังในหน้าได้ · Virtual Lab จะเป็นปุ่มเปิดแท็บใหม่</span></div>
-    <label class="switchrow full"><input type="checkbox" name="free" style="width:20px;height:20px;accent-color:var(--ok)"${l.free ? ' checked' : ''}><span class="bd"><b>ทดลองเรียนฟรี</b><small>คนที่ยังไม่มีสิทธิ์ (รวมถึงคนที่ยังไม่สมัคร) เปิดบทนี้ได้</small></span></label>
+    <label class="switchrow full"><input type="checkbox" name="free" style="width:20px;height:20px;accent-color:var(--accent)"${l.free ? ' checked' : ''}><span class="bd"><b>ทดลองเรียนฟรี</b><small>คนที่ยังไม่มีสิทธิ์ (รวมถึงคนที่ยังไม่สมัคร) เปิดบทนี้ได้</small></span></label>
   </div>
   <div class="row" style="margin-top:16px"><button class="btn solid" type="button" data-act="save-lesson" data-lid="${esc(l.id)}">💾 บันทึกบท</button><button class="btn" type="button" data-act="preview-lesson">👁 ดูตัวอย่าง</button><button class="btn ghost" type="button" data-act="close-lesson">ปิด</button><span class="sp"></span>${l._new ? '' : `<button class="btn bad sm" type="button" data-act="del-lesson" data-lid="${esc(l.id)}">🗑 ลบบท</button>`}</div>
   <div id="lprev"></div></div>`;

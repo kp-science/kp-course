@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>คอร์สออนไลน์ · KP Science</title>
 <meta name="description" content="คอร์สออนไลน์ฟิสิกส์ของ KP Science เรียนเป็นบท คลิป + Simulation โต้ตอบ + เอกสาร ติดตามความคืบหน้าได้">
-<meta name="theme-color" content="#faf7f1">
+<meta name="theme-color" content="#f5f5f7">
 <script>
 /* KP Science — Frame Protection */
 (function(){
@@ -27,305 +27,296 @@
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Itim&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=4">
+<link rel="stylesheet" href="course-ui.css?v=5">
 <style>
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
-/* กระดาษกราฟ: พื้นหลังทุกหน้า (การ์ด/เนื้อหาเป็นพื้นขาวทับ อ่านง่าย) */
-body{background-color:var(--bg);background-image:linear-gradient(rgba(36,86,201,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(36,86,201,.055) 1px,transparent 1px);background-size:24px 24px;background-attachment:fixed}
-.paper{background-image:linear-gradient(rgba(36,86,201,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(36,86,201,.07) 1px,transparent 1px);background-size:24px 24px}
+.wrap{max-width:1024px;margin:0 auto;padding:0 22px}
 
-/* ---------- หน้าแรก: ผู้เยี่ยมชม ---------- */
-.hero-band{position:relative;border-bottom:1px solid var(--line)}
-.hero{position:relative;z-index:1;padding-block:56px 64px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;align-items:center}
-.byline{font:400 19px var(--hand);color:var(--orange);display:inline-block;transform:rotate(-2deg)}
-.hero h1{font:700 clamp(2.1rem,4.6vw,3.4rem)/1.25 var(--head);margin:10px 0 18px;letter-spacing:-.015em}
-.hero p.lead{color:var(--text2);font-size:18px;max-width:520px}
-.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
-.hero .fine{margin-top:18px;color:var(--muted);font-size:14px}
-.hero .fine b{color:var(--text2);font-weight:600}
+/* ---------- หน้าแรก: ผู้เยี่ยมชม (hero กลางจอแบบหน้าสินค้า) ---------- */
+.hero-band{background:var(--surface)}
+.hero{padding-block:72px 64px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.byline{font:600 17px var(--head);color:var(--orange)}
+.hero h1{font:700 clamp(2.3rem,5.6vw,3.8rem)/1.32 var(--head);margin:8px 0 16px}
+.hero p.lead{color:var(--muted);font:400 clamp(1.1rem,2.2vw,1.45rem)/1.45 var(--body);max-width:640px}
+.hero .cta{display:flex;gap:22px;flex-wrap:wrap;margin-top:28px;align-items:center;justify-content:center}
+.hero .fine{margin-top:14px;color:var(--muted);font-size:14px}
+.hero .fine b{font-weight:500;color:var(--text2)}
+.quiz-wrap{width:100%;max-width:640px;margin-top:52px}
+.quiz-note{display:none}
 
 /* ซิมจิ๋ว: ทายก่อน */
-.quiz-wrap{position:relative}
-.quiz-note{position:absolute;top:-34px;right:6px;font:400 18px var(--hand);color:var(--orange);transform:rotate(3deg);white-space:nowrap}
-.quiz{border:1px solid var(--line2);border-radius:18px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden;transform:rotate(.6deg)}
-.quiz-h{padding:16px 18px 10px}
-.quiz-h small{font:600 12.5px var(--head);color:var(--muted)}
-.quiz-h b{display:block;font:700 18px/1.45 var(--head);margin-top:2px}
-.quiz svg.sim{display:block;width:100%;height:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fbfcff}
-.quiz-c{padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px}
-.quiz-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.quiz-opts button{padding:10px 6px;border-radius:10px;border:1.5px solid var(--line2);background:var(--surface);font:700 17px var(--mono);cursor:pointer;transition:.15s;color:var(--text)}
-.quiz-opts button:hover{border-color:var(--accent);color:var(--accent)}
-.quiz-opts button.pick{border-color:var(--orange);background:#fff1ea;color:var(--orange)}
-.quiz-opts button.best{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.quiz{border-radius:24px;background:var(--surface2);overflow:hidden;text-align:left}
+.quiz-h{padding:22px 24px 12px}
+.quiz-h small{font:600 13px var(--head);color:var(--orange)}
+.quiz-h b{display:block;font:600 21px/1.35 var(--head);margin-top:2px}
+.quiz svg.sim{display:block;width:100%;height:auto;background:#fff}
+.quiz-c{padding:16px 24px 22px;display:flex;flex-direction:column;gap:12px}
+.quiz-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quiz-opts button{padding:11px 6px;border-radius:980px;border:0;background:#fff;font:600 17px var(--head);cursor:pointer;transition:.15s;color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.quiz-opts button:hover{box-shadow:inset 0 0 0 2px var(--accent);color:var(--accent)}
+.quiz-opts button.pick{box-shadow:inset 0 0 0 2px var(--orange);color:var(--orange)}
+.quiz-opts button.best{background:var(--ok);color:#fff;box-shadow:none}
 .quiz-opts button[disabled]{cursor:default}
-.quiz-msg{font-size:15px;color:var(--text2);min-height:1.6em}
+.quiz-msg{font-size:16px;color:var(--text2);min-height:1.6em}
 .quiz-msg b{color:var(--text)}
-.quiz-hook{display:none;border-top:1px dashed var(--line2);padding-top:10px;font-size:15px}
+.quiz-hook{display:none;padding-top:4px;font-size:16px}
 .quiz-hook.on{display:block}
-.quiz-hook .q{font:400 18px var(--hand);color:var(--orange)}
-.quiz-hook a{color:var(--accent);font-weight:600;text-underline-offset:3px}
-.quiz-try{display:none;align-items:center;gap:10px;font:600 13.5px var(--head);color:var(--muted)}
+.quiz-hook .q{font:600 17px var(--head);color:var(--text)}
+.quiz-hook a{color:var(--link);text-decoration:none}
+.quiz-hook a:hover{text-decoration:underline}
+.quiz-try{display:none;align-items:center;gap:12px;font:500 14px var(--body);color:var(--muted)}
 .quiz-try.on{display:flex}
 .quiz-try input{flex:1;accent-color:var(--accent)}
-.quiz-try output{font:700 14px var(--mono);color:var(--accent);width:92px;text-align:right}
+.quiz-try output{font:600 14px var(--mono);color:var(--accent);width:96px;text-align:right}
 
-.sec{padding-block:46px}
-.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-.sec-h h2{font:700 clamp(1.4rem,2.6vw,1.85rem)/1.3 var(--head)}
-.sec-h p{color:var(--muted)}
+.sec{padding-block:56px}
+.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.sec-h h2{font:700 clamp(1.7rem,3.4vw,2.4rem)/1.32 var(--head)}
+.sec-h p{color:var(--muted);margin-top:6px}
 /* วิธีเรียน */
-.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow-s);overflow:hidden}
-.how>div{padding:24px 24px 26px;position:relative}
-.how>div+div{border-left:1px dashed var(--line2)}
-.how .n{font:400 30px/1 var(--hand);color:var(--orange)}
-.how svg{display:block;margin:10px 0 12px}
-.how h3{font:700 17px var(--head);margin-bottom:4px}
-.how p{color:var(--muted);font-size:15px}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.how>div{padding:30px 28px;background:var(--surface);border-radius:var(--r)}
+.how .n{display:none}
+.how svg{display:block;margin:0 0 16px}
+.how h3{font:600 21px/1.3 var(--head);margin-bottom:6px}
+.how p{color:var(--muted);font-size:16px}
 /* ขั้นเริ่ม */
-.start{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;border:1px solid var(--line);border-radius:18px;padding:30px;background:var(--surface);box-shadow:var(--shadow-s)}
-.start h2{font:700 clamp(1.4rem,2.6vw,1.8rem)/1.35 var(--head);margin-bottom:6px}
-.start ol{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:14px}
-.start li{counter-increment:s;display:flex;gap:14px;align-items:flex-start}
-.start li::before{content:counter(s);flex:none;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--text);display:grid;place-items:center;font:400 18px var(--hand)}
-.start li b{display:block;font:600 16px var(--head)}
-.start li span{color:var(--muted);font-size:14.5px}
-.start .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.start{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;border-radius:24px;padding:44px;background:var(--surface)}
+.start h2{font:700 clamp(1.7rem,3.2vw,2.3rem)/1.32 var(--head);margin:4px 0 8px}
+.start ol{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:18px}
+.start li{counter-increment:s;display:flex;gap:16px;align-items:flex-start}
+.start li::before{content:counter(s);flex:none;width:32px;height:32px;border-radius:50%;background:var(--text);color:#fff;display:grid;place-items:center;font:600 15px var(--head)}
+.start li b{display:block;font:600 17px var(--head)}
+.start li span{color:var(--muted);font-size:15px}
+.start .cta{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px;align-items:center}
 
 /* ---------- หน้าแรก: นักเรียน / ครู ---------- */
-.dash-h{padding:40px 0 6px}
-.dash-h .hand{font-size:20px;color:var(--orange)}
-.dash-h h1{font:700 clamp(1.7rem,3.4vw,2.4rem)/1.3 var(--head)}
-.dash-h p{color:var(--text2);margin-top:4px}
-.staffbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid color-mix(in srgb,var(--role) 35%,transparent);background:color-mix(in srgb,var(--role) 7%,#fff);border-radius:12px;padding:12px 16px;margin-top:18px;font-size:15px}
+.dash-h{padding:48px 0 4px}
+.dash-h .hand{font-size:17px}
+.dash-h h1{font:700 clamp(2rem,4.4vw,3rem)/1.32 var(--head)}
+.dash-h p{color:var(--muted);font-size:clamp(1.05rem,2vw,1.25rem);margin-top:6px}
+.staffbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border-radius:14px;padding:14px 18px;margin-top:22px;font-size:15px;color:var(--text2)}
 .staffbar .sp{flex:1}
-.resume{display:grid;grid-template-columns:260px minmax(0,1fr) auto;align-items:center;border:1px solid var(--line2);border-radius:18px;overflow:hidden;background:var(--surface);text-decoration:none;box-shadow:var(--shadow);transition:transform .25s var(--ease),border-color .2s}
-.resume:hover{transform:translateY(-2px);border-color:var(--accent)}
-.resume-cv{position:relative;align-self:stretch;min-height:160px}
-.resume-bd{padding:20px 24px;display:flex;flex-direction:column;gap:4px}
-.resume-bd small{font:400 17px var(--hand);color:var(--orange)}
-.resume-bd h3{font:700 22px/1.4 var(--head)}
-.resume-bd .meta{color:var(--muted);font-size:14.5px}
-.resume .go{margin:0 24px 0 0;display:flex;align-items:center;gap:14px}
-.pend{display:flex;flex-direction:column;gap:8px}
-.pend-i{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)}
-.pend-i b{font:600 15px var(--head)}
+.resume{display:grid;grid-template-columns:280px minmax(0,1fr) auto;align-items:center;border-radius:24px;overflow:hidden;background:var(--surface);text-decoration:none;transition:transform .35s var(--ease),box-shadow .35s}
+.resume:hover{transform:scale(1.008);box-shadow:var(--shadow)}
+.resume-cv{position:relative;align-self:stretch;min-height:170px}
+.resume-bd{padding:24px 28px;display:flex;flex-direction:column;gap:4px}
+.resume-bd small{font:600 14px var(--head);color:var(--orange)}
+.resume-bd h3{font:700 24px/1.3 var(--head)}
+.resume-bd .meta{color:var(--muted);font-size:15px}
+.resume .go{margin:0 28px 0 0;display:flex;align-items:center;gap:16px}
+.pend{display:flex;flex-direction:column;gap:10px}
+.pend-i{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-radius:14px;padding:14px 18px;background:var(--surface)}
+.pend-i b{font:600 16px var(--head)}
 .pend-i .sp{flex:1}
 
 /* ---------- การ์ดคอร์ส ---------- */
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px}
-.cc{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;box-shadow:var(--shadow-s);transition:transform .3s var(--ease),box-shadow .3s,border-color .2s}
-.cc:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--line2)}
-.cc-cv{position:relative;aspect-ratio:16/8.5;border-bottom:1px solid var(--line)}
+.cc{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r);overflow:hidden;text-decoration:none;transition:transform .35s var(--ease),box-shadow .35s}
+.cc:hover{transform:scale(1.015);box-shadow:var(--shadow)}
+.cc-cv{position:relative;aspect-ratio:16/8.5}
 .art{position:absolute;inset:0;width:100%;height:100%;display:block}
-.sticker{position:absolute;right:12px;top:12px;font:600 12.5px var(--head);padding:4px 10px;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(60,40,15,.18);transform:rotate(2deg);color:var(--text2)}
+.sticker{position:absolute;right:12px;top:12px;font:500 12.5px var(--body);padding:4px 11px;border-radius:980px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--text2);z-index:1}
 .sticker.ok{color:var(--ok)}.sticker.warn{color:var(--warn)}.sticker.role{color:var(--role)}.sticker.free{color:var(--orange)}
-.sticker.l{left:12px;right:auto;transform:rotate(-2deg);color:var(--warn)}
-.cc-bd{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
-.cc-tags{font-size:13px;color:var(--muted)}
-.cc h3{font:700 18.5px/1.45 var(--head)}
-.cc p{font-size:14.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cc-meta{margin-top:auto;padding-top:10px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.cc-meta .free{color:var(--orange);font-weight:600}
-.cc-pr{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:10px;font:600 13px var(--mono);color:var(--text2)}
+.sticker.l{left:12px;right:auto;color:var(--warn)}
+.cc-bd{padding:18px 22px 22px;display:flex;flex-direction:column;gap:6px;flex:1}
+.cc-tags{font:600 12.5px var(--head);color:var(--orange)}
+.cc h3{font:600 20px/1.3 var(--head)}
+.cc p{font-size:15px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cc-meta{margin-top:auto;padding-top:12px;font-size:14px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.cc-meta .free{color:var(--orange)}
+.cc-pr{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:12px;font:500 13px var(--mono);color:var(--text2)}
 .cc-pr .bar{flex:1}
-.medal{font:400 15px var(--hand);color:var(--warn)}
+.medal{font:500 14px var(--body);color:var(--muted)}
 .medal.done{color:var(--ok)}
+.cc-meta .pr{color:var(--text);font-weight:600}
 
 /* วงแหวนความคืบหน้า */
 .ring{position:relative;width:var(--s,58px);height:var(--s,58px);flex:none;display:inline-block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:6}
 .ring .bg{stroke:var(--surface3)}
-.ring .fg{stroke:var(--ok);stroke-linecap:round;transition:stroke-dashoffset .8s var(--ease)}
-.ring>span{position:absolute;inset:0;display:grid;place-items:center;font:700 13px var(--mono)}
+.ring .fg{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .8s var(--ease)}
+.ring>span{position:absolute;inset:0;display:grid;place-items:center;font:600 13px var(--head)}
 
-/* ---------- หน้าคอร์ส ---------- */
-.view{padding-block:22px 40px}
-.crumb{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-bottom:14px;flex-wrap:wrap}
-.crumb a{text-decoration:none}.crumb a:hover{color:var(--accent)}
-/* หัวหน้าเรียน: แถบเดียว ไม่มีภาพปก — ให้คลิปอยู่ใกล้ด้านบนเสมอ */
-.lhead{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:4px 0 14px;border-bottom:1px solid var(--line)}
-.lhead h1{font:700 20px/1.35 var(--head);margin-right:auto;min-width:0}
-.lhead .prog{font:600 13.5px var(--mono);color:var(--ok);white-space:nowrap}
-.lhead .prog .bar{display:inline-block;width:70px;vertical-align:middle;margin-right:6px}
+/* ---------- หน้าคอร์ส / หน้าเรียน ---------- */
+.view{padding-block:18px 48px}
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.crumb a{text-decoration:none}.crumb a:hover{color:var(--link)}
+.lhead{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:2px 0 16px}
+.lhead h1{font:700 24px/1.35 var(--head);margin-right:auto;min-width:0}
+.lhead .prog{font:500 14px var(--body);color:var(--muted);white-space:nowrap}
+.lhead .prog .bar{display:inline-block;width:80px;vertical-align:middle;margin-right:8px}
 .lhead .meta{font-size:14px;color:var(--muted)}
-.lhead .price{font-size:17px}
-/* หน้าต่างข้อมูลคอร์ส */
-.info-box{max-width:620px}
-.info-body{padding:6px 24px 24px}
-.info-body .meta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px;font-size:14px;color:var(--muted)}
-.info-body .prose{font-size:16px}
-.c-tags{font-size:13.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.c-sum{color:var(--text2);max-width:640px}
-.course{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;margin-top:18px}
-.player{position:relative;aspect-ratio:16/9;border:1px solid var(--line2);border-radius:14px;background:#000;overflow:hidden;box-shadow:var(--shadow-s)}
+.lhead .price{font:600 19px var(--head)}
+.course{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;margin-top:4px}
+.player{position:relative;aspect-ratio:16/9;border-radius:var(--r);background:#000;overflow:hidden}
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
-.player.ph{background:var(--surface2);display:grid;place-items:center;text-align:center;padding:20px}
-.player.ph small{display:block;font:400 16px var(--hand);color:var(--orange)}
-.player.ph b{font:700 20px/1.4 var(--head)}
-.lock{border:1.5px dashed var(--line2);border-radius:16px;background:var(--surface);padding:36px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:300px;justify-content:center}
+.player.ph{background:var(--surface);display:grid;place-items:center;text-align:center;padding:20px}
+.player.ph small{display:block;font:600 14px var(--head);color:var(--orange)}
+.player.ph b{font:700 26px/1.3 var(--head)}
+.lock{border-radius:var(--r);background:var(--surface);padding:44px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:320px;justify-content:center}
 .lock .ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--surface2)}
-.lock h3{font:700 21px var(--head)}
-.lock p{color:var(--text2);max-width:480px;font-size:15px}
-.lock .hand{color:var(--orange);font-size:17px}
-.lock textarea{width:min(440px,100%);min-height:76px;background:var(--surface);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14.5px;resize:vertical;outline:none}
-.lock textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.lock .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.ls-h{margin:22px 0 6px}
-.ls-h small{font-size:13.5px;color:var(--muted)}
-.ls-h h2{font:700 25px/1.4 var(--head);margin-top:2px}
+.lock h3{font:700 24px/1.3 var(--head)}
+.lock p{color:var(--muted);max-width:480px;font-size:16px}
+.lock .hand{font-size:15px;color:var(--muted);font-weight:400}
+.lock textarea{width:min(440px,100%);min-height:80px;background:var(--surface);border:1px solid #d2d2d7;border-radius:12px;padding:11px 14px;font-size:16px;resize:vertical;outline:none}
+.lock textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,113,227,.15)}
+.lock .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.ls-h{margin:24px 0 6px}
+.ls-h small{font:600 13px var(--head);color:var(--orange)}
+.ls-h h2{font:700 30px/1.35 var(--head);margin-top:2px}
 .ls-meta{display:flex;flex-wrap:wrap;gap:6px}
-.ltabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:18px;border-bottom:1px solid var(--line)}
-.ltabs button{border:0;background:none;padding:9px 14px;font:600 14.5px var(--head);cursor:pointer;color:var(--muted);position:relative}
-.ltabs button:hover{color:var(--text)}
-.ltabs button.on{color:var(--text)}
-.ltabs button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px;background:var(--accent)}
-.lpanel{padding-top:20px}
+.ltabs{display:inline-flex;gap:2px;flex-wrap:wrap;margin-top:20px;padding:3px;background:var(--surface3);border-radius:10px}
+.ltabs button{border:0;background:none;padding:6px 16px;font:500 14px var(--body);cursor:pointer;color:var(--text);border-radius:8px}
+.ltabs button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lpanel{padding-top:22px}
 .lpanel[hidden]{display:none}
-.res{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow-s)}
-.res .ri{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:10px;background:var(--accent-soft);font-size:19px}
-.res b{display:block;font:600 15px var(--head)}
-.res small{color:var(--muted);font-size:13px}
+.res{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-radius:14px;background:var(--surface);padding:14px 16px;margin-bottom:10px}
+.res .ri{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--surface2);font-size:20px}
+.res b{display:block;font:600 16px var(--head)}
+.res small{color:var(--muted);font-size:13.5px}
 .res .sp{flex:1}
-.ls-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;border-top:1px solid var(--line);padding-top:20px;margin-top:30px}
+.ls-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;border-top:1px solid var(--line);padding-top:22px;margin-top:34px}
 .ls-nav .left{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-.donebtn{display:inline-flex;align-items:center;gap:10px;padding:11px 16px;border-radius:11px;border:1.5px solid var(--line2);background:var(--surface);font:600 15px var(--head);cursor:pointer;transition:.2s;box-shadow:var(--shadow-s)}
-.donebtn .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;font-size:13px;color:transparent;transition:.2s}
-.donebtn:hover{border-color:var(--ok)}
-.donebtn.on{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.donebtn{display:inline-flex;align-items:center;gap:10px;padding:10px 18px 10px 12px;border-radius:980px;border:0;background:var(--surface3);font:500 15px var(--body);cursor:pointer;transition:background .2s}
+.donebtn .bx{width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center;font-size:12px;color:transparent;transition:.2s}
+.donebtn:hover{background:#dcdce1}
+.donebtn.on{background:var(--ok-soft);color:var(--ok)}
 .donebtn.on .bx{background:var(--ok);border-color:var(--ok);color:#fff}
-.freenote{color:var(--muted);font-size:14px}
-.next{display:flex;align-items:center;gap:14px;border:1px solid var(--line2);border-radius:14px;padding:13px 16px;background:var(--surface);text-decoration:none;transition:border-color .2s,transform .2s var(--ease);min-width:240px;max-width:440px;flex:1;box-shadow:var(--shadow-s)}
-.next:hover{border-color:var(--accent);transform:translateX(3px)}
-.next small{display:block;font:400 16px var(--hand);color:var(--orange)}
-.next b{display:block;font:700 16px/1.4 var(--head)}
-.next .go{margin-left:auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-weight:700;flex:none}
-.prevlink{font-size:14px;color:var(--muted);text-decoration:none}
-.prevlink:hover{color:var(--accent)}
+.freenote{color:var(--muted);font-size:15px}
+.next{display:flex;align-items:center;gap:14px;border-radius:var(--r);padding:16px 18px;background:var(--surface);text-decoration:none;transition:box-shadow .3s;min-width:240px;max-width:440px;flex:1}
+.next:hover{box-shadow:var(--shadow)}
+.next small{display:block;font:600 13px var(--head);color:var(--orange)}
+.next b{display:block;font:600 17px/1.35 var(--head)}
+.next .go{margin-left:auto;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-weight:600;flex:none}
+.prevlink{font-size:15px;color:var(--link);text-decoration:none}
+.prevlink:hover{text-decoration:underline}
 
 /* สารบัญ */
-.toc{position:sticky;top:78px;align-self:start;border:1px solid var(--line);border-radius:14px;background:var(--surface);max-height:calc(100vh - 98px);overflow:auto;box-shadow:var(--shadow-s)}
-.toc-h{padding:14px 16px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-.toc-h b{font:700 15px var(--head);flex:1}
-.toc-h b small{display:block;font:400 13px var(--body);color:var(--muted)}
-.unit+.unit{border-top:1px solid var(--line)}
-.unit summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;font:600 14px var(--head);background:var(--surface2)}
+.toc{position:sticky;top:68px;align-self:start;border-radius:var(--r);background:var(--surface);max-height:calc(100vh - 88px);overflow:auto}
+.toc-h{padding:16px 18px 12px;display:flex;align-items:center;gap:12px}
+.toc-h b{font:600 17px var(--head);flex:1}
+.toc-h b small{display:block;font:400 13px var(--body);color:var(--muted);letter-spacing:0}
+.unit summary{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font:600 13px var(--head);color:var(--muted);text-transform:none}
 .unit summary::-webkit-details-marker{display:none}
-.unit summary .un{font:400 15px var(--hand);color:var(--orange)}
+.unit summary .un{display:none}
 .unit summary .ut{flex:1}
 .unit summary small{font-size:12px;color:var(--muted);font-weight:400}
-.unit summary::after{content:"▾";color:var(--muted);transition:transform .25s}
-.unit:not([open]) summary::after{transform:rotate(-90deg)}
-.toc button{display:flex;gap:10px;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:10px 16px;cursor:pointer;font-size:14.5px;line-height:1.45;align-items:center}
+.unit summary::after{content:"›";color:var(--muted);transition:transform .25s;transform:rotate(90deg);font-size:16px}
+.unit:not([open]) summary::after{transform:rotate(0)}
+.toc button{display:flex;gap:12px;width:100%;text-align:left;border:0;background:none;padding:10px 18px;cursor:pointer;font-size:15px;line-height:1.4;align-items:center;border-radius:0}
 .toc button:hover{background:var(--surface2)}
-.toc button.on{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
-.toc .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;font:600 11px var(--mono);color:var(--muted)}
-.toc .on .n{border-color:var(--accent);color:var(--accent)}
-.toc .done .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.toc button.on{background:var(--accent-soft);color:var(--accent)}
+.toc .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--surface3);display:grid;place-items:center;font:600 11.5px var(--head);color:var(--muted)}
+.toc .on .n{background:var(--accent);color:#fff}
+.toc .done .n{background:var(--ok);color:#fff}
 .toc .t{flex:1}
-.toc .d{font-size:12px;color:var(--muted);white-space:nowrap}
-.toc .d.free{color:var(--orange);font-weight:600}
-.toc .lk{font-size:12px;opacity:.55}
+.toc .d{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.toc .d.free{color:var(--orange)}
+.toc .lk{font-size:12px;opacity:.5}
 
 /* เนื้อหาบท */
-.prose{font-size:17px;line-height:1.9;min-width:0;color:var(--text2)}
+.prose{font-size:17px;line-height:1.8;min-width:0;color:var(--text2)}
 .prose>*:first-child{margin-top:0}
 .prose p{margin:0 0 1em}
 .prose b{color:var(--text)}
-.prose h2{font:700 23px/1.45 var(--head);color:var(--text);margin:1.5em 0 .5em}
-.prose h3{font:700 19px/1.45 var(--head);color:var(--text);margin:1.3em 0 .4em}
+.prose h2{font:700 26px/1.3 var(--head);color:var(--text);margin:1.6em 0 .5em}
+.prose h3{font:600 20px/1.35 var(--head);color:var(--text);margin:1.3em 0 .4em}
 .prose ul,.prose ol{margin:0 0 1em;padding-left:1.4em}
 .prose li{margin:.25em 0}
-.prose li::marker{color:var(--accent)}
-.prose blockquote{margin:1.3em 0;padding:14px 18px;background:#fffbea;border:1px solid #f3e3a6;border-radius:10px;font-size:16px;color:var(--text)}
+.prose li::marker{color:var(--muted)}
+.prose blockquote{margin:1.3em 0;padding:16px 20px;background:var(--surface);border-radius:14px;font-size:16px;color:var(--text)}
 .prose figure{margin:1.5em 0}
-.prose figure img{width:100%;display:block;border-radius:10px;border:1px solid var(--line)}
-.prose figcaption{font-size:13px;color:var(--muted);margin-top:6px;text-align:center}
-.prose a{color:var(--accent);text-underline-offset:3px;word-break:break-word}
+.prose figure img{width:100%;display:block;border-radius:14px}
+.prose figcaption{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+.prose a{color:var(--link);text-decoration:none;word-break:break-word}
+.prose a:hover{text-decoration:underline}
 .prose .math{overflow-x:auto;margin:1.1em 0;text-align:center}
-.embed{position:relative;margin:1.5em 0;border:1px solid var(--line2);border-radius:12px;overflow:hidden;background:#000}
+.embed{position:relative;margin:1.5em 0;border-radius:14px;overflow:hidden;background:#000}
 .embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .embed.v{aspect-ratio:16/9}
-.embed.doc{aspect-ratio:3/4;max-height:85vh;background:var(--surface2)}
+.embed.doc{aspect-ratio:3/4;max-height:85vh;background:var(--surface)}
 .embed.web{aspect-ratio:4/3;background:#fff}
 .embed-cap{display:flex;justify-content:flex-end;font-size:13px;margin:-1.2em 0 1.5em}
-.lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1.5px solid var(--accent);border-radius:10px;font:600 15px var(--head);text-decoration:none!important;color:var(--accent)!important;background:#fff}
-.lbtn:hover{background:var(--accent-soft)}
+.lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:980px;font:500 15px var(--body);text-decoration:none!important;color:#fff!important;background:var(--accent)}
+.lbtn:hover{background:var(--accent-hover)}
 
 /* ชำระเงิน */
-.pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;text-align:left;width:min(640px,100%);margin-top:4px}
-.qr{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:#fff;align-self:start}
+.pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;text-align:left;width:min(640px,100%);margin-top:6px}
+.qr{border-radius:16px;overflow:hidden;background:#fff;align-self:start;box-shadow:0 0 0 1px var(--line)}
 .qr-h{background:#113566;color:#fff;font:600 13px var(--head);padding:8px 12px;display:flex;justify-content:space-between}
 .qr-b{padding:12px;display:grid;place-items:center;min-height:196px}
 .qr-b svg{width:100%;height:auto;display:block}
-.qr-f{border-top:1px solid var(--line);padding:8px 12px;font-size:13px;text-align:center}
-.qr-f b{display:block;font:700 18px var(--mono);color:var(--text)}
-.qr-f a{color:var(--accent);font-size:13px}
-.pay-s{display:flex;flex-direction:column;gap:10px}
-.pay-s ol{padding-left:1.2em;color:var(--text2);font-size:14.5px;display:flex;flex-direction:column;gap:4px}
-.pay-s .note{font-size:13.5px}
-.price{font:700 22px var(--head);color:var(--text)}
-.price small{font:400 15px var(--hand);color:var(--orange);margin-left:6px}
-.cc-meta .pr{color:var(--text);font-weight:700}
+.qr-f{border-top:1px solid var(--line);padding:8px 12px 10px;font-size:13px;text-align:center}
+.qr-f b{display:block;font:700 19px var(--head);color:var(--text)}
+.qr-f a{color:var(--link);font-size:13px;text-decoration:none}
+.pay-s{display:flex;flex-direction:column;gap:12px}
+.pay-s ol{padding-left:1.2em;color:var(--text2);font-size:15px;display:flex;flex-direction:column;gap:4px}
+.price{font:700 24px var(--head);color:var(--text)}
+.price small{font:400 15px var(--body);color:var(--muted);margin-left:8px;letter-spacing:0}
+
+/* หน้าต่างข้อมูลคอร์ส */
+.info-box{max-width:620px}
+.info-body{padding:6px 28px 28px}
+.info-body .meta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px}
+.info-body .prose{font-size:16px}
 
 /* ฉลอง */
 .confetti{position:fixed;left:50%;top:50%;pointer-events:none;z-index:9500}
 .confetti i{position:absolute;width:8px;height:13px;border-radius:2px;opacity:0;animation:cf 1.2s var(--ease) forwards}
 @keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
 
-footer{margin-top:60px;border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:14px}
+footer{margin-top:60px;border-top:1px solid var(--line);padding:22px 0;color:var(--muted);font-size:12.5px}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-footer a{color:var(--accent);text-decoration:none}
+footer a{color:var(--link);text-decoration:none}
 
 /* ---------- หน้าต่างล็อกอิน ---------- */
-.modal{display:none;position:fixed;inset:0;background:rgba(28,34,48,.45);backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;padding:16px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:16px}
 .modal.open{display:flex}
-.modal-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 24px 60px rgba(28,34,48,.25)}
-.modal-head{padding:22px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.modal-head h3{font:700 20px var(--head)}
-.modal-head p{color:var(--muted);font-size:14px}
-.modal-x{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 8px;border-radius:8px;line-height:1}
-.modal-x:hover{background:var(--surface2);color:var(--text)}
-.seg{display:grid;grid-template-columns:1fr 1fr;margin:18px 24px 0;padding:4px;background:var(--surface2);border-radius:10px}
-.seg button{border:0;background:none;padding:8px;border-radius:7px;font:600 14px var(--head);color:var(--muted);cursor:pointer}
-.seg button.on{background:#fff;color:var(--text);box-shadow:var(--shadow-s)}
-.pane{display:none;padding:20px 24px 24px;flex-direction:column;gap:12px}
+.modal-box{background:var(--surface);border-radius:22px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.modal-head{padding:26px 28px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.modal-head h3{font:700 24px/1.35 var(--head)}
+.modal-head p{color:var(--muted);font-size:15px;margin-top:2px}
+.modal-x{width:30px;height:30px;border-radius:50%;border:0;background:var(--surface3);color:var(--muted);font-size:14px;cursor:pointer;display:grid;place-items:center;flex:none}
+.modal-x:hover{background:#dcdce1;color:var(--text)}
+.seg{display:grid;grid-template-columns:1fr 1fr;margin:20px 28px 0;padding:3px;background:var(--surface3);border-radius:10px}
+.seg button{border:0;background:none;padding:7px;border-radius:8px;font:500 14px var(--body);color:var(--text);cursor:pointer}
+.seg button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pane{display:none;padding:20px 28px 28px;flex-direction:column;gap:12px}
 .pane.on{display:flex}
-.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid var(--line2);padding:11px;border-radius:10px;font:600 15px var(--head);cursor:pointer;box-shadow:var(--shadow-s)}
+.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #d2d2d7;padding:11px;border-radius:980px;font:500 16px var(--body);cursor:pointer}
 .gbtn:hover{background:var(--surface2)}
 .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line2)}
-.modal .btn.solid{width:100%;padding:12px}
+.modal .btn.solid{width:100%;padding:12px;font-size:16px}
 .switch{text-align:center;font-size:14px;color:var(--muted)}
-.switch button{background:none;border:0;color:var(--accent);font:600 14px var(--head);cursor:pointer}
+.switch button{background:none;border:0;color:var(--link);font:400 14px var(--body);cursor:pointer}
 
 @media (max-width:980px){
-  .hero{grid-template-columns:1fr;gap:56px;padding-block:40px 48px}
-  .quiz-wrap{max-width:520px}
   .course{grid-template-columns:1fr}
   .toc{position:static;max-height:none;order:2}
   .how{grid-template-columns:1fr}
-  .how>div+div{border-left:0;border-top:1px dashed var(--line2)}
-  .start{grid-template-columns:1fr}
+  .start{grid-template-columns:1fr;padding:32px}
   .resume{grid-template-columns:1fr}
   .resume-cv{min-height:0;aspect-ratio:32/17}
-  .resume .go{margin:0 24px 20px}
+  .resume .go{margin:0 28px 24px}
 }
 @media (max-width:640px){
   .wrap{padding:0 16px}
   .nav{display:none}
-  .hero p.lead{font-size:16px}
+  .hero{padding-block:48px 44px}
   .hero .cta .btn{flex:1}
-  .quiz,.quiz-note{transform:none}
+  .quiz-wrap{margin-top:36px}
+  .quiz-h,.quiz-c{padding-left:18px;padding-right:18px}
   .cgrid{grid-template-columns:1fr}
   .prose{font-size:16px}
-  .lock{padding:28px 16px}
+  .lock{padding:32px 18px}
   .res .btn{flex:1}
-  .start{padding:22px}
-  .lhead h1{font-size:18px;flex-basis:100%}
+  .start{padding:26px 20px}
+  .lhead h1{font-size:21px;flex-basis:100%}
+  .ls-h h2{font-size:25px}
   .tb-auth .btn.ghost{display:none}
   .next{max-width:none}
   .pay{grid-template-columns:1fr}
@@ -430,7 +421,7 @@ function toast(m, bad) { const t = $('toast'); t.textContent = m; t.className = 
 const courseUrl = (c, n) => '#/c/' + encodeURIComponent(c.id) + (n ? '/' + n : '');
 
 /* ===================== ปกคอร์ส: วาดเส้นแบบแผนภาพในสมุด ===================== */
-const PAL = { 'ฟิสิกส์': ['#eaf1ff', '#2456c9'], 'ดาราศาสตร์': ['#f0ebff', '#6a3fd0'], 'เคมี': ['#e7f6ef', '#17845a'], 'ชีววิทยา': ['#f1f6e3', '#5c7d12'] };
+const PAL = { 'ฟิสิกส์': ['#e8f2fd', '#0071e3'], 'ดาราศาสตร์': ['#f1ebfa', '#8944ab'], 'เคมี': ['#e5f4ea', '#1a7f43'], 'ชีววิทยา': ['#f0f5e1', '#5c7d12'] };
 const seedOf = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
 function coverArt(c) {
   // ภาพปกของครู (รองรับลิงก์แชร์ Google Drive) วางทับภาพวาด — โหลดไม่ได้ก็เห็นภาพวาดแทน
@@ -452,21 +443,21 @@ function coverArt(c) {
     // ประจุบวก-ลบ + เส้นสนาม
     const q = (x, s, col) => `<circle cx="${x}" cy="70" r="15" fill="#fff" stroke="${col}" stroke-width="2.2"/><text x="${x}" y="77" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="20" fill="${col}">${s}</text>`;
     d = [-46, -24, 24, 46].map(k => `<path d="M118 ${70 + k * .35} C 160 ${70 + k * 1.6} 200 ${70 + k * 1.6} 242 ${70 + k * .35}" fill="none" stroke="${ink}" stroke-width="1.8" stroke-dasharray="5 5"/>`).join('')
-      + `<line x1="118" y1="70" x2="242" y2="70" stroke="${ink}" stroke-width="1.8"/><path d="M184 70 l-8 -4 m8 4 l-8 4" stroke="${ink}" stroke-width="1.8" fill="none"/>` + q(100, '+', '#e8693a') + q(260, '−', ink);
+      + `<line x1="118" y1="70" x2="242" y2="70" stroke="${ink}" stroke-width="1.8"/><path d="M184 70 l-8 -4 m8 4 l-8 4" stroke="${ink}" stroke-width="1.8" fill="none"/>` + q(100, '+', '#bf4800') + q(260, '−', ink);
   } else if (/คลื่น|เสียง|แสง|สั่น/.test(c.title)) {
     const wave = (amp, y, col, dash) => { let p = `M30 ${y}`; for (let x = 30; x <= 300; x += 5) p += ` L${x} ${(y - amp * Math.sin((x - 30) / 22)).toFixed(1)}`; return `<path d="${p}" fill="none" stroke="${col}" stroke-width="2.2"${dash ? ' stroke-dasharray="5 5"' : ''}/>`; };
-    d = wave(26, 68, ink) + wave(14, 68, '#e8693a', 1) + `<line x1="30" y1="68" x2="300" y2="68" stroke="${ink}" stroke-opacity=".35"/>`;
+    d = wave(26, 68, ink) + wave(14, 68, '#bf4800', 1) + `<line x1="30" y1="68" x2="300" y2="68" stroke="${ink}" stroke-opacity=".35"/>`;
   } else {
     // โพรเจกไทล์ + เวกเตอร์ (ความสูงเปลี่ยนตามรหัสคอร์ส)
     const top = 26 + h % 26, x0 = 60, x1 = 290, xm = (x0 + x1) / 2, y0 = 122;
     d = `<line x1="40" y1="${y0}" x2="305" y2="${y0}" stroke="${ink}" stroke-width="2"/>
       <path d="M${x0} ${y0} Q ${xm} ${2 * top - y0} ${x1} ${y0}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-dasharray="6 6"/>
       <circle cx="${xm}" cy="${top}" r="8" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
-      <path d="M${xm} ${top} l34 0 m-7 -4 l7 4 l-7 4" stroke="#e8693a" stroke-width="2.4" fill="none"/>
-      <path d="M${xm} ${top} l0 24 m-4 -7 l4 7 l4 -7" stroke="#e8693a" stroke-width="2.4" fill="none"/>
+      <path d="M${xm} ${top} l34 0 m-7 -4 l7 4 l-7 4" stroke="#bf4800" stroke-width="2.4" fill="none"/>
+      <path d="M${xm} ${top} l0 24 m-4 -7 l4 7 l4 -7" stroke="#bf4800" stroke-width="2.4" fill="none"/>
       <path d="M${x0 + 34} ${y0} A 34 34 0 0 0 ${x0 + 26} ${y0 - 20}" fill="none" stroke="${ink}" stroke-width="1.6"/>`;
   }
-  return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/><g stroke="${ink}" stroke-opacity=".09">${g.join('')}</g>${d}<text x="18" y="${H - 16}" font-family="Itim, cursive" font-size="19" fill="${ink}">${esc(c.subject || 'วิทยาศาสตร์')}${c.level ? ' · ' + esc(c.level) : ''}</text></svg>${img}`;
+  return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/>${d}<text x="18" y="${H - 16}" font-family="-apple-system, BlinkMacSystemFont, 'IBM Plex Sans Thai', sans-serif" font-size="14" font-weight="600" fill="${ink}" opacity=".75">${esc(c.subject || 'วิทยาศาสตร์')}${c.level ? ' · ' + esc(c.level) : ''}</text></svg>${img}`;
 }
 function ring(pct, s) {
   const r = 24, C = 2 * Math.PI * r;
@@ -533,9 +524,9 @@ function renderHome() {
 }
 
 const ICONS = {
-  watch: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1c2230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="38" height="26" rx="4"/><path d="M19 16v12l10-6z" fill="#ffe270"/><path d="M15 40h16"/></svg>',
-  play: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1c2230" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 36h34"/><path d="M8 36 Q 23 2 38 36" stroke-dasharray="4 4"/><circle cx="23" cy="19" r="4" fill="#ffe270"/><path d="M12 30v-8M9 25l3-3 3 3" stroke="#e8693a"/></svg>',
-  check: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1c2230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="5" width="30" height="36" rx="4"/><path d="M14 26h19" stroke="#ffe270" stroke-width="6"/><path d="M14 15l3 3 6-6" stroke="#17845a"/><path d="M27 15h6M14 26h19M14 33h12"/></svg>',
+  watch: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="38" height="26" rx="4"/><path d="M19 16v12l10-6z" fill="#d2e3fc"/><path d="M15 40h16"/></svg>',
+  play: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 36h34"/><path d="M8 36 Q 23 2 38 36" stroke-dasharray="4 4"/><circle cx="23" cy="19" r="4" fill="#d2e3fc"/><path d="M12 30v-8M9 25l3-3 3 3" stroke="#bf4800"/></svg>',
+  check: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="5" width="30" height="36" rx="4"/><path d="M14 26h19" stroke="#d2e3fc" stroke-width="6"/><path d="M14 15l3 3 6-6" stroke="#1a7f43"/><path d="M27 15h6M14 26h19M14 33h12"/></svg>',
 };
 
 function homeGuest() {
@@ -546,13 +537,12 @@ function homeGuest() {
       <span class="byline">ครูโกเมน · KP Science</span>
       <h1>เรียนฟิสิกส์ให้<span class="mark">เห็นภาพ</span><br>ไม่ใช่แค่ท่องสูตร</h1>
       <p class="lead">ดูคลิปสั้น ๆ แล้วลองเล่นกับซิมูเลชันด้วยมือตัวเอง เรียนทีละบทตามจังหวะของตัวเอง และรู้เสมอว่าตัวเองไปถึงไหนแล้ว</p>
-      <div class="cta">${ff ? `<a class="btn solid lg" href="${courseUrl(ff[0], ff[1])}">ลองเรียนบทฟรี</a>` : ''}<button class="btn lg" type="button" data-login="register">สมัครฟรี</button></div>
+      <div class="cta">${ff ? `<a class="btn solid lg" href="${courseUrl(ff[0], ff[1])}">ลองเรียนบทฟรี</a>` : ''}<button class="btn ghost lg" type="button" data-login="register">สมัครฟรี ›</button></div>
       <p class="fine"><b>ไม่มีค่าใช้จ่าย</b> · ใช้ Google หรืออีเมลก็ได้ · เปิดบนมือถือได้</p>
     </div>
     <div class="quiz-wrap">
-      <span class="quiz-note">ทายก่อน แล้วค่อยดูเฉลยนะ</span>
-      <div class="quiz" id="quiz">
-        <div class="quiz-h"><small>คำถามอุ่นเครื่อง</small><b>เตะลูกบอลแรงเท่ากันทุกครั้ง… เตะทำมุมเท่าไรถึงไปไกลที่สุด?</b></div>
+            <div class="quiz" id="quiz">
+        <div class="quiz-h"><small>ทายก่อน แล้วค่อยดูเฉลย</small><b>เตะลูกบอลแรงเท่ากันทุกครั้ง… เตะทำมุมเท่าไรถึงไปไกลที่สุด?</b></div>
         <svg class="sim" id="qsvg" viewBox="0 0 400 220" role="img" aria-label="ภาพจำลองการเคลื่อนที่แบบโพรเจกไทล์"></svg>
         <div class="quiz-c">
           <div class="quiz-opts" id="qopts"><button type="button" data-a="30">30°</button><button type="button" data-a="45">45°</button><button type="button" data-a="60">60°</button></div>
@@ -579,8 +569,8 @@ function homeGuest() {
   </section>
 
   <section class="wrap sec"><div class="start">
-    <div><span class="hand" style="color:var(--orange);font-size:19px">เริ่มยังไงดี?</span><h2>เริ่มเรียนได้ใน 3 ขั้น</h2><p class="sub">สมัครครั้งเดียว เรียนได้ทุกคอร์สที่ครูอนุมัติ</p>
-      <div class="cta">${ff ? `<a class="btn" href="${courseUrl(ff[0], ff[1])}">ลองบทฟรีก่อน</a>` : ''}<button class="btn solid" type="button" data-login="register">สมัครฟรี</button></div></div>
+    <div><span class="hand">เริ่มยังไงดี</span><h2>เริ่มเรียนได้ใน 3 ขั้น</h2><p class="sub">สมัครครั้งเดียว เรียนได้ทุกคอร์สที่ครูอนุมัติ</p>
+      <div class="cta"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button>${ff ? `<a class="link" href="${courseUrl(ff[0], ff[1])}">ลองบทฟรีก่อน ›</a>` : ''}</div></div>
     <ol>
       <li><div><b>สมัครบัญชีฟรี</b><span>ใช้ Google หรืออีเมลก็ได้ ไม่ถึงนาที</span></div></li>
       <li><div><b>กดขอสิทธิ์เรียน</b><span>เลือกคอร์ส แล้วบอกครูว่าเป็นใคร (ชื่อ · ห้อง · โรงเรียน)</span></div></li>
@@ -592,7 +582,7 @@ function homeGuest() {
 /* ---------- ซิมจิ๋ว: ทายมุมที่เตะไปไกลสุด (v = 20 m/s, g = 9.8 m/s²) ---------- */
 function initQuiz() {
   const svg = $('qsvg'); if (!svg) return;
-  const V = 20, G = 9.8, SC = 8, X0 = 30, Y0 = 196, COL = { 30: '#e8693a', 45: '#2456c9', 60: '#17845a' };
+  const V = 20, G = 9.8, SC = 8, X0 = 30, Y0 = 196, COL = { 30: '#bf4800', 45: '#0071e3', 60: '#1a7f43' };
   const R = a => V * V * Math.sin(2 * a * Math.PI / 180) / G;
   const T = a => 2 * V * Math.sin(a * Math.PI / 180) / G;
   const pt = (a, t) => { const r = a * Math.PI / 180; return [X0 + SC * V * Math.cos(r) * t, Y0 - SC * (V * Math.sin(r) * t - G * t * t / 2)]; };
@@ -601,13 +591,13 @@ function initQuiz() {
   for (let x = X0; x < 400; x += 40) grid.push(`<line x1="${x}" y1="0" x2="${x}" y2="220"/>`);
   for (let y = Y0; y > 0; y -= 40) grid.push(`<line x1="0" y1="${y}" x2="400" y2="${y}"/>`);
   const ticks = [10, 20, 30, 40].map(m => `<text x="${X0 + m * SC}" y="${Y0 + 16}" text-anchor="middle">${m} m</text>`).join('');
-  svg.innerHTML = `<g stroke="#2456c9" stroke-opacity=".08">${grid.join('')}</g><line x1="0" y1="${Y0}" x2="400" y2="${Y0}" stroke="#1c2230" stroke-width="2"/>
-    <g font-family="Share Tech Mono, monospace" font-size="11" fill="#6a7180">${ticks}</g><circle cx="${X0}" cy="${Y0 - 5}" r="5" fill="#1c2230"/><g id="qpaths"></g><g id="qballs"></g><g id="qlabels" font-family="Share Tech Mono, monospace" font-size="12"></g>`;
+  svg.innerHTML = `<g stroke="#0071e3" stroke-opacity=".08">${grid.join('')}</g><line x1="0" y1="${Y0}" x2="400" y2="${Y0}" stroke="#1d1d1f" stroke-width="2"/>
+    <g font-family="Share Tech Mono, monospace" font-size="11" fill="#6a7180">${ticks}</g><circle cx="${X0}" cy="${Y0 - 5}" r="5" fill="#1d1d1f"/><g id="qpaths"></g><g id="qballs"></g><g id="qlabels" font-family="Share Tech Mono, monospace" font-size="12"></g>`;
   const paths = svg.querySelector('#qpaths'), balls = svg.querySelector('#qballs'), labels = svg.querySelector('#qlabels');
   function launch(angles, done) {
     labels.innerHTML = '';
-    paths.innerHTML = angles.map(a => `<path fill="none" stroke="${COL[a] || '#2456c9'}" stroke-width="2.4" stroke-dasharray="5 5" data-a="${a}"/>`).join('');
-    balls.innerHTML = angles.map(a => `<circle r="7" fill="#fff" stroke="${COL[a] || '#2456c9'}" stroke-width="2.4" data-a="${a}"/>`).join('');
+    paths.innerHTML = angles.map(a => `<path fill="none" stroke="${COL[a] || '#0071e3'}" stroke-width="2.4" stroke-dasharray="5 5" data-a="${a}"/>`).join('');
+    balls.innerHTML = angles.map(a => `<circle r="7" fill="#fff" stroke="${COL[a] || '#0071e3'}" stroke-width="2.4" data-a="${a}"/>`).join('');
     const tMax = Math.max(...angles.map(T)), speed = 1.7;
     const draw = t => angles.forEach(a => {
       const tt = Math.min(t, T(a));
@@ -637,8 +627,8 @@ function initQuiz() {
   $('qang').addEventListener('input', e => {
     const a = Number(e.target.value);
     labels.innerHTML = '';
-    paths.innerHTML = `<path d="${pathD(a, T(a))}" fill="none" stroke="#2456c9" stroke-width="2.4" stroke-dasharray="5 5"/>`;
-    const [bx] = pt(a, T(a)); balls.innerHTML = `<circle cx="${bx}" cy="${Y0 - 6}" r="7" fill="#fff" stroke="#2456c9" stroke-width="2.4"/>`;
+    paths.innerHTML = `<path d="${pathD(a, T(a))}" fill="none" stroke="#0071e3" stroke-width="2.4" stroke-dasharray="5 5"/>`;
+    const [bx] = pt(a, T(a)); balls.innerHTML = `<circle cx="${bx}" cy="${Y0 - 6}" r="7" fill="#fff" stroke="#0071e3" stroke-width="2.4"/>`;
     $('qout').textContent = `${a}° · ${R(a).toFixed(1)} m`;
   });
 }
@@ -846,7 +836,7 @@ async function fillPay(c) {
 function confetti(big) {
   if (REDUCED) return;
   const box = document.createElement('div'); box.className = 'confetti';
-  const cols = ['#2456c9', '#e8693a', '#ffe270', '#17845a', '#7046d8'];
+  const cols = ['#0071e3', '#bf4800', '#ffcc00', '#1a7f43', '#8944ab'];
   for (let k = 0; k < (big ? 60 : 26); k++) {
     const i = document.createElement('i'), a = Math.random() * Math.PI * 2, d = 90 + Math.random() * (big ? 260 : 150);
     i.style.background = cols[k % cols.length];
