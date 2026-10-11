@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=9">
+<link rel="stylesheet" href="course-ui.css?v=10">
 <style>
 .wrap{max-width:1024px;margin:0 auto;padding:0 22px}
 
@@ -386,6 +386,21 @@ a.tile:hover .pic{transform:translateY(-8px)}
   .ticker .track{animation:none}
 }
 
+.cine-hero.short{min-height:min(78svh,760px)}
+.cine-hero .who-pill{display:inline-flex;gap:8px;align-items:center;font:500 13px var(--body);color:var(--on-dark-2);background:rgba(255,255,255,.08);border-radius:980px;padding:5px 12px;margin-bottom:14px}
+.cine-stats{background:#000;color:var(--on-dark);padding:40px 22px 110px}
+.cine-stats .in{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+.cine-stats b{display:block;font:700 clamp(52px,7.4vw,100px)/1.15 var(--head);background:var(--ap-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cine-stats span{color:var(--on-dark-2);font-size:clamp(15px,1.5vw,18px)}
+.cine-show .pbar{height:4px;border-radius:4px;background:#333;margin-top:16px;max-width:360px;overflow:hidden}
+.cine-show .pbar i{display:block;height:100%;background:var(--ap-grad);border-radius:4px}
+.cine-light{background:var(--bg);padding:10px 0 20px}
+.cine-show.single .pin{position:relative;height:auto;padding:40px 0 110px}
+.cine-show,.cine-stmt,.cine-hero,.cine-stats{overflow-x:clip}
+.cine-stats{margin-top:-1px;padding-bottom:70px}
+.cine-show,.cine-stmt{margin-top:-1px}
+@media (max-width:760px){.cine-stats .in{grid-template-columns:1fr;gap:34px}.cine-show .pbar{margin:16px auto 0}}
+
 /* ชำระเงิน */
 .pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;text-align:left;width:min(640px,100%);margin-top:6px}
 .qr{border-radius:16px;overflow:hidden;background:#fff;align-self:start;box-shadow:0 0 0 1px var(--line)}
@@ -669,7 +684,7 @@ function renderHome() {
   setNav('home');
   $('app').innerHTML = KPC.user() ? homeUser() : homeGuest();
   if (!KPC.user()) initQuiz();
-  KPC.motion($('app'), '.cine-after .tiles > .tile, .sec-h, .dash-h > *, .staffbar, .resume, .pend-i');
+  KPC.motion($('app'), '.cine-after .tiles > .tile, .cine-light .tiles > .tile, .sec-h, .pend-i');
   cineScroll();
 }
 
@@ -687,16 +702,9 @@ function homeGuest() {
   const tick = L.map(c => `<a href="${courseUrl(c)}">${esc(c.title)}${c.outline ? ' · ' + c.outline.length + ' บท' : ''}</a>`).join('')
     + '<a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">คลังซิมูเลชันฟิสิกส์ KP Science</a>';
   const ffOf = c => (c.outline || []).findIndex(l => l.free);
-  const show = L.length ? `<section class="cine-show cine-dark" id="cineShow" data-n="${L.length}" style="height:${L.length > 1 ? (L.length * 90 + 60) : 100}vh">
-    <div class="pin"><div class="glow"></div><div class="glow b"></div>
-      <div class="in">
-        <div><div class="eyebrow">คอร์สที่เปิดสอน</div>
-          <div class="names">${L.map((c, i) => `<div class="nm${i ? '' : ' on'}"><small>${String(i + 1).padStart(2, '0')} · ${esc([c.subject, c.level].filter(Boolean).join(' · '))}</small><b>${esc(c.title)}</b>${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
-            <div class="btns">${ffOf(c) >= 0 ? `<a class="btn solid" href="${courseUrl(c, ffOf(c) + 1)}">ลองเรียนฟรี</a>` : `<a class="btn solid" href="${courseUrl(c)}">ดูคอร์ส</a>`}<a class="btn ghost" href="${courseUrl(c)}">${(c.outline || []).length} บทเรียน${c.price > 0 ? ' · ' + KPC.baht(c.price) : ''} ›</a></div></div>`).join('')}</div>
-          ${L.length > 1 ? `<div class="steps">${L.map((c, i) => `<button type="button" data-step="${i}" class="${i ? '' : 'on'}"><i></i><span>${esc(c.subject || 'คอร์ส')} ${esc(c.level || '')}</span></button>`).join('')}</div>` : ''}
-        </div>
-        <div class="stage">${L.map((c, i) => `<a class="sc${i ? '' : ' on'}" href="${courseUrl(c)}" aria-label="${esc(c.title)}">${coverArt(c)}</a>`).join('')}</div>
-      </div></div></section>` : '';
+  const show = showcase(L, 'คอร์สที่เปิดสอน', c => ({
+    small: [c.subject, c.level].filter(Boolean).join(' · '), para: c.summary,
+    btns: `${ffOf(c) >= 0 ? `<a class="btn solid" href="${courseUrl(c, ffOf(c) + 1)}">ลองเรียนฟรี</a>` : `<a class="btn solid" href="${courseUrl(c)}">ดูคอร์ส</a>`}<a class="btn ghost" href="${courseUrl(c)}">${(c.outline || []).length} บทเรียน${c.price > 0 ? ' · ' + KPC.baht(c.price) : ''} ›</a>` }));
   return `
   <header class="cine-hero cine-dark">
     <div class="orb a"></div><div class="orb b"></div>
@@ -764,6 +772,23 @@ function homeGuest() {
   </div></div>`;
 }
 
+/* ---------- โชว์คอร์สแบบปักหมุด (ใช้ทั้งหน้าแรกผู้เยี่ยมชมและแดชบอร์ด) ----------
+   item(c, i) → { small, para, extra, btns } */
+function showcase(list, eyebrow, item) {
+  if (!list.length) return '';
+  // คอร์สเดียว: ไม่ต้องปักหมุด (ไม่มีอะไรให้เลื่อนเปลี่ยน)
+  return `<section class="cine-show cine-dark${list.length > 1 ? '' : ' single'}" id="cineShow" data-n="${list.length}"${list.length > 1 ? ` style="height:${list.length * 90 + 60}vh"` : ''}>
+    <div class="pin"><div class="glow"></div><div class="glow b"></div>
+      <div class="in">
+        <div><div class="eyebrow">${esc(eyebrow)}</div>
+          <div class="names">${list.map((c, i) => { const it = item(c, i); return `<div class="nm${i ? '' : ' on'}"><small>${String(i + 1).padStart(2, '0')} · ${esc(it.small)}</small><b>${esc(c.title)}</b>${it.para ? `<p>${esc(it.para)}</p>` : ''}${it.extra || ''}<div class="btns">${it.btns}</div></div>`; }).join('')}</div>
+          ${list.length > 1 ? `<div class="steps">${list.map((c, i) => `<button type="button" data-step="${i}" class="${i ? '' : 'on'}"><i></i><span>${esc(c.subject || 'คอร์ส')} ${esc(c.level || '')}</span></button>`).join('')}</div>` : ''}
+        </div>
+        <div class="stage">${list.map((c, i) => `<a class="sc${i ? '' : ' on'}" href="${item(c, i).href || courseUrl(c)}" aria-label="${esc(c.title)}">${coverArt(c)}</a>`).join('')}</div>
+      </div></div></section>`;
+}
+const ticker = (label, items) => items.length ? `<div class="ticker intro" style="--d:.8s"><div class="lab"><i></i><span>${esc(label)}</span></div><div class="run"><div class="track" style="--dur:${Math.max(24, items.length * 12)}s">${items.join('')}${items.join('')}</div></div></div>` : '';
+
 /* ---------- ฉากเลื่อนจอ (ประโยคสว่างทีละคำ · โชว์คอร์ส · แถบเมนูมืดบนส่วนมืด) ---------- */
 function cineScroll() {
   const vh = innerHeight, prog = el => { const r = el.getBoundingClientRect(); return Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - vh))); };
@@ -775,6 +800,15 @@ function cineScroll() {
     sh.querySelectorAll('.nm').forEach((e, i) => { e.classList.toggle('on', i === idx); e.classList.toggle('past', i < idx); });
     sh.querySelectorAll('.sc').forEach((e, i) => { e.classList.toggle('on', i === idx); e.classList.toggle('past', i < idx); });
     sh.querySelectorAll('.steps button').forEach((b, i) => { b.classList.toggle('on', i === idx); b.style.setProperty('--p', i < idx ? 1 : i === idx ? Math.min(1, p - idx) : 0); });
+  }
+  const cs = $('cineStats');
+  if (cs && !cs.dataset.done && cs.getBoundingClientRect().top < vh * .8) {
+    cs.dataset.done = 1;
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) cs.querySelectorAll('[data-count]').forEach(b => {
+      const n = Number(b.dataset.count), suf = b.dataset.suffix || '', t0 = performance.now();
+      const step = now => { const k = Math.min(1, (now - t0) / 1200), e = 1 - Math.pow(1 - k, 3); b.textContent = Math.round(n * e) + suf; if (k < 1) requestAnimationFrame(step); };
+      b.textContent = '0' + suf; requestAnimationFrame(step);
+    });
   }
   const tb = document.querySelector('.topbar');
   if (tb) tb.classList.toggle('dark', [...document.querySelectorAll('.cine-dark')].some(el => { const r = el.getBoundingClientRect(); return r.top <= 52 && r.bottom > 52; }));
@@ -850,34 +884,55 @@ function homeUser() {
   const teach = L.filter(c => KPC.ownsCourse(c) && role === 'teacher');
   const mine = L.filter(c => KPC.canCourse(c.id, c) && !teach.includes(c) && role !== 'admin');
   const pending = L.filter(c => !KPC.canCourse(c.id, c) && S.request[c.id]);
-  const others = L.filter(c => !mine.includes(c) && !teach.includes(c) && !pending.includes(c));
   const active = mine.filter(c => pctOf(c) < 100);
   const recent = (active.length ? active : mine).map(c => ({ c, p: S.progress[c.id] || {} }))
     .sort((x, y) => ((y.p.lastAt && y.p.lastAt.seconds) || 0) - ((x.p.lastAt && x.p.lastAt.seconds) || 0))[0];
-  let resume = '';
-  if (recent) {
-    const c = recent.c, o = c.outline || [], j = nextIndex(c), pct = pctOf(c), started = !!recent.p.last;
-    resume = `<a class="resume" href="${courseUrl(c, j + 1)}">
-      <div class="resume-cv">${coverArt(c)}</div>
-      <div class="resume-bd"><small>${pct >= 100 ? 'ทบทวนได้ทุกเมื่อ' : started ? 'เรียนต่อจากครั้งก่อน' : 'เริ่มบทแรกกันเลย'}</small><h3>${esc((o[j] || {}).title || c.title)}</h3>
-        <div class="meta">${esc(c.title)} · บทที่ ${j + 1} จาก ${o.length}</div></div>
-      <div class="go">${ring(pct)}<span class="btn solid">${started ? 'เรียนต่อ' : 'เริ่มเรียน'} →</span></div></a>`;
-  }
+  // โชว์คอร์ส: นักเรียน = คอร์สของฉัน (ล่าสุดก่อน) · ครู = คอร์สที่สอน · แอดมิน = ทุกคอร์ส
+  const showList = mine.length ? [recent.c].concat(mine.filter(c => c !== recent.c)) : teach.length ? teach : role === 'admin' ? L : [];
+  const others = L.filter(c => !showList.includes(c) && !pending.includes(c) && !teach.includes(c));
+  const doneAll = mine.reduce((s, c) => s + doneOf(c).length, 0);
   const allPct = mine.length ? Math.round(mine.reduce((s, c) => s + pctOf(c), 0) / mine.length) : 0;
-  const cheer = !mine.length ? (role === 'student' ? 'ยังไม่มีคอร์ส — เลือกคอร์สด้านล่างแล้วกดขอสิทธิ์เรียน' : '')
+  const cheer = !mine.length ? (role === 'student' ? (pending.length ? 'ส่งคำขอแล้ว รอครูอนุมัติอีกนิดเดียว' : 'เลือกคอร์สที่อยากเรียนด้านล่าง แล้วกดขอสิทธิ์จากครู') : role === 'admin' ? 'ดูเว็บนี้ในฐานะแอดมิน — เห็นทุกคอร์ส รวมถึงร่าง' : 'ดูเว็บนี้ในฐานะครู — เปิดบทเรียนของคอร์สที่สอนได้ทุกบท')
     : allPct >= 100 ? 'เรียนครบทุกคอร์สแล้ว เยี่ยมมาก!' : allPct >= 50 ? 'มาได้ครึ่งทางแล้ว ไปต่อกัน' : allPct > 0 ? 'เริ่มต้นได้ดี วันนี้เรียนต่ออีกสักบทไหม' : 'พร้อมเริ่มบทแรกแล้ว';
-  const staff = KPC.isStaff() ? `<div class="staffbar"><span class="pill role">${KPC.ROLE[role].label}</span><span>${role === 'admin' ? 'คุณดูเว็บนี้ในฐานะแอดมิน — เห็นทุกคอร์ส รวมถึงร่าง' : 'คุณดูเว็บนี้ในฐานะครู — เปิดบทเรียนของคอร์สที่สอนได้ทุกบท'}</span><span class="sp"></span><a class="btn sm" href="admin.html">ไปห้องครู →</a></div>` : '';
   const hr = new Date().getHours(), hello = hr < 12 ? 'สวัสดีตอนเช้า' : hr < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น';
-  return `<div class="wrap">
-  <section class="dash-h"><span class="hand">${hello},</span><h1>${esc(KPC.displayName())}</h1>${cheer ? `<p>${cheer}</p>` : ''}</section>
-  ${staff}
-  ${resume ? `<section class="sec" style="padding-top:24px">${resume}</section>` : ''}
-  ${teach.length ? `<section class="sec"><div class="sec-h"><h2>คอร์สที่ฉันสอน</h2><a class="btn sm" href="admin.html">จัดการคอร์ส →</a></div>${grid(teach)}</section>` : ''}
-  ${mine.length ? `<section class="sec"><div class="sec-h"><h2>คอร์สของฉัน</h2></div>${grid(mine)}</section>` : ''}
-  ${pending.length ? `<section class="sec"><div class="sec-h"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะย้ายขึ้นไปอยู่ใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
+  let mainBtn = '';
+  if (recent) { const c = recent.c, j = nextIndex(c), lt = ((c.outline || [])[j] || {}).title || ''; mainBtn = `<a class="btn solid" href="${courseUrl(c, j + 1)}">${recent.p.last ? 'เรียนต่อ' : 'เริ่มเรียน'} · ${esc(lt.length > 26 ? lt.slice(0, 25) + '…' : lt)}</a>`; }
+  const staffBtn = KPC.isStaff() ? `<a class="btn ${mainBtn ? 'fb' : 'solid'}" href="admin.html">ไปห้องครู</a>` : '';
+  const tickItems = active.length ? active.map(c => { const j = nextIndex(c); return `<a href="${courseUrl(c, j + 1)}">${esc(c.title)} · บทที่ ${j + 1}: ${esc(((c.outline || [])[j] || {}).title || '')}</a>`; })
+    : L.map(c => `<a href="${courseUrl(c)}">${esc(c.title)}</a>`);
+  const show = showcase(showList, mine.length ? 'คอร์สของฉัน' : teach.length ? 'คอร์สที่ฉันสอน' : 'คอร์สทั้งหมด', c => {
+    if (!mine.includes(c)) return { small: [c.subject, c.level].filter(Boolean).join(' · ') + (c.published === false ? ' · ร่าง' : ''), para: c.summary,
+      btns: `<a class="btn solid" href="${courseUrl(c)}">เปิดคอร์ส</a><a class="btn ghost" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้ในห้องครู ›</a>` };
+    const o = c.outline || [], j = nextIndex(c), pct = pctOf(c), started = !!(S.progress[c.id] || {}).last;
+    return { small: [c.subject, c.level].filter(Boolean).join(' · ') + ` · เรียนแล้ว ${pct}%`, href: courseUrl(c, j + 1),
+      para: pct >= 100 ? 'เรียนครบทุกบทแล้ว — ทบทวนได้ทุกเมื่อ' : `บทต่อไป: ${(o[j] || {}).title || ''}`,
+      extra: `<div class="pbar"><i style="width:${pct}%"></i></div>`,
+      btns: `<a class="btn solid" href="${courseUrl(c, j + 1)}">${pct >= 100 ? 'ทบทวน' : started ? 'เรียนต่อ' : 'เริ่มเรียน'}</a><a class="btn ghost" href="${courseUrl(c, j + 1)}">บทที่ ${j + 1} จาก ${o.length} ›</a>` };
+  });
+  return `
+  <header class="cine-hero short cine-dark">
+    <div class="orb a"></div><div class="orb b"></div>
+    <div class="cine-in">
+      ${KPC.isStaff() ? `<div class="who-pill intro" style="--d:.05s">${esc(KPC.ROLE[role].label)} · ${esc((KPC.user() || {}).email || '')}</div>` : ''}
+      <div class="eyebrow intro" style="--d:.1s">${hello}</div>
+      <h1 class="intro" style="--d:.25s"><span class="grad">${esc(KPC.displayName())}</span></h1>
+      <p class="deck intro" style="--d:.45s">${esc(cheer)}</p>
+      <div class="btns intro" style="--d:.6s">${mainBtn}${staffBtn}<a class="btn ghost" href="#/courses">คอร์สทั้งหมด ›</a></div>
+    </div>
+    ${ticker(active.length ? 'บทต่อไปของคุณ' : 'คอร์สเปิดแล้ว', tickItems)}
+  </header>
+  ${mine.length ? `<section class="cine-stats cine-dark" id="cineStats"><div class="in">
+    <div><b data-count="${doneAll}">${doneAll}</b><span>บทที่เรียนจบแล้ว</span></div>
+    <div><b data-count="${mine.length}">${mine.length}</b><span>คอร์สที่กำลังเรียน</span></div>
+    <div><b data-count="${allPct}" data-suffix="%">${allPct}%</b><span>ความคืบหน้าเฉลี่ย</span></div>
+  </div></section>` : ''}
+  ${show}
+  <div class="cine-light"><div class="wrap">
+  ${pending.length ? `<section class="sec"><div class="sec-h"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะขึ้นใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
     <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">${S.request[c.id].amount ? 'รอตรวจยอด ' + KPC.baht(S.request[c.id].amount) : 'รออนุมัติ'}</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
-  ${others.length ? `<section class="sec"><div class="sec-h"><div><h2>${role === 'admin' ? 'คอร์สทั้งหมด' : mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน'}</h2>${role === 'student' ? '<p>เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”</p>' : ''}</div></div>${grid(others)}</section>` : ''}
-  ${!L.length ? `<div class="empty" style="margin-top:24px">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>` : ''}</div>`;
+  ${others.length ? `<section class="sec"><div class="sec-h"><div><h2>${mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน'}</h2>${role === 'student' ? '<p>เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”</p>' : ''}</div></div>${grid(others)}</section>` : ''}
+  ${!L.length ? `<div class="empty" style="margin:40px 0">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>` : ''}
+  </div></div>`;
 }
 
 function renderAll() {
