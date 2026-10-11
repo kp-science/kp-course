@@ -12,7 +12,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#f5f5f7">
+<meta name="theme-color" content="#000000">
 <title>ห้องครู · คอร์สออนไลน์ KP Science</title>
 <script>
 /* KP Science — Frame Protection */
@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=11">
+<link rel="stylesheet" href="course-ui.css?v=12">
 <style>
 body{font-size:15px;line-height:1.55}
 .topbar{padding:0 22px}
@@ -32,24 +32,24 @@ body{font-size:15px;line-height:1.55}
 .gate p{color:var(--muted);font-size:16px}
 .gate .email{font:500 15px var(--mono);background:var(--surface2);border-radius:12px;padding:10px 14px;word-break:break-all}
 .gate .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #d2d2d7;padding:12px;border-radius:980px;font:500 16px var(--body);cursor:pointer;width:100%}
-.gbtn:hover{background:var(--surface2)}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:0;padding:12px;border-radius:980px;font:500 16px var(--body);cursor:pointer;width:100%}
+.gbtn:hover{background:#e8e8ed}
 
 /* ---------- โครงหน้า ---------- */
 .layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 52px)}
-.side{padding:20px 12px;display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.6);border-right:1px solid var(--line);position:sticky;top:52px;height:calc(100vh - 52px);overflow:auto}
+.side{padding:20px 12px;display:flex;flex-direction:column;gap:2px;background:rgba(29,29,31,.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-right:1px solid var(--line);position:sticky;top:52px;height:calc(100vh - 52px);overflow:auto}
 .me{display:flex;align-items:center;gap:11px;padding:10px 12px 16px;margin-bottom:6px;border-bottom:1px solid var(--line)}
 .me .avatar{width:38px;height:38px;font-size:16px}
 .me b{display:block;font:600 15px/1.3 var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px}
 .side h4{font:600 12px var(--head);color:var(--muted);margin:16px 12px 6px;display:flex;align-items:center;justify-content:space-between}
 .side h4 button{font:400 13px var(--body);color:var(--link);background:none;border:0;cursor:pointer}
 .nv{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:10px;border:0;background:none;text-decoration:none;font:400 15px var(--body);color:var(--text);cursor:pointer;text-align:left}
-.nv:hover{background:rgba(0,0,0,.04)}
-.nv.on{background:rgba(0,0,0,.07);font-weight:600}
+.nv:hover{background:rgba(255,255,255,.06)}
+.nv.on{background:rgba(255,255,255,.1);font-weight:600}
 .nv .i{width:22px;display:grid;place-items:center;color:var(--muted)}
 .nv.on .i{color:var(--accent)}
 .nv .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nv .dot{width:8px;height:8px;border-radius:50%;flex:none;background:#c7c7cc}
+.nv .dot{width:8px;height:8px;border-radius:50%;flex:none;background:#636366}
 .nv .dot.pub{background:var(--ok)}
 .side .foot{margin-top:auto;padding-top:14px;display:flex;flex-direction:column;gap:2px}
 .main{padding:36px 40px 80px;min-width:0;max-width:1120px}
@@ -63,9 +63,9 @@ body{font-size:15px;line-height:1.55}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
 .stat{border-radius:var(--r);background:var(--surface);padding:18px 20px}
 .stat small{display:block;font:500 13px var(--body);color:var(--muted)}
-.stat b{display:block;font:700 34px/1.2 var(--head);margin-top:4px}
+.stat b{display:block;font:700 34px/1.2 var(--head);margin-top:4px;background:var(--ap-grad);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
 .stat span{font-size:13px;color:var(--muted)}
-.stat.warn b{color:var(--bad)}
+.stat.warn b{background:none;color:var(--bad)}
 .grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:18px;align-items:start}
 .stack{display:flex;flex-direction:column;gap:18px}
 
@@ -96,7 +96,7 @@ td small{color:var(--muted)}
 /* ---------- หน้าคอร์ส ---------- */
 .tabs{display:inline-flex;gap:2px;flex-wrap:wrap;padding:3px;background:var(--surface3);border-radius:10px;margin-bottom:22px;max-width:100%}
 .tabs button{border:0;background:none;border-radius:8px;padding:6px 16px;font:500 14px var(--body);cursor:pointer;color:var(--text);display:inline-flex;align-items:center;gap:6px}
-.tabs button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.tabs button.on{background:#636366;box-shadow:none}
 .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
 .form .full{grid-column:1/-1}
 .field textarea{min-height:100px;resize:vertical;font-family:var(--mono);font-size:14px;line-height:1.6}
@@ -121,7 +121,7 @@ td small{color:var(--muted)}
 .prev h2{font:700 20px var(--head);margin:.8em 0 .3em;color:var(--text)}
 .prev h3{font:600 17px var(--head);margin:.8em 0 .3em;color:var(--text)}
 .prev ul,.prev ol{padding-left:1.3em;margin:0 0 .8em}
-.prev blockquote{padding:10px 14px;background:#fff;border-radius:10px;margin:.8em 0}
+.prev blockquote{padding:10px 14px;background:var(--surface);border-radius:10px;margin:.8em 0}
 .prev p{margin:0 0 .8em}
 .prev .embed{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin:.8em 0;background:#fff}
 .prev .embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -145,7 +145,7 @@ td small{color:var(--muted)}
 .mhead{padding:8px 8px;font:500 13px var(--body);color:var(--muted);border-bottom:1px solid var(--line)}
 .mrow{padding:10px 8px;border-bottom:1px solid var(--line);text-decoration:none;border-radius:10px}
 .mrow:last-child{border-bottom:0}
-.mrow:hover{background:var(--surface2)}
+.mrow:hover{background:rgba(255,255,255,.05)}
 .mrow .avatar{width:36px;height:36px;font-size:14px}
 .mrow .who{min-width:0}.mrow .who b{display:block;font:600 15px var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mrow .who small{display:block;color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mrow .pg{display:flex;align-items:center;gap:8px}.mrow .pg .bar{flex:1}
@@ -168,7 +168,7 @@ td small{color:var(--muted)}
 @media (max-width:480px){.gate{margin:8vh 16px;padding:30px 20px}.stats{gap:10px}.stat{padding:14px 16px}.stat b{font-size:26px}}
 </style>
 </head>
-<body data-role="guest">
+<body data-role="guest" class="theme-dark">
 <header class="topbar">
   <a href="#/" class="logo"><span class="logo-mark">KP</span><span class="logo-text"><b>KP</b>Science</span><span class="logo-sub">ห้องครู</span></a>
   <span class="tb-sp"></span>
@@ -358,7 +358,7 @@ function drawDash() {
     return;
   }
   $('main').innerHTML = `
-    <div class="ph"><div><span class="hand">${hello},</span><h1>${esc(KPC.displayName())}</h1><p>${isAdmin() ? 'ภาพรวมทุกคอร์สในระบบ' : 'ภาพรวมคอร์สที่คุณสอน'}</p></div><span class="sp"></span><a class="btn solid" href="#/new">＋ คอร์สใหม่</a></div>
+    <div class="ph"><div><span class="hand">${hello},</span><h1><span class="grad">${esc(KPC.displayName())}</span></h1><p>${isAdmin() ? 'ภาพรวมทุกคอร์สในระบบ' : 'ภาพรวมคอร์สที่คุณสอน'}</p></div><span class="sp"></span><a class="btn solid" href="#/new">＋ คอร์สใหม่</a></div>
     <div class="stats">
       <div class="stat"><small>คอร์ส</small><b>${C.length}</b><span>เผยแพร่ ${C.filter(c => c.published).length} · ร่าง ${C.filter(c => !c.published).length}</span></div>
       <div class="stat"><small>นักเรียน</small><b>${students}</b><span>${S.enroll.length} สิทธิ์เข้าเรียน</span></div>
@@ -498,13 +498,13 @@ function drawMain() {
   const c = S.cur; if (!c) return;
   document.title = c.title + ' · ห้องครู';
   const st = courseStats(c);
-  const T = [['lessons', '📖', `บทเรียน <span class="sub">${S.lessons.length}</span>`], ['students', '🎓', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['progress', '📈', 'ความคืบหน้า'], ['info', '⚙️', 'ข้อมูลคอร์ส']];
+  const T = [['lessons', '', `บทเรียน <span class="sub">${S.lessons.length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['progress', '', 'ความคืบหน้า'], ['info', '', 'ข้อมูลคอร์ส']];
   $('main').innerHTML = `
     <div class="ph"><div>
       <div class="row" style="gap:6px;margin-bottom:6px">${c.published ? '<span class="pill ok">● เผยแพร่แล้ว</span>' : '<span class="pill warn">○ ร่าง — นักเรียนยังไม่เห็น</span>'}${isAdmin() ? `<span class="pill">ผู้สอน: ${esc(staffName(c.owner))}</span>` : ''}</div>
       <h1>${esc(c.title || c.id)}</h1><p class="mono" style="font-size:13px">${esc(c.id)}</p></div><span class="sp"></span>
       <a class="btn sm" href="index.html#/c/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">ดูแบบนักเรียน ↗</a></div>
-    <div class="tabs" role="tablist">${T.map(t => `<button type="button" role="tab" data-tab="${t[0]}" class="${S.tab === t[0] ? 'on' : ''}">${t[1]} ${t[2]}</button>`).join('')}</div>
+    <div class="tabs" role="tablist">${T.map(t => `<button type="button" role="tab" data-tab="${t[0]}" class="${S.tab === t[0] ? 'on' : ''}">${t[2]}</button>`).join('')}</div>
     <div id="pane"></div>`;
   history.replaceState(null, '', '#/c/' + encodeURIComponent(c.id) + '/' + S.tab);
   ({ info: drawInfo, lessons: drawLessons, students: drawStudents, progress: drawProgress })[S.tab]();
