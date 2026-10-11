@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Itim&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=3">
+<link rel="stylesheet" href="course-ui.css?v=4">
 <style>
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 /* กระดาษกราฟ */
@@ -251,6 +251,22 @@
 .lbtn:hover{background:var(--accent-soft)}
 .cintro{margin-top:18px;max-width:860px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px 22px}
 
+/* ชำระเงิน */
+.pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;text-align:left;width:min(640px,100%);margin-top:4px}
+.qr{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:#fff;align-self:start}
+.qr-h{background:#113566;color:#fff;font:600 13px var(--head);padding:8px 12px;display:flex;justify-content:space-between}
+.qr-b{padding:12px;display:grid;place-items:center;min-height:196px}
+.qr-b svg{width:100%;height:auto;display:block}
+.qr-f{border-top:1px solid var(--line);padding:8px 12px;font-size:13px;text-align:center}
+.qr-f b{display:block;font:700 18px var(--mono);color:var(--text)}
+.qr-f a{color:var(--accent);font-size:13px}
+.pay-s{display:flex;flex-direction:column;gap:10px}
+.pay-s ol{padding-left:1.2em;color:var(--text2);font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.pay-s .note{font-size:13.5px}
+.price{font:700 22px var(--head);color:var(--text)}
+.price small{font:400 15px var(--hand);color:var(--orange);margin-left:6px}
+.cc-meta .pr{color:var(--text);font-weight:700}
+
 /* ฉลอง */
 .confetti{position:fixed;left:50%;top:50%;pointer-events:none;z-index:9500}
 .confetti i{position:absolute;width:8px;height:13px;border-radius:2px;opacity:0;animation:cf 1.2s var(--ease) forwards}
@@ -310,6 +326,8 @@ footer a{color:var(--accent);text-decoration:none}
   .c-hero-bd{padding:20px}
   .tb-auth .btn.ghost{display:none}
   .next{max-width:none}
+  .pay{grid-template-columns:1fr}
+  .qr{max-width:240px;justify-self:center}
 }
 </style>
 </head>
@@ -390,8 +408,9 @@ footer a{color:var(--accent);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=2"></script>
+<script src="course-core.js?v=3"></script>
 <script>
 (function () {
 const { esc, safeUrl, ytId, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -490,7 +509,7 @@ function card(c) {
       <h3>${esc(c.title)}</h3>
       ${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
       ${track ? `<div class="cc-pr"><span class="bar"><i style="width:${pct}%"></i></span>${doneOf(c).length}/${n}</div>${medal(pct)}`
-        : `<div class="cc-meta"><span>${n} บทเรียน${free ? ` · <span class="free">ฟรี ${free} บท</span>` : ''}</span><span>${esc(c.author || '')}</span></div>`}
+        : `<div class="cc-meta"><span>${n} บทเรียน${free ? ` · <span class="free">ฟรี ${free} บท</span>` : ''}</span><span>${c.price > 0 && !ok ? `<span class="pr">${KPC.baht(c.price)}</span>` : esc(c.author || '')}</span></div>`}
     </div></a>`;
 }
 const grid = list => `<div class="cgrid">${list.map(card).join('')}</div>`;
@@ -644,7 +663,7 @@ function homeUser() {
   ${teach.length ? `<section class="sec"><div class="sec-h"><h2>คอร์สที่ฉันสอน</h2><a class="btn sm" href="admin.html">จัดการคอร์ส →</a></div>${grid(teach)}</section>` : ''}
   ${mine.length ? `<section class="sec"><div class="sec-h"><h2>คอร์สของฉัน</h2></div>${grid(mine)}</section>` : ''}
   ${pending.length ? `<section class="sec"><div class="sec-h"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะย้ายขึ้นไปอยู่ใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
-    <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">รออนุมัติ</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
+    <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">${S.request[c.id].amount ? 'รอตรวจยอด ' + KPC.baht(S.request[c.id].amount) : 'รออนุมัติ'}</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
   ${others.length ? `<section class="sec"><div class="sec-h"><div><h2>${role === 'admin' ? 'คอร์สทั้งหมด' : mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน'}</h2>${role === 'student' ? '<p>เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”</p>' : ''}</div></div>${grid(others)}</section>` : ''}
   ${!L.length ? `<div class="empty" style="margin-top:24px">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>` : ''}</div>`;
 }
@@ -673,10 +692,19 @@ function tocHtml(c, i) {
 }
 
 function lockPanel(c) {
-  const user = KPC.user(), req = S.request[c.id];
+  const user = KPC.user(), req = S.request[c.id], paid = c.price > 0;
   let inner;
-  if (!user) inner = `<div class="ic">🔑</div><h3>สมัครฟรีเพื่อเรียนบทนี้</h3><p>บทนี้สำหรับนักเรียนในคอร์ส สมัครบัญชีฟรี แล้วกด “ขอสิทธิ์จากครู”</p><span class="hand">ระหว่างนี้ลองบทที่เขียนว่า “ฟรี” ในสารบัญได้เลย</span><div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว</button></div>`;
-  else if (req) inner = `<div class="ic">⏳</div><h3>ส่งคำขอแล้ว รอครูอนุมัติ</h3><p>ส่งเมื่อ ${esc(fmtDate(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b> พอครูอนุมัติ บทเรียนจะเปิดให้ทันที</p><div class="row"><button class="btn solid sm" type="button" data-recheck>ตรวจสิทธิ์อีกครั้ง</button><button class="btn bad sm" type="button" data-cancel="${esc(c.id)}">ยกเลิกคำขอ</button></div>`;
+  if (!user) inner = paid
+    ? `<div class="ic">🔑</div><h3>คอร์สนี้ราคา ${KPC.baht(c.price)}</h3><p>สมัครบัญชีฟรีก่อน แล้วชำระผ่านพร้อมเพย์ ครูตรวจยอดแล้วจะเปิดทุกบทให้</p><span class="hand">ระหว่างนี้ลองบทที่เขียนว่า “ฟรี” ในสารบัญได้เลย</span><div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว</button></div>`
+    : `<div class="ic">🔑</div><h3>สมัครฟรีเพื่อเรียนบทนี้</h3><p>บทนี้สำหรับนักเรียนในคอร์ส สมัครบัญชีฟรี แล้วกด “ขอสิทธิ์จากครู”</p><span class="hand">ระหว่างนี้ลองบทที่เขียนว่า “ฟรี” ในสารบัญได้เลย</span><div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว</button></div>`;
+  else if (req) inner = `<div class="ic">⏳</div><h3>${req.amount ? `แจ้งโอน ${KPC.baht(req.amount)} แล้ว รอครูตรวจยอด` : 'ส่งคำขอแล้ว รอครูอนุมัติ'}</h3><p>ส่งเมื่อ ${esc(fmtDate(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b>${req.payRef ? ` · อ้างอิง “${esc(req.payRef)}”` : ''} พอครูอนุมัติ บทเรียนจะเปิดให้ทันที</p><div class="row"><button class="btn solid sm" type="button" data-recheck>ตรวจสิทธิ์อีกครั้ง</button><button class="btn bad sm" type="button" data-cancel="${esc(c.id)}">ยกเลิกคำขอ</button></div>`;
+  else if (paid) inner = `<div class="ic">💳</div><h3>ชำระ ${KPC.baht(c.price)} เพื่อเรียนคอร์สนี้</h3><p>จ่ายครั้งเดียว เปิดทุกบท · ครูตรวจยอดแล้วอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
+    <div class="pay"><div class="qr" id="payQr"><div class="qr-h"><span>Thai QR · พร้อมเพย์</span></div><div class="qr-b"><div class="skel" style="width:150px;height:150px"></div></div></div>
+      <div class="pay-s"><ol><li>สแกน QR ด้วยแอปธนาคาร (ยอดเงินใส่ไว้ให้แล้ว)</li><li>โอนเสร็จ กรอกเวลาโอน หรือ 4 ตัวท้ายเลขอ้างอิง</li><li>กด “แจ้งชำระเงินแล้ว” แล้วรอครูอนุมัติ</li></ol>
+        <div id="payNote"></div>
+        <div class="field"><label for="payRef">เวลาโอน / เลขอ้างอิง</label><input type="text" id="payRef" maxlength="100" placeholder="เช่น 14:05 · ref 8A21"></div>
+        <div class="field"><label for="reqNote">ชื่อ · ห้อง · โรงเรียน (ไม่บังคับ)</label><input type="text" id="reqNote" maxlength="300" placeholder="ด.ญ. ใจดี เรียนดี ม.4/2"></div>
+        <button class="btn solid" type="button" data-request="${esc(c.id)}" data-paid>แจ้งชำระเงินแล้ว</button></div></div>`;
   else inner = `<div class="ic">🙋</div><h3>ขอสิทธิ์เรียนคอร์สนี้</h3><p>บอกครูสั้น ๆ ว่าเป็นใคร แล้วกดขอสิทธิ์ ครูจะอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
     <textarea id="reqNote" maxlength="300" placeholder="เช่น ด.ญ. ใจดี เรียนดี ม.4/2 โรงเรียน…" aria-label="ข้อความถึงครู"></textarea>
     <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
@@ -713,6 +741,7 @@ async function renderCourse(cid, n) {
   document.title = c.title + ' · KP Science';
   $('app').innerHTML = `<div class="wrap view">${viewCourse(c, i, meta, L, ok)}</div>`;
   typeset($('app'));
+  if ($('payQr')) fillPay(c);
   // บันทึกว่าเรียนถึงบทไหน (ครูดูในห้องครู) — เฉพาะนักเรียน
   if (ok && L && KPC.user() && !KPC.ownsCourse(c)) {
     const p = S.progress[cid] = S.progress[cid] || { done: [] };
@@ -727,6 +756,7 @@ function head(c, i) {
   let cta;
   if (own) cta = `<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a><span class="meta">คุณดูแลคอร์สนี้</span>`;
   else if (track) cta = `${ring(pctOf(c))}<span class="meta">เรียนแล้ว ${doneOf(c).length} จาก ${o.length} บท<br>${medal(pctOf(c)) || 'ค่อย ๆ ไปทีละบท'}</span>`;
+  else if (!ok && c.price > 0) cta = `<span class="price">${KPC.baht(c.price)}<small>จ่ายครั้งเดียว เรียนได้ทุกบท</small></span>${ff >= 0 && i !== ff ? `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรีก่อน</a>` : ''}`;
   else if (!ok && ff >= 0 && i !== ff) cta = `<a class="btn solid sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a><span class="meta">${o.length} บทเรียน · ฟรี ${o.filter(l => l.free).length} บท</span>`;
   else cta = `<span class="meta">${o.length} บทเรียน${c.author ? ' · โดย ' + esc(c.author) : ''}</span>`;
   return `${crumb(c)}
@@ -780,6 +810,21 @@ function viewCourse(c, i, meta, L, ok) {
   return `${head(c, i)}${intro}<div class="course"><div>${main}</div><nav class="toc" id="toc" aria-label="สารบัญ">${tocHtml(c, i)}</nav></div>`;
 }
 
+/* ---------- QR พร้อมเพย์ (ข้อมูลรับเงินอยู่ใน courses/{cid}/meta/pay) ---------- */
+async function fillPay(c) {
+  const info = await KPC.getPayInfo(c.id), box = $('payQr'); if (!box) return;
+  const payload = info && KPC.promptpay(info.promptpay, c.price);
+  const body = box.querySelector('.qr-b');
+  if (!payload) { body.innerHTML = '<p class="sub" style="padding:10px;text-align:center">ครูยังไม่ได้ตั้งค่าช่องทางชำระเงิน — ติดต่อครูโดยตรง</p>'; return; }
+  const draw = () => {
+    const qr = qrcode(0, 'M'); qr.addData(payload); qr.make();
+    body.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+    box.insertAdjacentHTML('beforeend', `<div class="qr-f">${info.name ? esc(info.name) + '<br>' : ''}<b>${KPC.baht(c.price)}</b><a href="${qr.createDataURL(8, 16)}" download="promptpay-${esc(c.id)}.gif">บันทึกรูป QR</a></div>`);
+  };
+  if (window.qrcode) draw(); else addEventListener('load', draw, { once: true });
+  if (info.note) $('payNote').innerHTML = `<div class="note">${esc(info.note)}</div>`;
+}
+
 /* ---------- ฉลองเมื่อติ๊กเรียนแล้ว ---------- */
 function confetti(big) {
   if (REDUCED) return;
@@ -824,13 +869,15 @@ document.addEventListener('click', async e => {
   const rq = e.target.closest('[data-request]');
   if (rq) {
     const c = S.courses.find(x => x.id === rq.dataset.request) || (CUR && CUR.c);
-    rq.disabled = true; rq.textContent = 'กำลังส่ง…';
+    const paid = rq.dataset.paid !== undefined, ref = (($('payRef') || {}).value || '').trim();
+    if (paid && !ref) { toast('กรอกเวลาโอน หรือเลขอ้างอิงก่อน', true); $('payRef').focus(); return; }
+    const label = rq.textContent; rq.disabled = true; rq.textContent = 'กำลังส่ง…';
     try {
-      await KPC.requestAccess(c, ($('reqNote') || {}).value || '');
+      await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref } : null);
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
-      toast('ส่งคำขอถึงครูแล้ว');
+      toast(paid ? 'แจ้งชำระเงินแล้ว รอครูตรวจยอด' : 'ส่งคำขอถึงครูแล้ว');
       route();
-    } catch (err) { rq.disabled = false; rq.textContent = 'ขอสิทธิ์จากครู'; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
+    } catch (err) { rq.disabled = false; rq.textContent = label; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
     return;
   }
   const cn = e.target.closest('[data-cancel]');

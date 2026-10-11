@@ -11,7 +11,8 @@
 //    courses/{cid}/lessons/{lid}   เนื้อหาบท · อ่านได้เมื่อมีสิทธิ์ หรือบท free
 //    enrollments/{uid}_{cid}       { uid, email, name, courseId, owner, by, createdAt }  สิทธิ์เข้าเรียน
 //    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
-//    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, createdAt }
+//    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, amount?, payRef?, createdAt }
+//    courses/{cid}.price           ราคา (บาท · 0/ไม่มี = ฟรี) · courses/{cid}/meta/pay { promptpay, name, note } อ่านได้เมื่อล็อกอิน
 // ============================================================
 (function (W) {
 'use strict';
@@ -56,6 +57,25 @@ function embedSrc(u) {
   return u;
 }
 KPC.embedSrc = embedSrc;
+
+/* ---------- พร้อมเพย์ (มาตรฐาน EMVCo QR ของ ธปท.) ----------
+   id: เบอร์มือถือ 10 หลัก · เลขบัตรประชาชน/ผู้เสียภาษี 13 หลัก · e-Wallet 15 หลัก
+   amount > 0 → QR แบบใส่ยอดเงิน (ใช้ครั้งเดียว) · คืน '' ถ้ารูปแบบเลขไม่ถูก */
+KPC.promptpay = function (id, amount) {
+  const d = String(id || '').replace(/\D/g, '');
+  let sub;
+  if (d.length === 10 && d[0] === '0') sub = ['01', '0066' + d.slice(1)];
+  else if (d.length === 13) sub = ['02', d];
+  else if (d.length === 15) sub = ['03', d];
+  else return '';
+  const f = (tag, v) => tag + String(v.length).padStart(2, '0') + v;
+  const amt = Number(amount) > 0 ? Number(amount).toFixed(2) : '';
+  let s = f('00', '01') + f('01', amt ? '12' : '11') + f('29', f('00', 'A000000677010111') + f(sub[0], sub[1])) + f('58', 'TH') + f('53', '764') + (amt ? f('54', amt) : '') + '6304';
+  let crc = 0xFFFF;
+  for (let i = 0; i < s.length; i++) { crc ^= s.charCodeAt(i) << 8; for (let k = 0; k < 8; k++) crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF; }
+  return s + crc.toString(16).toUpperCase().padStart(4, '0');
+};
+KPC.baht = n => '฿' + Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 2 });
 
 const ICON = KPC.ICON = {
   out: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M8 7h9v9"/></svg>',
@@ -296,12 +316,19 @@ KPC.getMyRequest = async function (cid) {
   } catch (e) { return null; }
 };
 
-KPC.requestAccess = function (c, note) {
+// pay = { ref } เมื่อเป็นคอร์สมีราคา (แจ้งชำระเงิน) — ครูตรวจยอดในบัญชีแล้วอนุมัติเอง
+KPC.requestAccess = function (c, note, pay) {
   const u = KPC.user(); if (!u) return Promise.reject(new Error('ยังไม่ได้เข้าสู่ระบบ'));
-  return col('course_requests').doc(pid(u.uid, c.id)).set({
-    uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '',
-    note: String(note || '').slice(0, 300), createdAt: FS().serverTimestamp()
-  });
+  const data = { uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '',
+    note: String(note || '').slice(0, 300), createdAt: FS().serverTimestamp() };
+  if (pay) { data.amount = Number(c.price) || 0; data.payRef = String(pay.ref || '').slice(0, 100); }
+  return col('course_requests').doc(pid(u.uid, c.id)).set(data);
+};
+
+/* ---------- ข้อมูลรับเงิน: courses/{cid}/meta/pay (อ่านได้เฉพาะคนที่ล็อกอิน) ---------- */
+KPC.getPayInfo = async function (cid) {
+  try { const s = await col('courses').doc(cid).collection('meta').doc('pay').get(); return s.exists ? s.data() : null; }
+  catch (e) { return null; }
 };
 KPC.cancelRequest = cid => col('course_requests').doc(pid(KPC.uid(), cid)).delete();
 
@@ -316,9 +343,11 @@ KPC.admin = {
     const ls = await col('courses').doc(cid).collection('lessons').get();
     const batch = db.batch();
     ls.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(col('courses').doc(cid).collection('meta').doc('pay'));
     batch.delete(col('courses').doc(cid));
     return batch.commit();
   },
+  savePayInfo: (cid, data) => col('courses').doc(cid).collection('meta').doc('pay').set(Object.assign({}, data, { updatedAt: FS().serverTimestamp() })),
   newLessonId: cid => col('courses').doc(cid).collection('lessons').doc().id,
   lessonRef: (cid, lid) => col('courses').doc(cid).collection('lessons').doc(lid),
   saveLesson: (cid, lid, data) => col('courses').doc(cid).collection('lessons').doc(lid).set(data),

@@ -24,6 +24,7 @@
 - **นักเรียน** = ล็อกอินแล้ว — เรียนคอร์สที่มี `enrollments/{uid}_{cid}` · **ผู้เยี่ยมชม** = เห็นคอร์สที่เผยแพร่ + บทฟรี
 - Firestore: `staff/{email}` · `students/{uid}` (`courses[]` = ระบบเดิม rules ยังรองรับ แต่ไม่เขียนใหม่) · `courses/{cid}` (+ `outline`, `owner`) · `courses/{cid}/lessons/{lid}` · `enrollments/{uid}_{cid}` · `course_progress/{uid}_{cid}` · `course_requests/{uid}_{cid}`
 - enrollments / progress / requests **เก็บ `owner` ของคอร์ส** — ครูค้นด้วย `where('owner','==',อีเมล)` เท่านั้น (rules ไม่ใช่ filter) · โอนคอร์สต้องย้าย owner ตามทุกเอกสาร
+- **คอร์สมีราคา** (แบบโอนแล้วครูอนุมัติ): `courses.price` (บาท, 0 = ฟรี) · ข้อมูลรับเงิน `courses/{cid}/meta/pay` {promptpay, name, note} อ่านได้เฉพาะคนล็อกอิน · นักเรียนสแกน QR พร้อมเพย์ (`KPC.promptpay` สร้าง payload EMVCo ใส่ยอด — ตรวจเทียบไลบรารี promptpay-qr แล้ว) → แจ้งโอนเป็น `course_requests` + `amount`, `payRef` → ครูเช็กยอดแล้วอนุมัติ · **ไม่มีการยืนยันการจ่ายอัตโนมัติ** (ถ้าจะทำต้องใช้ Cloud Functions + payment gateway + Blaze · ห้ามใส่ secret key ใน repo) · QR ใช้ qrcode-generator 1.4.4 จาก cdnjs
 - แอดมินเปิดห้องครูครั้งแรก → `A.migrate()` ย้ายข้อมูลระบบเดิมอัตโนมัติ (ปุ่ม “ตรวจและซ่อมข้อมูล” ในหน้าจัดการครู)
 
 ## ⚠️ กติกา

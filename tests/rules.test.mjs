@@ -161,6 +161,28 @@ test('teacher ที่ถูกพัก / ยังไม่ยืนยัน
   await assertFails(getDocs(query(collection(t1Unverified(), 'enrollments'), where('owner', '==', T1))));
 });
 
+// ── คอร์สมีราคา ──
+test('ข้อมูลรับเงิน: ล็อกอินแล้วอ่านได้ · ผู้เยี่ยมชมอ่านไม่ได้ · เฉพาะเจ้าของคอร์สแก้ได้', async () => {
+  await env.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), 'courses/c1/meta/pay'), { promptpay: '0812345678', name: 'ครูหนึ่ง' }); await setDoc(doc(ctx.firestore(), 'courses/c1draft/meta/pay'), { promptpay: '0812345678' }); });
+  await assertFails(getDoc(doc(guest(), 'courses/c1/meta/pay')));
+  await assertSucceeds(getDoc(doc(stu2(), 'courses/c1/meta/pay')));
+  await assertFails(getDoc(doc(stu2(), 'courses/c1draft/meta/pay')));
+  await assertSucceeds(getDoc(doc(t1(), 'courses/c1draft/meta/pay')));
+  await assertFails(setDoc(doc(stu(), 'courses/c1/meta/pay'), { promptpay: '0899999999' }));
+  await assertFails(setDoc(doc(t2(), 'courses/c1/meta/pay'), { promptpay: '0899999999' }));
+  await assertSucceeds(setDoc(doc(t1(), 'courses/c1/meta/pay'), { promptpay: '0899999999', name: 'x' }));
+});
+test('แจ้งชำระเงิน: ส่ง amount + payRef ได้ · ยาวเกิน/ผิดชนิดไม่ได้ · ยังเปิดบทไม่ได้จนครูอนุมัติ', async () => {
+  const db = stu2();
+  const r = { uid: 's2', email: 's2@mail.com', name: '', courseId: 'c1', owner: T1, note: '' };
+  await env.withSecurityRulesDisabled(async ctx => { await deleteDoc(doc(ctx.firestore(), 'course_requests/s2_c1')); });
+  await assertFails(setDoc(doc(db, 'course_requests/s2_c1'), { ...r, amount: '500', payRef: 'x' }));
+  await assertFails(setDoc(doc(db, 'course_requests/s2_c1'), { ...r, amount: 500, payRef: 'x'.repeat(101) }));
+  await assertFails(setDoc(doc(db, 'course_requests/s2_c1'), { ...r, amount: 500, payRef: 'ok', paid: true }));
+  await assertSucceeds(setDoc(doc(db, 'course_requests/s2_c1'), { ...r, amount: 500, payRef: '10:42 · 1234' }));
+  await assertFails(getDoc(doc(db, 'courses/c1/lessons/paid')));
+});
+
 // ── แอดมิน ──
 test('admin: ทำได้ทุกอย่าง + จัดการครู', async () => {
   const db = admin();

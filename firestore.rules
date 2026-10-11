@@ -17,7 +17,8 @@ rules_version = '2';
 //   /courses/{cid}/lessons/{lid}    — เนื้อหาบท
 //   /enrollments/{uid}_{cid}        — สิทธิ์เข้าเรียน (ครูเจ้าของคอร์ส/แอดมินสร้าง)
 //   /course_progress/{uid}_{cid}    — ความคืบหน้า (นักเรียนเขียนของตัวเอง)
-//   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ (นักเรียนสร้าง)
+//   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
+//   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
 //   enrollments / progress / requests เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
 // ═══════════════════════════════════════════════════════════════
 
@@ -87,6 +88,12 @@ service cloud.firestore {
           || (resource.data.free == true && courseDoc(cid).published == true);
         allow write: if ownsCourse(cid);
       }
+
+      // ข้อมูลรับเงิน (พร้อมเพย์) — ให้เห็นเฉพาะคนที่ล็อกอิน ไม่ให้ผู้เยี่ยมชม/บอตเห็นเบอร์ครู
+      match /meta/{doc} {
+        allow read: if signedIn() && (ownsCourse(cid) || courseDoc(cid).published == true);
+        allow write: if ownsCourse(cid);
+      }
     }
 
     // ── สิทธิ์เข้าเรียน: id = <uid>_<courseId> ─────
@@ -121,8 +128,10 @@ service cloud.firestore {
       allow create: if signedIn()
         && rid == request.auth.uid + '_' + request.resource.data.courseId
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'note', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'note', 'amount', 'payRef', 'createdAt'])
         && request.resource.data.get('note', '').size() <= 300
+        && request.resource.data.get('payRef', '').size() <= 100
+        && request.resource.data.get('amount', 0) is number
         && courseDoc(request.resource.data.courseId).published == true
         && request.resource.data.owner == ownerOf(request.resource.data.courseId);
       allow update: if isAdmin();
