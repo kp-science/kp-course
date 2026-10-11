@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=9">
+<link rel="stylesheet" href="course-ui.css?v=11">
 <style>
 body{font-size:15px;line-height:1.55}
 .topbar{padding:0 22px}
@@ -136,6 +136,24 @@ td small{color:var(--muted)}
 .paid b{color:var(--text)}
 @media (max-width:640px){.paybox{grid-template-columns:1fr}.payqr{max-width:200px}}
 .danger-zone h3{color:var(--bad)}
+/* สมาชิก */
+.mtools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.mtools .tabs{margin:0}
+.msearch{flex:1;min-width:220px;max-width:360px}
+.mlist{padding:8px 12px}
+.mhead,.mrow{display:grid;grid-template-columns:40px minmax(0,2.2fr) 130px 90px minmax(120px,1.2fr) 120px;gap:12px;align-items:center}
+.mhead{padding:8px 8px;font:500 13px var(--body);color:var(--muted);border-bottom:1px solid var(--line)}
+.mrow{padding:10px 8px;border-bottom:1px solid var(--line);text-decoration:none;border-radius:10px}
+.mrow:last-child{border-bottom:0}
+.mrow:hover{background:var(--surface2)}
+.mrow .avatar{width:36px;height:36px;font-size:14px}
+.mrow .who{min-width:0}.mrow .who b{display:block;font:600 15px var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mrow .who small{display:block;color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .pg{display:flex;align-items:center;gap:8px}.mrow .pg .bar{flex:1}
+.mrow .la{font-size:13px}
+.crumbs{margin-bottom:14px}
+.mhero{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+.mhero h1{font:700 30px/1.3 var(--head)}
+@media (max-width:860px){.mhead{display:none}.mrow{grid-template-columns:40px minmax(0,1fr) auto;row-gap:4px}.mrow .cs,.mrow .la{display:none}.mrow .pg{grid-column:2/-1}}
 
 @media (max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
 @media (max-width:860px){
@@ -184,7 +202,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=6"></script>
+<script src="course-core.js?v=7"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -203,7 +221,7 @@ const fail = e => toast('❌ ' + (e.code === 'permission-denied' ? 'ไม่ม
 const isAdmin = () => KPC.role === 'admin';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: [], requests: [], enroll: [], progress: [], staff: [], cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
+const S = { courses: [], requests: [], enroll: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
 const courseOf = cid => S.courses.find(c => c.id === cid);
 const staffName = email => email === KPC.ADMIN_EMAIL ? 'แอดมิน' : ((S.staff.find(s => s.id === email) || {}).name || email || '—');
 const pctOf = (p, c) => { const o = (c && c.outline) || []; if (!o.length) return 0; return Math.round((p.done || []).filter(x => o.some(l => l.id === x)).length / o.length * 100); };
@@ -271,7 +289,7 @@ async function refreshAll() {
     A.enrollments().then(l => { S.enroll = l; }).catch(() => { S.enroll = []; }),
     A.progress().then(l => { S.progress = l; }).catch(() => { S.progress = []; }),
   ];
-  if (isAdmin()) jobs.push(A.staffList().then(l => { S.staff = l; }).catch(() => { S.staff = []; }));
+  if (isAdmin()) jobs.push(A.staffList().then(l => { S.staff = l; }).catch(() => { S.staff = []; }), A.students().then(l => { S.studentDocs = l; }).catch(() => { S.studentDocs = []; }));
   await Promise.all(jobs);
   if (S.cur) S.cur = courseOf(S.cur.id) || null;
   drawSide();
@@ -292,7 +310,7 @@ function drawSide() {
     <div class="me"><span class="avatar">${esc(initial(name))}</span><div><b>${esc(name)}</b><span class="pill role">${R.icon} ${R.label}</span></div></div>
     ${nv('#/', IC.home, 'ภาพรวม', '', h === '' || h === '#/' || h === '#')}
     ${nv('#/requests', IC.inbox, 'คำขอสิทธิ์', S.requests.length ? `<span class="count">${S.requests.length}</span>` : '', h === '#/requests')}
-    ${isAdmin() ? nv('#/teachers', IC.people, 'จัดการครู', `<span class="sub">${S.staff.filter(s => s.active).length}</span>`, h === '#/teachers') : ''}
+    ${nv('#/members', IC.people, isAdmin() ? 'สมาชิก' : 'นักเรียนของฉัน', `<span class="sub">${buildMembers().length}</span>`, h.startsWith('#/members') || h === '#/teachers')}
     <h4>${isAdmin() ? 'คอร์สทั้งหมด' : 'คอร์สของฉัน'} <button type="button" data-act="new-course">＋ ใหม่</button></h4>
     <div class="clist">${S.courses.map(c => `<a class="nv${S.cur && S.cur.id === c.id && h.startsWith('#/c/') ? ' on' : ''}" href="#/c/${encodeURIComponent(c.id)}" title="${esc(c.title)}"><span class="dot${c.published ? ' pub' : ''}"></span><span class="t">${esc(c.title || c.id)}</span>${courseStats(c).req ? `<span class="count">${courseStats(c).req}</span>` : ''}</a>`).join('') || '<div class="sub" style="padding:4px 11px">ยังไม่มีคอร์ส</div>'}</div>
     <div class="foot"><button class="nv" type="button" data-act="import"><span class="i">${IC.import}</span><span class="t">นำเข้า courses.js / JSON</span></button></div>`;
@@ -306,7 +324,9 @@ function route() {
   if (m && courseOf(m[1])) { openCourse(m[1], m[2]); return; }
   S.cur = null;
   if (h === '/requests') drawRequests();
-  else if (h === '/teachers' && isAdmin()) drawTeachers();
+  else if (h === '/teachers' && isAdmin()) { S.mFilter = 'teacher'; drawMembers(); }
+  else if (h === '/members') drawMembers();
+  else if (h.startsWith('/members/')) drawMember(h.slice(9));
   else if (h === '/new') drawNewCourse();
   else drawDash();
   drawSide();
@@ -359,31 +379,109 @@ function drawRequests() {
     <div class="card">${S.requests.length ? reqList(S.requests, true) : '<div class="empty"><span class="ic">✅</span>ไม่มีคำขอค้าง</div>'}</div>`;
 }
 
-/* ===================== จัดการครู (แอดมิน) ===================== */
-function drawTeachers() {
-  document.title = 'จัดการครู · ห้องครู';
-  const count = email => S.courses.filter(c => c.owner === email).length;
-  $('main').innerHTML = `<div class="ph"><div><h1>🧑‍🏫 จัดการครู</h1><p>ครูสร้างและดูแลได้เฉพาะคอร์สของตัวเอง · แอดมินเห็นทุกคอร์ส</p></div></div>
+/* ===================== สมาชิก =====================
+   แอดมิน: นักเรียนทุกคน (students) + ครู (staff) + แอดมิน · ครู: นักเรียนในคอร์สของตัวเอง (จาก enrollments)
+   key = uid ถ้ามี · ครูที่ยังไม่เคยเข้าเว็บ = 'e:' + อีเมล */
+const lc = s => String(s || '').trim().toLowerCase();
+function buildMembers() {
+  const map = new Map(), byEmail = new Map();
+  const add = (uid, email, name, extra) => {
+    const k = uid || 'e:' + lc(email);
+    let m = map.get(k);
+    if (!m) { m = { key: k, uid: uid || '', email: email || '', name: name || '', en: [], pr: [], createdAt: null }; map.set(k, m); if (email) byEmail.set(lc(email), m); }
+    if (!m.name && name) m.name = name; if (!m.email && email) { m.email = email; byEmail.set(lc(email), m); }
+    return Object.assign(m, extra || {});
+  };
+  if (isAdmin()) S.studentDocs.forEach(st => add(st.id, st.email, st.name, { createdAt: st.createdAt || null }));
+  S.enroll.forEach(e => add(e.uid, e.email, e.name).en.push(e));
+  S.progress.forEach(p => { const m = map.get(p.uid); if (m) m.pr.push(p); });
+  if (isAdmin()) S.staff.forEach(st => { const m = byEmail.get(lc(st.id)) || add('', st.id, st.name); m.staff = st; if (st.name) m.staffName = st.name; });
+  const list = [...map.values()];
+  list.forEach(m => {
+    m.role = lc(m.email) === KPC.ADMIN_EMAIL ? 'admin' : m.staff ? 'teacher' : 'student';
+    m.display = m.staffName || m.name || (m.email || '').split('@')[0] || '(ไม่มีชื่อ)';
+    const pcts = m.en.map(e => { const c = courseOf(e.courseId); return c ? pctOf(m.pr.find(p => p.courseId === e.courseId) || {}, c) : null; }).filter(x => x != null);
+    m.avg = pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : null;
+    m.lastAt = m.pr.reduce((t, p) => Math.max(t, ((p.lastAt || p.updatedAt || {}).seconds) || 0), 0);
+  });
+  return list.sort((a, b) => (b.lastAt - a.lastAt) || a.display.localeCompare(b.display, 'th'));
+}
+const ROLE_PILL = { admin: '<span class="pill role" style="--role:var(--admin)">แอดมิน</span>', teacher: '<span class="pill role" style="--role:var(--teacher)">ครู</span>', student: '<span class="pill">นักเรียน</span>' };
+const agoS = s => s ? ago({ seconds: s }) : '—';
+function memberRows(list) {
+  if (!list.length) return '<div class="empty">ไม่พบสมาชิก</div>';
+  return list.map(m => `<a class="mrow" href="#/members/${encodeURIComponent(m.key)}">
+    <span class="avatar" style="background:${m.role === 'admin' ? 'var(--admin)' : m.role === 'teacher' ? 'var(--teacher)' : 'var(--student)'}">${esc(initial(m.display))}</span>
+    <span class="who"><b>${esc(m.display)}</b><small>${esc(m.email || '—')}</small></span>
+    <span class="rl">${ROLE_PILL[m.role]}${m.staff && !m.staff.active ? ' <span class="pill">พักสิทธิ์</span>' : ''}</span>
+    <span class="cs">${m.en.length ? m.en.length + ' คอร์ส' : '<span class="sub">—</span>'}</span>
+    <span class="pg">${m.avg == null ? '<span class="sub">—</span>' : `<span class="bar"><i style="width:${m.avg}%"></i></span><span class="mono">${m.avg}%</span>`}</span>
+    <span class="la sub">${agoS(m.lastAt)}</span></a>`).join('');
+}
+function filteredMembers() {
+  const q = lc(S.mQuery);
+  return buildMembers().filter(m => (S.mFilter === 'all' || m.role === S.mFilter || (S.mFilter === 'teacher' && m.role === 'admin'))
+    && (!q || lc(m.display).includes(q) || lc(m.email).includes(q) || lc(m.name).includes(q)));
+}
+function drawMembers() {
+  document.title = (isAdmin() ? 'สมาชิก' : 'นักเรียนของฉัน') + ' · ห้องครู';
+  const all = buildMembers(), n = r => all.filter(m => m.role === r).length;
+  const F = [['all', 'ทั้งหมด', all.length], ['student', 'นักเรียน', n('student')], ['teacher', 'ครู', n('teacher') + n('admin')]];
+  $('main').innerHTML = `
+    <div class="ph"><div><h1>${isAdmin() ? 'สมาชิก' : 'นักเรียนของฉัน'}</h1><p>${isAdmin() ? `นักเรียน ${n('student')} คน · ครู ${n('teacher')} คน · กดที่รายชื่อเพื่อจัดการ` : 'นักเรียนที่มีสิทธิ์ในคอร์สของคุณ · กดที่รายชื่อเพื่อดูความคืบหน้าและจัดการสิทธิ์'}</p></div><span class="sp"></span><button class="btn sm" type="button" data-act="m-csv">ดาวน์โหลด CSV</button></div>
+    <div class="mtools">${isAdmin() ? `<div class="tabs" role="tablist">${F.map(f => `<button type="button" data-mfilter="${f[0]}" class="${S.mFilter === f[0] ? 'on' : ''}">${f[1]} <span class="sub">${f[2]}</span></button>`).join('')}</div>` : ''}
+      <div class="field msearch"><input type="search" id="mq" placeholder="ค้นหาชื่อหรืออีเมล" value="${esc(S.mQuery)}" aria-label="ค้นหาสมาชิก"></div></div>
+    ${isAdmin() && S.mFilter === 'teacher' ? `<div class="card" style="margin-bottom:16px"><div class="card-h"><h2>เพิ่มครู</h2></div>
+      <div class="form"><div class="field"><label for="tEmail">อีเมล Google ของครู</label><input type="email" id="tEmail" placeholder="teacher@gmail.com"></div><div class="field"><label for="tName">ชื่อที่แสดง</label><input type="text" id="tName" placeholder="ครูใจดี"></div></div>
+      <div class="row" style="margin-top:14px"><button class="btn solid" type="button" data-act="add-teacher">เพิ่มเป็นครู</button><span class="sub">ครูเข้าห้องครูด้วยปุ่ม Google ของอีเมลนี้ได้ทันที</span></div></div>` : ''}
+    <div class="card mlist"><div class="mhead"><span></span><span>สมาชิก</span><span>บทบาท</span><span>คอร์ส</span><span>ความคืบหน้า</span><span>ใช้งานล่าสุด</span></div><div id="mlist">${memberRows(filteredMembers())}</div></div>
+    ${isAdmin() ? `<div class="card" style="margin-top:16px"><div class="card-h"><h3>ตรวจข้อมูล</h3></div><p class="sub" style="margin-bottom:12px">ตรวจว่าทุกคอร์ส สิทธิ์ ความคืบหน้า และคำขอ มีเจ้าของถูกต้อง (กดซ้ำได้ไม่เสียหาย)</p><button class="btn sm" type="button" data-act="migrate">ตรวจและซ่อมข้อมูล</button></div>` : ''}`;
+  const q = $('mq');
+  q.addEventListener('input', () => { S.mQuery = q.value; $('mlist').innerHTML = memberRows(filteredMembers()); });
+}
+
+function drawMember(key) {
+  key = decodeURIComponent(key);
+  const m = buildMembers().find(x => x.key === key);
+  if (!m) { $('main').innerHTML = '<div class="empty">ไม่พบสมาชิกนี้ <a class="link" href="#/members">← กลับรายชื่อ</a></div>'; return; }
+  document.title = m.display + ' · สมาชิก';
+  const myCourses = S.courses.filter(c => !m.en.some(e => e.courseId === c.id));
+  const rows = m.en.map(e => {
+    const c = courseOf(e.courseId), p = m.pr.find(x => x.courseId === e.courseId) || {};
+    const pct = c ? pctOf(p, c) : 0, last = c && (c.outline || []).find(l => l.id === p.last);
+    return `<div class="lrow"><span class="t"><b>${esc(c ? c.title : e.courseId)}</b><small><span>ได้สิทธิ์ ${fmtTime(e.createdAt)}</span>${last ? `<span>· ล่าสุด: ${esc(last.title)}</span>` : ''}${p.lastAt ? `<span>· ${ago(p.lastAt)}</span>` : ''}</small></span>
+      <span class="bar"><i style="width:${pct}%"></i></span><span class="mono" style="width:44px;text-align:right">${pct}%</span>
+      ${c ? `<button class="btn bad xs" type="button" data-mrevoke="${esc(m.uid)}|${esc(e.courseId)}">ถอนสิทธิ์</button>` : ''}</div>`;
+  }).join('');
+  const st = m.staff;
+  $('main').innerHTML = `
+    <div class="crumbs"><a class="link" href="#/members">← ${isAdmin() ? 'สมาชิกทั้งหมด' : 'นักเรียนของฉัน'}</a></div>
+    <div class="mhero"><span class="avatar" style="width:64px;height:64px;font-size:26px;background:${m.role === 'admin' ? 'var(--admin)' : m.role === 'teacher' ? 'var(--teacher)' : 'var(--student)'}">${esc(initial(m.display))}</span>
+      <div><h1>${esc(m.display)}</h1><p class="sub">${esc(m.email || '—')} · ${ROLE_PILL[m.role]}${st && !st.active ? ' <span class="pill">พักสิทธิ์ครู</span>' : ''}${m.createdAt ? ` · สมัครเมื่อ ${fmtTime(m.createdAt)}` : ''}</p></div></div>
+    <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <div class="stat"><small>คอร์สที่มีสิทธิ์</small><b>${m.en.length}</b></div>
+      <div class="stat"><small>ความคืบหน้าเฉลี่ย</small><b>${m.avg == null ? '—' : m.avg + '%'}</b></div>
+      <div class="stat"><small>ใช้งานล่าสุด</small><b style="font-size:22px;margin-top:10px">${agoS(m.lastAt)}</b></div>
+    </div>
     <div class="stack">
-    <div class="card"><div class="card-h"><h2>＋ เพิ่มครู</h2></div>
-      <div class="form">
-        <div class="field"><label for="tEmail">อีเมล Google ของครู</label><input type="email" id="tEmail" placeholder="teacher@gmail.com"></div>
-        <div class="field"><label for="tName">ชื่อที่แสดง</label><input type="text" id="tName" placeholder="ครูใจดี"></div>
-      </div>
-      <div class="row" style="margin-top:14px"><button class="btn solid" type="button" data-act="add-teacher">เพิ่มเป็นครู</button><span class="sub">ครูเข้า <b>ห้องครู</b> ด้วยปุ่ม Google ของอีเมลนี้ได้ทันที</span></div>
-    </div>
-    <div class="card"><div class="card-h"><h2>รายชื่อครู (${S.staff.length})</h2></div>
-      ${S.staff.length ? `<div class="tw"><table><tr><th>ครู</th><th>คอร์ส</th><th>สถานะ</th><th></th></tr>
-        ${S.staff.map(s => `<tr><td><b>${esc(s.name || '—')}</b><br><small>${esc(s.id)}</small></td><td class="mono">${count(s.id)}</td>
-          <td>${s.active ? '<span class="pill ok">ใช้งาน</span>' : '<span class="pill">พักสิทธิ์</span>'}</td>
-          <td><div class="acts"><button class="btn xs" type="button" data-toggle-staff="${esc(s.id)}">${s.active ? 'พักสิทธิ์' : 'เปิดสิทธิ์'}</button><button class="btn bad xs" type="button" data-del-staff="${esc(s.id)}">ลบ</button></div></td></tr>`).join('')}</table></div>`
-        : '<div class="empty"><span class="ic">🧑‍🏫</span>ยังไม่มีครู — คุณ (แอดมิน) ดูแลทุกคอร์สอยู่</div>'}
-      <div class="note" style="margin-top:14px">พักสิทธิ์ = ครูเข้าห้องครูไม่ได้ แต่คอร์สและนักเรียนยังอยู่ · โอนคอร์สให้ครูคนอื่นได้ที่แท็บ <b>ข้อมูลคอร์ส</b></div>
-    </div>
-    <div class="card"><div class="card-h"><h2>🛠 ตรวจข้อมูล</h2></div>
-      <p class="sub" style="margin-bottom:12px">ตรวจว่าทุกคอร์ส สิทธิ์ ความคืบหน้า และคำขอ มีเจ้าของถูกต้อง (ทำอัตโนมัติครั้งแรกแล้ว กดซ้ำได้ไม่เสียหาย)</p>
-      <button class="btn sm" type="button" data-act="migrate">ตรวจและซ่อมข้อมูล</button></div>
+    <div class="card"><div class="card-h"><h2>คอร์สและความคืบหน้า</h2></div>${rows || '<div class="sub">ยังไม่มีสิทธิ์ในคอร์ส' + (isAdmin() ? '' : 'ของคุณ') + '</div>'}
+      ${m.uid && myCourses.length ? `<div class="row" style="margin-top:16px"><div class="field" style="flex:1;min-width:220px"><select id="mgCourse" aria-label="เลือกคอร์ส">${myCourses.map(c => `<option value="${esc(c.id)}">${esc(c.title)}</option>`).join('')}</select></div><button class="btn solid sm" type="button" data-mgrant="${esc(m.key)}">ให้สิทธิ์คอร์สนี้</button></div>` : ''}
+      ${!m.uid ? '<p class="note" style="margin-top:12px">บัญชีนี้ยังไม่เคยเข้าเว็บคอร์ส — ให้สิทธิ์คอร์สได้หลังจากเข้าสู่ระบบครั้งแรก</p>' : ''}</div>
+    ${isAdmin() ? `
+    ${m.uid ? `<div class="card"><div class="card-h"><h2>ชื่อที่แสดง</h2></div><div class="row"><div class="field" style="flex:1;min-width:220px"><input type="text" id="mRename" value="${esc(m.name || '')}" aria-label="ชื่อ"></div><button class="btn sm" type="button" data-act="m-rename" data-key="${esc(m.key)}">บันทึกชื่อ</button></div><p class="sub" style="margin-top:8px">ครูจะเห็นชื่อนี้ในรายชื่อนักเรียนและคำขอ</p></div>` : ''}
+    ${m.role !== 'admin' ? `<div class="card"><div class="card-h"><h2>บทบาท</h2></div>
+      ${st ? `<p class="sub" style="margin-bottom:12px">เป็นครู · ดูแล ${S.courses.filter(c => c.owner === lc(st.id)).length} คอร์ส${st.active ? '' : ' · ตอนนี้พักสิทธิ์อยู่'}</p><div class="row"><button class="btn sm" type="button" data-toggle-staff="${esc(st.id)}">${st.active ? 'พักสิทธิ์ครู' : 'เปิดสิทธิ์ครู'}</button><button class="btn bad sm" type="button" data-del-staff="${esc(st.id)}">ถอดออกจากครู</button></div>`
+        : `<p class="sub" style="margin-bottom:12px">นักเรียน · ตั้งเป็นครูแล้วจะเข้าห้องครูได้ (ต้องเข้าด้วย Google ของอีเมลนี้)</p><button class="btn sm" type="button" data-act="m-make-teacher" data-key="${esc(m.key)}">ตั้งเป็นครู</button>`}</div>` : ''}
+    ${m.uid && m.role !== 'admin' ? `<div class="card"><div class="card-h"><h3 style="color:var(--bad)">ลบข้อมูลสมาชิก</h3></div><p class="sub" style="margin-bottom:12px">ลบสิทธิ์เข้าเรียน ความคืบหน้า คำขอ และข้อมูลบัญชีในเว็บคอร์ส — ย้อนกลับไม่ได้ · บัญชีล็อกอิน (Google/อีเมล) ยังอยู่ ถ้าเข้ามาใหม่จะเริ่มจากว่าง</p><button class="btn bad sm" type="button" data-act="m-delete" data-key="${esc(m.key)}">ลบข้อมูลสมาชิก</button></div>` : ''}` : ''}
     </div>`;
+}
+function membersCsv() {
+  const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+  const lines = [['name', 'email', 'role', 'courses', 'avg_percent', 'last_active'].map(q).join(',')];
+  filteredMembers().forEach(m => lines.push([m.display, m.email, m.role, m.en.map(e => (courseOf(e.courseId) || {}).title || e.courseId).join(' | '), m.avg == null ? '' : m.avg, m.lastAt ? new Date(m.lastAt * 1000).toISOString() : ''].map(q).join(',')));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv' }));
+  a.download = 'members.csv'; a.click();
 }
 
 /* ===================== หน้าคอร์ส ===================== */
@@ -674,16 +772,29 @@ document.addEventListener('click', async e => {
     try { await A.revoke(u.uid, S.cur.id); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); } catch (err) { fail(err); }
     return drawMain();
   }
+  if (d.mfilter) { S.mFilter = d.mfilter; return drawMembers(); }
+  if (d.mrevoke) {
+    const [uid, cid] = d.mrevoke.split('|'), c = courseOf(cid);
+    if (!confirm(`ถอนสิทธิ์คอร์ส “${(c || {}).title || cid}”?\n(ความคืบหน้าเดิมยังเก็บไว้)`)) return;
+    try { await A.revoke(uid, cid); toast('ถอนสิทธิ์แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); }
+    return;
+  }
+  if (d.mgrant) {
+    const m = buildMembers().find(x => x.key === d.mgrant), c = courseOf($('mgCourse').value); if (!m || !c) return;
+    el.disabled = true;
+    try { await A.grant({ uid: m.uid, email: m.email, name: m.name || m.display }, c); const r = S.requests.find(x => x.uid === m.uid && x.courseId === c.id); if (r) await A.dropRequest(r.id); toast('ให้สิทธิ์ “' + c.title + '” แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
+    return;
+  }
   if (d.toggleStaff) {
     const s = S.staff.find(x => x.id === d.toggleStaff); if (!s) return;
-    try { await A.saveStaff(s.id, { active: !s.active }); toast(s.active ? 'พักสิทธิ์ครูแล้ว' : 'เปิดสิทธิ์ครูแล้ว'); await refreshAll(); drawTeachers(); } catch (err) { fail(err); }
+    try { await A.saveStaff(s.id, { active: !s.active }); toast(s.active ? 'พักสิทธิ์ครูแล้ว' : 'เปิดสิทธิ์ครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); }
     return;
   }
   if (d.delStaff) {
     const s = S.staff.find(x => x.id === d.delStaff); if (!s) return;
     const n = S.courses.filter(c => c.owner === s.id).length;
     if (!confirm(`ลบ ${s.name || s.id} ออกจากรายชื่อครู?` + (n ? `\nครูคนนี้มี ${n} คอร์ส — คอร์สยังอยู่ แต่จะไม่มีครูดูแล จนกว่าแอดมินจะโอนให้คนอื่น` : ''))) return;
-    try { await A.deleteStaff(s.id); toast('ลบครูแล้ว'); await refreshAll(); drawTeachers(); } catch (err) { fail(err); }
+    try { await A.deleteStaff(s.id); toast('ถอดออกจากครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); }
     return;
   }
   switch (d.act) {
@@ -770,11 +881,30 @@ document.addEventListener('click', async e => {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('รูปแบบอีเมลไม่ถูกต้อง', true);
       if (email === KPC.ADMIN_EMAIL) return toast('อีเมลนี้เป็นแอดมินอยู่แล้ว', true);
       el.disabled = true;
-      try { await A.saveStaff(email, { name: name || email.split('@')[0], active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); toast('เพิ่ม ' + (name || email) + ' เป็นครูแล้ว'); await refreshAll(); drawTeachers(); } catch (err) { fail(err); el.disabled = false; }
+      try { await A.saveStaff(email, { name: name || email.split('@')[0], active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); toast('เพิ่ม ' + (name || email) + ' เป็นครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
       return;
     }
-    case 'migrate': el.disabled = true; await autoMigrate(true); await refreshAll(); el.disabled = false; return;
+    case 'migrate': el.disabled = true; await autoMigrate(true); await refreshAll(); route(); return;
     case 'csv': return downloadCsv();
+    case 'm-csv': return membersCsv();
+    case 'm-rename': {
+      const m = buildMembers().find(x => x.key === d.key), name = $('mRename').value.trim(); if (!m || !name) return;
+      el.disabled = true;
+      try { await A.setStudentName(m.uid, name); toast('บันทึกชื่อแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
+      return;
+    }
+    case 'm-make-teacher': {
+      const m = buildMembers().find(x => x.key === d.key); if (!m || !m.email) return;
+      if (!confirm(`ตั้ง ${m.display} (${m.email}) เป็นครู?\nครูสร้างและจัดการคอร์สของตัวเองได้`)) return;
+      try { await A.saveStaff(m.email, { name: m.name || m.display, active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); toast('ตั้งเป็นครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); }
+      return;
+    }
+    case 'm-delete': {
+      const m = buildMembers().find(x => x.key === d.key); if (!m || !m.uid) return;
+      if (prompt(`ลบข้อมูลของ ${m.display} ทั้งหมด (ย้อนกลับไม่ได้)\nพิมพ์อีเมล "${m.email}" เพื่อยืนยัน`) !== m.email) return;
+      try { const n = await A.deleteMember(m.uid); toast(`ลบข้อมูลแล้ว (${n} รายการ)`); await refreshAll(); location.hash = '#/members'; } catch (err) { fail(err); }
+      return;
+    }
   }
 });
 

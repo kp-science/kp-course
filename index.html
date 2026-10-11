@@ -470,6 +470,18 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .lesson-dark footer a{color:#2997ff}
 .lesson-dark .skel{background:linear-gradient(90deg,#1d1d1f,#2c2c2e,#1d1d1f);background-size:200% 100%}
 
+/* หน้า "คอร์สทั้งหมด" แบบมืด (ใช้ body.lesson-dark ร่วมกับหน้าเรียน) */
+.cine-hero.all-hero{min-height:auto;padding:90px 22px 60px}
+.all-hero .orb{opacity:.28}
+.all-grid{padding-top:8px;padding-bottom:40px}
+.lesson-dark .tiles:not(.bleed) .tile{background:#1d1d1f;color:var(--on-dark)}
+.lesson-dark .tile p.t{color:#a1a1a6}
+.lesson-dark .tile .eyebrow{color:#ff9f45}
+.lesson-dark .tile .link{color:#2997ff}
+.lesson-dark .tile .prog{color:var(--on-dark-2)}
+.lesson-dark .tile .pic{box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.lesson-dark a.tile:hover{box-shadow:0 0 0 1px #3a3a3c}
+
 /* ชำระเงิน */
 .pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;text-align:left;width:min(640px,100%);margin-top:6px}
 .qr{border-radius:16px;overflow:hidden;background:#fff;align-self:start;box-shadow:0 0 0 1px var(--line)}
@@ -637,7 +649,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=6"></script>
+<script src="course-core.js?v=7"></script>
 <script>
 (function () {
 const { esc, safeUrl, ytId, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -1006,11 +1018,19 @@ function homeUser() {
 
 function renderAll() {
   document.title = 'คอร์สทั้งหมด · KP Science';
-  setNav('courses');
-  const L = S.courses || [];
-  $('app').innerHTML = `<div class="wrap"><section class="dash-h"><span class="hand">เลือกเรียนได้เลย</span><h1>คอร์สทั้งหมด</h1><p>${L.length} คอร์ส${KPC.user() ? '' : ' · บทที่เขียนว่าฟรีเปิดดูได้เลย'}</p></section>
-    <section class="sec" style="padding-top:20px">${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section></div>`;
-  KPC.motion($('app'), '.dash-h > *, .tiles > .tile');
+  setNav('courses', true);
+  const L = S.courses || [], free = L.reduce((n, c) => n + (c.outline || []).filter(l => l.free).length, 0);
+  $('app').innerHTML = `
+  <header class="cine-hero short cine-dark all-hero">
+    <div class="orb a"></div><div class="orb b"></div>
+    <div class="cine-in">
+      <div class="eyebrow intro" style="--d:.05s">KP Science · คอร์สออนไลน์</div>
+      <h1 class="intro" style="--d:.2s">คอร์ส<span class="grad">ทั้งหมด</span></h1>
+      <p class="deck intro" style="--d:.4s">${L.length} คอร์ส${free && !KPC.user() ? ` · ลองเรียนฟรีได้ ${free} บท ไม่ต้องสมัคร` : ''}</p>
+    </div>
+  </header>
+  <div class="wrap all-grid">${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</div>`;
+  KPC.motion($('app'), '.tiles > .tile');
 }
 
 /* ===================== หน้าคอร์ส ===================== */

@@ -420,6 +420,20 @@ KPC.admin = {
   progress: async cid => docs(await (cid ? mine(col('course_progress')).where('courseId', '==', cid) : mine(col('course_progress'))).get()),
 
   // ---- เฉพาะแอดมิน ----
+  students: async () => docs(await col('students').get()),
+  setStudentName: async (uid, name) => {
+    await col('students').doc(uid).update({ name });
+    // ชื่อในสิทธิ์เข้าเรียน (ครูเห็นชื่อจากตรงนี้) ให้ตรงกัน
+    const en = await col('enrollments').where('uid', '==', uid).get();
+    if (!en.empty) { const b = db.batch(); en.docs.forEach(d => b.update(d.ref, { name })); await b.commit(); }
+  },
+  // ลบข้อมูลของสมาชิกในเว็บคอร์ส (สิทธิ์ · ความคืบหน้า · คำขอ · บัญชีนักเรียน) — บัญชีล็อกอินยังอยู่ ถ้าเข้ามาใหม่จะเริ่มจากว่าง
+  deleteMember: async uid => {
+    const refs = [col('students').doc(uid)];
+    for (const name of ['enrollments', 'course_progress', 'course_requests']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
+    const b = db.batch(); refs.forEach(r => b.delete(r)); await b.commit();
+    return refs.length;
+  },
   staffList: async () => docs(await col('staff').get()).sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id), 'th')),
   saveStaff: (email, data) => col('staff').doc(lower(email)).set(Object.assign({ email: lower(email) }, data, { updatedAt: FS().serverTimestamp() }), { merge: true }),
   deleteStaff: email => col('staff').doc(lower(email)).delete(),
