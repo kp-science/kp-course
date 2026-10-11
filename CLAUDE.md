@@ -30,6 +30,6 @@
 - **ห้ามใส่เนื้อหาบท (คลิป/เอกสาร/แบบทดสอบ) ในไฟล์ใน repo** — repo เป็น public · เนื้อหาอยู่ใน Firestore เท่านั้น
 - แก้ `course-core.js` · `course-ui.css` · `firebase-config.js` → เพิ่มเลข `?v=` ในแท็ก `<script>` ของ `index.html` + `admin.html` (cache busting)
 - ทุกหน้า HTML มี Google Analytics `G-2YTJBNHP6D` ต่อจาก `<head>` และ frame protection
-- Design: ธีมมืด bg `#06090f` · accent `#38bdf8` · ฟอนต์ IBM Plex Sans Thai Looped (เนื้อหา) / IBM Plex Sans Thai (หัวเรื่อง) / Share Tech Mono (ตัวเลข) · ห้ามใช้ Sarabun · สีบทบาท: แอดมิน `#f5b544` · ครู `#a78bfa` · นักเรียน `#38bdf8` · มือถือ 375 px ต้องไม่มี scroll แนวนอน
+- Design (11 ต.ค. 69 ครูขอ: **โทนสว่าง** + **ไม่ดูแข็งแบบงาน AI**): แนว “สมุดจดของครู” — พื้นกระดาษ `#faf7f1` · หมึกน้ำเงิน `#2456c9` · ส้ม `#e8693a` · ปากกาเน้น `#ffe270` (`.mark`) · ลายกระดาษกราฟ (`.paper`) · โน้ตลายมือฟอนต์ **Itim** (`.hand`) · ปกคอร์สวาดเส้นด้วย SVG (`coverArt`) · สติกเกอร์เอียงแทนป้ายเม็ดยา · **ห้าม**: ตัวหนังสือไล่สี, แสงเรือง, ธีมมืด, อีโมจิเป็นไอคอนหลัก · ฟอนต์ IBM Plex Sans Thai Looped (เนื้อหา) / IBM Plex Sans Thai (หัวเรื่อง) / Share Tech Mono (ตัวเลข) · ห้ามใช้ Sarabun · สีบทบาท: แอดมิน `#b7791f` · ครู `#7046d8` · นักเรียน `#2456c9` · มือถือ 375 px ต้องไม่มี scroll แนวนอน
 - ซิมูเลชันฝังจาก `kp-science.github.io/physics-simulations/Demo/…` ได้ · ลิงก์ Virtual Lab (มี frame-busting) แสดงเป็นปุ่มเปิดแท็บใหม่ (`KPC.noEmbed`)
 - ทดสอบในเครื่อง: `python3 -m http.server 8765 --directory <โฟลเดอร์นี้>` (รันจาก /tmp — preview_start ของแอปอ่าน Documents ไม่ได้)

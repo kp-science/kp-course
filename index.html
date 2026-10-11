@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>คอร์สออนไลน์ · KP Science</title>
 <meta name="description" content="คอร์สออนไลน์ฟิสิกส์ของ KP Science เรียนเป็นบท คลิป + Simulation โต้ตอบ + เอกสาร ติดตามความคืบหน้าได้">
-<meta name="theme-color" content="#06090f">
+<meta name="theme-color" content="#faf7f1">
 <script>
 /* KP Science — Frame Protection */
 (function(){
@@ -27,182 +27,215 @@
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Itim&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=2">
+<link rel="stylesheet" href="course-ui.css?v=3">
 <style>
-.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+/* กระดาษกราฟ */
+.paper{background-image:linear-gradient(rgba(36,86,201,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(36,86,201,.07) 1px,transparent 1px);background-size:24px 24px}
 
 /* ---------- หน้าแรก: ผู้เยี่ยมชม ---------- */
-.hero{position:relative;padding:64px 0 56px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center}
-.hero::before{content:"";position:absolute;inset:-60px -20vw auto;height:520px;background:radial-gradient(50% 60% at 25% 30%,rgba(56,189,248,.16),transparent 70%),radial-gradient(40% 50% at 80% 20%,rgba(129,140,248,.14),transparent 70%);pointer-events:none;z-index:-1}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);color:var(--accent);padding:4px 12px;border-radius:99px;font:700 12px var(--head);letter-spacing:.06em}
-.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(52,211,153,.18)}
-.hero h1{font:700 clamp(2rem,4.8vw,3.3rem)/1.22 var(--head);margin:16px 0 14px;letter-spacing:-.01em}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p.lead{color:var(--text2);font-size:18px;max-width:560px}
-.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
-.hero .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:14px}
-.hero .trust span::before{content:"✓ ";color:var(--ok);font-weight:700}
-/* ภาพตัวอย่างบทเรียน (วาดด้วย CSS) */
-.mock{position:relative;border:1px solid var(--line2);border-radius:18px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden;transform:rotate(1.2deg)}
-.mock-v{aspect-ratio:16/9;background:linear-gradient(135deg,#0ea5e9,#6366f1);position:relative;overflow:hidden}
-.mock-v svg{position:absolute;inset:0;width:100%;height:100%}
-.mock-v .play{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px;border-radius:50%;background:rgba(6,9,15,.55);backdrop-filter:blur(6px);display:grid;place-items:center;color:#fff;font-size:20px}
-.mock-b{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px}
-.mock-b b{font:700 16px var(--head)}
-.mock-row{display:flex;gap:8px;flex-wrap:wrap}
-.mock-row span{font-size:12.5px;padding:3px 10px;border-radius:7px;background:var(--surface2);color:var(--text2)}
-.mock-row span.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
-.mock-p{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
-.mock-p .bar{flex:1}
-.float{position:absolute;right:-10px;bottom:22px;background:var(--surface3);border:1px solid var(--line2);border-radius:12px;padding:9px 13px;font:600 13px var(--head);box-shadow:var(--shadow);transform:rotate(-1.2deg)}
-.float b{color:var(--ok)}
+.hero-band{position:relative;border-bottom:1px solid var(--line)}
+.hero-band::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,var(--bg));pointer-events:none}
+.hero{position:relative;z-index:1;padding:56px 0 64px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;align-items:center}
+.byline{font:400 19px var(--hand);color:var(--orange);display:inline-block;transform:rotate(-2deg)}
+.hero h1{font:700 clamp(2.1rem,4.6vw,3.4rem)/1.25 var(--head);margin:10px 0 18px;letter-spacing:-.015em}
+.hero p.lead{color:var(--text2);font-size:18px;max-width:520px}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.hero .fine{margin-top:18px;color:var(--muted);font-size:14px}
+.hero .fine b{color:var(--text2);font-weight:600}
 
-.sec{padding:44px 0}
+/* ซิมจิ๋ว: ทายก่อน */
+.quiz-wrap{position:relative}
+.quiz-note{position:absolute;top:-34px;right:6px;font:400 18px var(--hand);color:var(--orange);transform:rotate(3deg);white-space:nowrap}
+.quiz{border:1px solid var(--line2);border-radius:18px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden;transform:rotate(.6deg)}
+.quiz-h{padding:16px 18px 10px}
+.quiz-h small{font:600 12.5px var(--head);color:var(--muted)}
+.quiz-h b{display:block;font:700 18px/1.45 var(--head);margin-top:2px}
+.quiz svg.sim{display:block;width:100%;height:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fbfcff}
+.quiz-c{padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.quiz-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.quiz-opts button{padding:10px 6px;border-radius:10px;border:1.5px solid var(--line2);background:var(--surface);font:700 17px var(--mono);cursor:pointer;transition:.15s;color:var(--text)}
+.quiz-opts button:hover{border-color:var(--accent);color:var(--accent)}
+.quiz-opts button.pick{border-color:var(--orange);background:#fff1ea;color:var(--orange)}
+.quiz-opts button.best{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.quiz-opts button[disabled]{cursor:default}
+.quiz-msg{font-size:15px;color:var(--text2);min-height:1.6em}
+.quiz-msg b{color:var(--text)}
+.quiz-hook{display:none;border-top:1px dashed var(--line2);padding-top:10px;font-size:15px}
+.quiz-hook.on{display:block}
+.quiz-hook .q{font:400 18px var(--hand);color:var(--orange)}
+.quiz-hook a{color:var(--accent);font-weight:600;text-underline-offset:3px}
+.quiz-try{display:none;align-items:center;gap:10px;font:600 13.5px var(--head);color:var(--muted)}
+.quiz-try.on{display:flex}
+.quiz-try input{flex:1;accent-color:var(--accent)}
+.quiz-try output{font:700 14px var(--mono);color:var(--accent);width:92px;text-align:right}
+
+.sec{padding:46px 0}
 .sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-.sec-h h2{font:700 clamp(1.4rem,2.6vw,1.9rem)/1.3 var(--head)}
+.sec-h h2{font:700 clamp(1.4rem,2.6vw,1.85rem)/1.3 var(--head)}
 .sec-h p{color:var(--muted)}
-.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.feat{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:22px}
-.feat .fi{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--surface3);margin-bottom:12px}
-.feat h3{font:700 17px var(--head);margin-bottom:4px}
-.feat p{color:var(--muted);font-size:15px}
-.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;counter-reset:st}
-.step{position:relative;border:1px solid var(--line);border-radius:14px;padding:22px 22px 22px 70px;background:var(--surface)}
-.step::before{counter-increment:st;content:counter(st);position:absolute;left:20px;top:20px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:700 15px var(--mono);background:rgba(56,189,248,.14);color:var(--accent)}
-.step h3{font:700 16px var(--head)}
-.step p{color:var(--muted);font-size:14.5px}
-.band{border:1px solid var(--line2);border-radius:18px;padding:30px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;background:radial-gradient(60% 120% at 0% 0%,rgba(56,189,248,.14),transparent 60%),var(--surface)}
-.band h3{font:700 22px var(--head)}
-.band p{color:var(--muted)}
-.band .sp{flex:1}
+/* วิธีเรียน */
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow-s);overflow:hidden}
+.how>div{padding:24px 24px 26px;position:relative}
+.how>div+div{border-left:1px dashed var(--line2)}
+.how .n{font:400 30px/1 var(--hand);color:var(--orange)}
+.how svg{display:block;margin:10px 0 12px}
+.how h3{font:700 17px var(--head);margin-bottom:4px}
+.how p{color:var(--muted);font-size:15px}
+/* ขั้นเริ่ม */
+.start{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;border:1px solid var(--line);border-radius:18px;padding:30px;background:var(--surface);box-shadow:var(--shadow-s)}
+.start h2{font:700 clamp(1.4rem,2.6vw,1.8rem)/1.35 var(--head);margin-bottom:6px}
+.start ol{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:14px}
+.start li{counter-increment:s;display:flex;gap:14px;align-items:flex-start}
+.start li::before{content:counter(s);flex:none;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--text);display:grid;place-items:center;font:400 18px var(--hand)}
+.start li b{display:block;font:600 16px var(--head)}
+.start li span{color:var(--muted);font-size:14.5px}
+.start .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 
 /* ---------- หน้าแรก: นักเรียน / ครู ---------- */
-.dash-h{padding:36px 0 8px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.dash-h h1{font:700 clamp(1.6rem,3.4vw,2.3rem)/1.3 var(--head)}
-.dash-h p{color:var(--muted)}
-.dash-h .sp{flex:1}
-.staffbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid color-mix(in srgb,var(--role) 40%,transparent);background:color-mix(in srgb,var(--role) 8%,var(--surface));border-radius:12px;padding:12px 16px;margin-top:18px}
+.dash-h{padding:40px 0 6px}
+.dash-h .hand{font-size:20px;color:var(--orange)}
+.dash-h h1{font:700 clamp(1.7rem,3.4vw,2.4rem)/1.3 var(--head)}
+.dash-h p{color:var(--text2);margin-top:4px}
+.staffbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid color-mix(in srgb,var(--role) 35%,transparent);background:color-mix(in srgb,var(--role) 7%,#fff);border-radius:12px;padding:12px 16px;margin-top:18px;font-size:15px}
 .staffbar .sp{flex:1}
-.resume{display:grid;grid-template-columns:240px minmax(0,1fr);gap:0;border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:var(--surface);text-decoration:none;transition:border-color .3s,transform .3s var(--ease)}
-.resume:hover{border-color:var(--accent);transform:translateY(-2px)}
-.resume-cv{background:linear-gradient(135deg,var(--a,#0ea5e9),var(--b,#6366f1));display:grid;place-items:center;position:relative;min-height:150px}
-.resume-cv .play{width:56px;height:56px;border-radius:50%;background:rgba(6,9,15,.55);display:grid;place-items:center;color:#fff;font-size:20px}
-.resume-bd{padding:20px 24px;display:flex;flex-direction:column;gap:8px;justify-content:center}
-.resume-bd small{font:700 12px var(--head);letter-spacing:.08em;color:var(--accent)}
-.resume-bd h3{font:700 21px/1.4 var(--head)}
-.resume-bd .meta{color:var(--muted);font-size:14px}
-.resume-bd .pr{display:flex;align-items:center;gap:12px;margin-top:4px}
-.resume-bd .pr .bar{flex:1;max-width:340px}
-.resume-bd .pr span{font:600 14px var(--mono);color:var(--text2)}
+.resume{display:grid;grid-template-columns:260px minmax(0,1fr) auto;align-items:center;border:1px solid var(--line2);border-radius:18px;overflow:hidden;background:var(--surface);text-decoration:none;box-shadow:var(--shadow);transition:transform .25s var(--ease),border-color .2s}
+.resume:hover{transform:translateY(-2px);border-color:var(--accent)}
+.resume-cv{position:relative;align-self:stretch;min-height:160px}
+.resume-bd{padding:20px 24px;display:flex;flex-direction:column;gap:4px}
+.resume-bd small{font:400 17px var(--hand);color:var(--orange)}
+.resume-bd h3{font:700 22px/1.4 var(--head)}
+.resume-bd .meta{color:var(--muted);font-size:14.5px}
+.resume .go{margin:0 24px 0 0;display:flex;align-items:center;gap:14px}
 .pend{display:flex;flex-direction:column;gap:8px}
 .pend-i{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)}
 .pend-i b{font:600 15px var(--head)}
 .pend-i .sp{flex:1}
 
 /* ---------- การ์ดคอร์ส ---------- */
-.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
-.cc{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;transition:transform .35s var(--ease),border-color .3s,box-shadow .3s}
-.cc:hover{transform:translateY(-4px);border-color:rgba(56,189,248,.45);box-shadow:var(--shadow)}
-.cc-cv{position:relative;aspect-ratio:16/8;background:linear-gradient(135deg,var(--a,#0ea5e9),var(--b,#6366f1));display:flex;align-items:flex-end;padding:16px}
-.cc-cv::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 90% at 85% 10%,rgba(255,255,255,.25),transparent 60%)}
-.cc-cv em{position:relative;font:700 12px var(--head);letter-spacing:.16em;font-style:normal;color:#fff;opacity:.92}
-.cc-cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cc-st{position:absolute;right:12px;top:12px}
-.cc-st .pill{background:rgba(6,9,15,.82)}
-.cc-dr{position:absolute;left:12px;top:12px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px}
+.cc{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;box-shadow:var(--shadow-s);transition:transform .3s var(--ease),box-shadow .3s,border-color .2s}
+.cc:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--line2)}
+.cc-cv{position:relative;aspect-ratio:16/8.5;border-bottom:1px solid var(--line)}
+.art{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sticker{position:absolute;right:12px;top:12px;font:600 12.5px var(--head);padding:4px 10px;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(60,40,15,.18);transform:rotate(2deg);color:var(--text2)}
+.sticker.ok{color:var(--ok)}.sticker.warn{color:var(--warn)}.sticker.role{color:var(--role)}.sticker.free{color:var(--orange)}
+.sticker.l{left:12px;right:auto;transform:rotate(-2deg);color:var(--warn)}
 .cc-bd{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
-.cc-tags{display:flex;gap:6px;flex-wrap:wrap}
-.cc h3{font:700 18px/1.45 var(--head)}
+.cc-tags{font-size:13px;color:var(--muted)}
+.cc h3{font:700 18.5px/1.45 var(--head)}
 .cc p{font-size:14.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cc-meta{margin-top:auto;padding-top:10px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.cc-meta .free{color:var(--ok);font-weight:600}
-.cc-pr{display:flex;align-items:center;gap:10px;margin-top:8px;font:600 12.5px var(--mono);color:var(--text2)}
+.cc-meta{margin-top:auto;padding-top:10px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.cc-meta .free{color:var(--orange);font-weight:600}
+.cc-pr{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:10px;font:600 13px var(--mono);color:var(--text2)}
 .cc-pr .bar{flex:1}
+.medal{font:400 15px var(--hand);color:var(--warn)}
+.medal.done{color:var(--ok)}
+
+/* วงแหวนความคืบหน้า */
+.ring{position:relative;width:var(--s,58px);height:var(--s,58px);flex:none;display:inline-block}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .bg{stroke:var(--surface3)}
+.ring .fg{stroke:var(--ok);stroke-linecap:round;transition:stroke-dashoffset .8s var(--ease)}
+.ring>span{position:absolute;inset:0;display:grid;place-items:center;font:700 13px var(--mono)}
 
 /* ---------- หน้าคอร์ส ---------- */
-.view{padding:24px 0 40px}
+.view{padding:22px 0 40px}
 .crumb{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-bottom:14px;flex-wrap:wrap}
-.crumb a{text-decoration:none}.crumb a:hover{color:var(--text)}
-.c-head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
-.c-head h1{font:700 clamp(1.5rem,3.2vw,2.2rem)/1.3 var(--head);margin:8px 0 4px}
-.c-tags{display:flex;gap:6px;flex-wrap:wrap}
-.c-sum{color:var(--muted);max-width:760px}
-.c-by{font-size:13.5px;color:var(--muted)}
-.course{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;margin-top:22px}
-.player{position:relative;aspect-ratio:16/9;border:1px solid var(--line2);border-radius:14px;background:#000;overflow:hidden}
+.crumb a{text-decoration:none}.crumb a:hover{color:var(--accent)}
+.c-hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow-s)}
+.c-hero-bd{padding:24px 28px;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.c-hero-cv{position:relative;min-height:180px;border-left:1px solid var(--line)}
+.c-tags{font-size:13.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.c-hero h1{font:700 clamp(1.5rem,3vw,2.1rem)/1.3 var(--head)}
+.c-sum{color:var(--text2);max-width:640px}
+.c-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.c-cta .meta{font-size:14px;color:var(--muted)}
+.course{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;margin-top:26px}
+.player{position:relative;aspect-ratio:16/9;border:1px solid var(--line2);border-radius:14px;background:#000;overflow:hidden;box-shadow:var(--shadow-s)}
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
-.player.ph{display:flex;align-items:flex-end;padding:22px;background:linear-gradient(135deg,var(--a,#0ea5e9),var(--b,#6366f1));color:#fff}
-.player.ph b{font:700 24px/1.4 var(--head)}
-.player.ph small{display:block;font:700 12px var(--head);letter-spacing:.12em;opacity:.85}
-.lock{position:relative;border:1px solid var(--line2);border-radius:14px;background:radial-gradient(70% 90% at 80% 0%,rgba(129,140,248,.18),transparent 60%),var(--surface);padding:36px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:300px;justify-content:center}
-.lock .ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:var(--surface3)}
+.player.ph{background:var(--surface)}
+.player.ph .cap{position:absolute;left:20px;bottom:18px;background:#fff;border-radius:10px;padding:8px 14px;box-shadow:var(--shadow-s)}
+.player.ph .cap small{display:block;font:400 15px var(--hand);color:var(--orange)}
+.player.ph .cap b{font:700 19px/1.4 var(--head)}
+.lock{border:1.5px dashed var(--line2);border-radius:16px;background:var(--surface);padding:36px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:300px;justify-content:center}
+.lock .ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--surface2)}
 .lock h3{font:700 21px var(--head)}
 .lock p{color:var(--text2);max-width:480px;font-size:15px}
-.lock textarea{width:min(440px,100%);min-height:76px;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14.5px;resize:vertical;outline:none}
-.lock textarea:focus{border-color:var(--accent)}
+.lock .hand{color:var(--orange);font-size:17px}
+.lock textarea{width:min(440px,100%);min-height:76px;background:var(--surface);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14.5px;resize:vertical;outline:none}
+.lock textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .lock .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.ls-h{margin:20px 0 6px}
-.ls-h small{font-size:13px;color:var(--muted)}
-.ls-h h2{font:700 24px/1.4 var(--head);margin-top:2px}
+.ls-h{margin:22px 0 6px}
+.ls-h small{font-size:13.5px;color:var(--muted)}
+.ls-h h2{font:700 25px/1.4 var(--head);margin-top:2px}
 .ls-meta{display:flex;flex-wrap:wrap;gap:6px}
-.ltabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:18px;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:12px;width:fit-content;max-width:100%}
-.ltabs button{border:0;background:none;padding:7px 14px;border-radius:8px;font:600 14px var(--head);cursor:pointer;color:var(--muted)}
+.ltabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:18px;border-bottom:1px solid var(--line)}
+.ltabs button{border:0;background:none;padding:9px 14px;font:600 14.5px var(--head);cursor:pointer;color:var(--muted);position:relative}
 .ltabs button:hover{color:var(--text)}
-.ltabs button.on{background:var(--surface3);color:var(--text)}
+.ltabs button.on{color:var(--text)}
+.ltabs button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px;background:var(--accent)}
 .lpanel{padding-top:20px}
 .lpanel[hidden]{display:none}
-.res{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid var(--line2);border-radius:12px;background:var(--surface);padding:12px 14px;margin-bottom:10px}
-.res .ri{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--indigo));color:#06090f;font-size:18px}
+.res{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow-s)}
+.res .ri{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:10px;background:var(--accent-soft);font-size:19px}
 .res b{display:block;font:600 15px var(--head)}
 .res small{color:var(--muted);font-size:13px}
 .res .sp{flex:1}
-.ls-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid var(--line);padding-top:18px;margin-top:28px}
-.ls-nav .pn{display:flex;gap:10px}
-.donebtn{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);font:600 14.5px var(--head);cursor:pointer;transition:.2s}
-.donebtn .bx{width:20px;height:20px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;font-size:12px;color:transparent;transition:.2s}
+.ls-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;border-top:1px solid var(--line);padding-top:20px;margin-top:30px}
+.ls-nav .left{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.donebtn{display:inline-flex;align-items:center;gap:10px;padding:11px 16px;border-radius:11px;border:1.5px solid var(--line2);background:var(--surface);font:600 15px var(--head);cursor:pointer;transition:.2s;box-shadow:var(--shadow-s)}
+.donebtn .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;font-size:13px;color:transparent;transition:.2s}
 .donebtn:hover{border-color:var(--ok)}
-.donebtn.on{border-color:var(--ok);background:rgba(52,211,153,.1);color:var(--ok)}
-.donebtn.on .bx{background:var(--ok);border-color:var(--ok);color:#04130d}
+.donebtn.on{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.donebtn.on .bx{background:var(--ok);border-color:var(--ok);color:#fff}
 .freenote{color:var(--muted);font-size:14px}
+.next{display:flex;align-items:center;gap:14px;border:1px solid var(--line2);border-radius:14px;padding:13px 16px;background:var(--surface);text-decoration:none;transition:border-color .2s,transform .2s var(--ease);min-width:240px;max-width:440px;flex:1;box-shadow:var(--shadow-s)}
+.next:hover{border-color:var(--accent);transform:translateX(3px)}
+.next small{display:block;font:400 16px var(--hand);color:var(--orange)}
+.next b{display:block;font:700 16px/1.4 var(--head)}
+.next .go{margin-left:auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-weight:700;flex:none}
+.prevlink{font-size:14px;color:var(--muted);text-decoration:none}
+.prevlink:hover{color:var(--accent)}
 
 /* สารบัญ */
-.toc{position:sticky;top:76px;align-self:start;border:1px solid var(--line2);border-radius:14px;background:var(--surface);max-height:calc(100vh - 96px);overflow:auto}
-.toc-h{padding:14px 16px 12px;border-bottom:1px solid var(--line)}
-.toc-h b{font:700 15px var(--head);display:flex;justify-content:space-between;gap:10px}
-.toc-h b small{font:600 13px var(--mono);color:var(--ok)}
-.toc-h .bar{margin-top:8px}
+.toc{position:sticky;top:78px;align-self:start;border:1px solid var(--line);border-radius:14px;background:var(--surface);max-height:calc(100vh - 98px);overflow:auto;box-shadow:var(--shadow-s)}
+.toc-h{padding:14px 16px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.toc-h b{font:700 15px var(--head);flex:1}
+.toc-h b small{display:block;font:400 13px var(--body);color:var(--muted)}
 .unit+.unit{border-top:1px solid var(--line)}
 .unit summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;font:600 14px var(--head);background:var(--surface2)}
 .unit summary::-webkit-details-marker{display:none}
-.unit summary .un{font:700 11px var(--mono);background:var(--accent);color:#06090f;padding:1px 6px;border-radius:4px}
+.unit summary .un{font:400 15px var(--hand);color:var(--orange)}
 .unit summary .ut{flex:1}
 .unit summary small{font-size:12px;color:var(--muted);font-weight:400}
 .unit summary::after{content:"▾";color:var(--muted);transition:transform .25s}
 .unit:not([open]) summary::after{transform:rotate(-90deg)}
 .toc button{display:flex;gap:10px;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:10px 16px;cursor:pointer;font-size:14.5px;line-height:1.45;align-items:center}
 .toc button:hover{background:var(--surface2)}
-.toc button.on{background:rgba(56,189,248,.1);box-shadow:inset 3px 0 0 var(--accent)}
-.toc .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font:600 11px var(--mono);color:var(--muted)}
+.toc button.on{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.toc .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;font:600 11px var(--mono);color:var(--muted)}
 .toc .on .n{border-color:var(--accent);color:var(--accent)}
-.toc .done .n{background:var(--ok);border-color:var(--ok);color:#06090f}
+.toc .done .n{background:var(--ok);border-color:var(--ok);color:#fff}
 .toc .t{flex:1}
 .toc .d{font-size:12px;color:var(--muted);white-space:nowrap}
-.toc .d.free{color:var(--ok);font-weight:600}
-.toc .lk{font-size:12px;opacity:.6}
+.toc .d.free{color:var(--orange);font-weight:600}
+.toc .lk{font-size:12px;opacity:.55}
 
 /* เนื้อหาบท */
 .prose{font-size:17px;line-height:1.9;min-width:0;color:var(--text2)}
 .prose>*:first-child{margin-top:0}
 .prose p{margin:0 0 1em}
 .prose b{color:var(--text)}
-.prose h2{font:700 23px/1.45 var(--head);color:var(--text);margin:1.5em 0 .5em;padding-top:.4em;border-top:1px solid var(--line)}
+.prose h2{font:700 23px/1.45 var(--head);color:var(--text);margin:1.5em 0 .5em}
 .prose h3{font:700 19px/1.45 var(--head);color:var(--text);margin:1.3em 0 .4em}
 .prose ul,.prose ol{margin:0 0 1em;padding-left:1.4em}
 .prose li{margin:.25em 0}
 .prose li::marker{color:var(--accent)}
-.prose blockquote{margin:1.3em 0;padding:14px 18px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:16px}
+.prose blockquote{margin:1.3em 0;padding:14px 18px;background:#fffbea;border:1px solid #f3e3a6;border-radius:10px;font-size:16px;color:var(--text)}
 .prose figure{margin:1.5em 0}
 .prose figure img{width:100%;display:block;border-radius:10px;border:1px solid var(--line)}
 .prose figcaption{font-size:13px;color:var(--muted);margin-top:6px;text-align:center}
@@ -214,30 +247,35 @@
 .embed.doc{aspect-ratio:3/4;max-height:85vh;background:var(--surface2)}
 .embed.web{aspect-ratio:4/3;background:#fff}
 .embed-cap{display:flex;justify-content:flex-end;font-size:13px;margin:-1.2em 0 1.5em}
-.lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid var(--accent);border-radius:9px;font:600 15px var(--head);text-decoration:none!important;color:var(--accent)!important}
-.lbtn:hover{background:rgba(56,189,248,.12)}
+.lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1.5px solid var(--accent);border-radius:10px;font:600 15px var(--head);text-decoration:none!important;color:var(--accent)!important;background:#fff}
+.lbtn:hover{background:var(--accent-soft)}
 .cintro{margin-top:18px;max-width:860px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px 22px}
+
+/* ฉลอง */
+.confetti{position:fixed;left:50%;top:50%;pointer-events:none;z-index:9500}
+.confetti i{position:absolute;width:8px;height:13px;border-radius:2px;opacity:0;animation:cf 1.2s var(--ease) forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
 
 footer{margin-top:60px;border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:14px}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 footer a{color:var(--accent);text-decoration:none}
 
 /* ---------- หน้าต่างล็อกอิน ---------- */
-.modal{display:none;position:fixed;inset:0;background:rgba(2,4,8,.72);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:16px}
+.modal{display:none;position:fixed;inset:0;background:rgba(28,34,48,.45);backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;padding:16px}
 .modal.open{display:flex}
-.modal-box{background:var(--surface);border:1px solid var(--line2);border-radius:18px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;box-shadow:var(--shadow)}
+.modal-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 24px 60px rgba(28,34,48,.25)}
 .modal-head{padding:22px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.modal-head h3{font:700 19px var(--head)}
+.modal-head h3{font:700 20px var(--head)}
 .modal-head p{color:var(--muted);font-size:14px}
 .modal-x{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 8px;border-radius:8px;line-height:1}
 .modal-x:hover{background:var(--surface2);color:var(--text)}
 .seg{display:grid;grid-template-columns:1fr 1fr;margin:18px 24px 0;padding:4px;background:var(--surface2);border-radius:10px}
 .seg button{border:0;background:none;padding:8px;border-radius:7px;font:600 14px var(--head);color:var(--muted);cursor:pointer}
-.seg button.on{background:var(--surface3);color:var(--text)}
+.seg button.on{background:#fff;color:var(--text);box-shadow:var(--shadow-s)}
 .pane{display:none;padding:20px 24px 24px;flex-direction:column;gap:12px}
 .pane.on{display:flex}
-.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:0;padding:11px;border-radius:10px;font:600 15px var(--head);cursor:pointer}
-.gbtn:hover{background:#f1f5f9}
+.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid var(--line2);padding:11px;border-radius:10px;font:600 15px var(--head);cursor:pointer;box-shadow:var(--shadow-s)}
+.gbtn:hover{background:var(--surface2)}
 .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line2)}
 .modal .btn.solid{width:100%;padding:12px}
@@ -245,26 +283,33 @@ footer a{color:var(--accent);text-decoration:none}
 .switch button{background:none;border:0;color:var(--accent);font:600 14px var(--head);cursor:pointer}
 
 @media (max-width:980px){
-  .hero{grid-template-columns:1fr;gap:36px;padding:44px 0 36px}
-  .mock{max-width:520px}
+  .hero{grid-template-columns:1fr;gap:56px;padding:40px 0 48px}
+  .quiz-wrap{max-width:520px}
   .course{grid-template-columns:1fr}
   .toc{position:static;max-height:none;order:2}
-  .feats,.steps{grid-template-columns:1fr}
+  .how{grid-template-columns:1fr}
+  .how>div+div{border-left:0;border-top:1px dashed var(--line2)}
+  .start{grid-template-columns:1fr}
+  .c-hero{grid-template-columns:1fr}
+  .c-hero-cv{border-left:0;border-bottom:1px solid var(--line);min-height:0;aspect-ratio:32/17;order:-1}
+  .resume{grid-template-columns:1fr}
+  .resume-cv{min-height:0;aspect-ratio:32/17}
+  .resume .go{margin:0 24px 20px}
 }
 @media (max-width:640px){
   .wrap{padding:0 16px}
   .nav{display:none}
   .hero p.lead{font-size:16px}
   .hero .cta .btn{flex:1}
-  .float{right:8px}
+  .quiz,.quiz-note{transform:none}
   .cgrid{grid-template-columns:1fr}
-  .resume{grid-template-columns:1fr}
-  .resume-cv{min-height:110px}
   .prose{font-size:16px}
   .lock{padding:28px 16px}
   .res .btn{flex:1}
-  .band{padding:22px}
+  .start{padding:22px}
+  .c-hero-bd{padding:20px}
   .tb-auth .btn.ghost{display:none}
+  .next{max-width:none}
 }
 </style>
 </head>
@@ -288,18 +333,18 @@ footer a{color:var(--accent);text-decoration:none}
     </button>
     <div class="menu" id="whoMenu" role="menu">
       <div class="mh"><b id="mName"></b><small id="mEmail"></small></div>
-      <a href="#/" role="menuitem">🏠 หน้าแรกของฉัน</a>
-      <a href="#/courses" role="menuitem">📚 คอร์สทั้งหมด</a>
-      <a href="admin.html" class="hide" id="mStaff" role="menuitem">🧑‍🏫 ห้องครู</a>
-      <button type="button" class="danger" data-logout role="menuitem">↩ ออกจากระบบ</button>
+      <a href="#/" role="menuitem">หน้าแรกของฉัน</a>
+      <a href="#/courses" role="menuitem">คอร์สทั้งหมด</a>
+      <a href="admin.html" class="hide" id="mStaff" role="menuitem">ห้องครู</a>
+      <button type="button" class="danger" data-logout role="menuitem">ออกจากระบบ</button>
     </div>
   </div>
 </header>
 
-<main class="wrap" id="app"><div class="view"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div></main>
+<main id="app"><div class="wrap view"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div></main>
 
 <footer><div class="wrap">
-  <span>KP Science · คอร์สออนไลน์</span>
+  <span>KP Science · คอร์สออนไลน์ฟิสิกส์ โดยครูโกเมน</span>
   <span><a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">KP Science Simulation ↗</a></span>
 </div></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -307,7 +352,7 @@ footer a{color:var(--accent);text-decoration:none}
 <div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
   <div class="modal-box">
     <div class="modal-head">
-      <div><h3 id="loginTitle">ยินดีต้อนรับ 👋</h3><p>บัญชีนักเรียน KP Science ใช้ฟรี</p></div>
+      <div><h3 id="loginTitle">ยินดีต้อนรับ</h3><p>บัญชีนักเรียน KP Science ใช้ฟรี</p></div>
       <button class="modal-x" type="button" data-close aria-label="ปิด">✕</button>
     </div>
     <div class="seg"><button type="button" id="seg-login" data-tab="login">เข้าสู่ระบบ</button><button type="button" id="seg-register" data-tab="register">สมัครสมาชิก</button></div>
@@ -351,11 +396,54 @@ footer a{color:var(--accent);text-decoration:none}
 (function () {
 const { esc, safeUrl, ytId, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
 const $ = id => document.getElementById(id);
-const SUBJ = { 'ฟิสิกส์': ['#0ea5e9', '#6366f1', 'PHYSICS'], 'ดาราศาสตร์': ['#7c3aed', '#f97316', 'ASTRONOMY'], 'เคมี': ['#0d9488', '#65a30d', 'CHEMISTRY'], 'ชีววิทยา': ['#16a34a', '#ca8a04', 'BIOLOGY'] };
-const subjOf = s => SUBJ[s] || ['#475569', '#0ea5e9', 'SCIENCE'];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtDate = ts => { try { const d = ts && ts.toDate ? ts.toDate() : null; return d ? d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : ''; } catch (e) { return ''; } };
 function toast(m, bad) { const t = $('toast'); t.textContent = m; t.className = 'toast show' + (bad ? ' bad' : ''); clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 2800); }
 const courseUrl = (c, n) => '#/c/' + encodeURIComponent(c.id) + (n ? '/' + n : '');
+
+/* ===================== ปกคอร์ส: วาดเส้นแบบแผนภาพในสมุด ===================== */
+const PAL = { 'ฟิสิกส์': ['#eaf1ff', '#2456c9'], 'ดาราศาสตร์': ['#f0ebff', '#6a3fd0'], 'เคมี': ['#e7f6ef', '#17845a'], 'ชีววิทยา': ['#f1f6e3', '#5c7d12'] };
+const seedOf = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+function coverArt(c) {
+  if (safeUrl(c.cover)) return `<img class="art" src="${esc(c.cover)}" alt="" loading="lazy" style="object-fit:cover">`;
+  const [bg, ink] = PAL[c.subject] || ['#f5f1e8', '#3c4555'];
+  const h = seedOf(c.id), W = 320, H = 170, g = [];
+  for (let x = 16; x < W; x += 16) g.push(`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`);
+  for (let y = 10; y < H; y += 16) g.push(`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`);
+  let d = '';
+  if (c.subject === 'ดาราศาสตร์') {
+    const rx = 90 + h % 30;
+    d = `<ellipse cx="190" cy="88" rx="${rx}" ry="${rx * .38}" fill="none" stroke="${ink}" stroke-width="2" stroke-dasharray="5 6"/><circle cx="190" cy="88" r="16" fill="${ink}" opacity=".9"/><circle cx="${190 + rx * .8}" cy="${88 - rx * .22}" r="7" fill="#fff" stroke="${ink}" stroke-width="2"/>`;
+  } else if (c.subject === 'เคมี') {
+    const hex = (x, y) => `<polygon points="${[0, 1, 2, 3, 4, 5].map(i => [x + 22 * Math.cos(Math.PI / 3 * i + Math.PI / 6), y + 22 * Math.sin(Math.PI / 3 * i + Math.PI / 6)].map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${ink}" stroke-width="2"/>`;
+    d = hex(170, 80) + hex(208, 102) + hex(208, 58) + `<circle cx="246" cy="124" r="5" fill="${ink}"/>`;
+  } else if (c.subject === 'ชีววิทยา') {
+    d = `<ellipse cx="200" cy="86" rx="80" ry="48" fill="#fff" stroke="${ink}" stroke-width="2"/><circle cx="214" cy="80" r="17" fill="none" stroke="${ink}" stroke-width="2"/><circle cx="214" cy="80" r="6" fill="${ink}"/><path d="M150 96 q14 -10 26 0 t26 0" fill="none" stroke="${ink}" stroke-width="2"/>`;
+  } else if (/ไฟฟ้า|ประจุ|แม่เหล็ก/.test(c.title)) {
+    // ประจุบวก-ลบ + เส้นสนาม
+    const q = (x, s, col) => `<circle cx="${x}" cy="70" r="15" fill="#fff" stroke="${col}" stroke-width="2.2"/><text x="${x}" y="77" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="20" fill="${col}">${s}</text>`;
+    d = [-46, -24, 24, 46].map(k => `<path d="M118 ${70 + k * .35} C 160 ${70 + k * 1.6} 200 ${70 + k * 1.6} 242 ${70 + k * .35}" fill="none" stroke="${ink}" stroke-width="1.8" stroke-dasharray="5 5"/>`).join('')
+      + `<line x1="118" y1="70" x2="242" y2="70" stroke="${ink}" stroke-width="1.8"/><path d="M184 70 l-8 -4 m8 4 l-8 4" stroke="${ink}" stroke-width="1.8" fill="none"/>` + q(100, '+', '#e8693a') + q(260, '−', ink);
+  } else if (/คลื่น|เสียง|แสง|สั่น/.test(c.title)) {
+    const wave = (amp, y, col, dash) => { let p = `M30 ${y}`; for (let x = 30; x <= 300; x += 5) p += ` L${x} ${(y - amp * Math.sin((x - 30) / 22)).toFixed(1)}`; return `<path d="${p}" fill="none" stroke="${col}" stroke-width="2.2"${dash ? ' stroke-dasharray="5 5"' : ''}/>`; };
+    d = wave(26, 68, ink) + wave(14, 68, '#e8693a', 1) + `<line x1="30" y1="68" x2="300" y2="68" stroke="${ink}" stroke-opacity=".35"/>`;
+  } else {
+    // โพรเจกไทล์ + เวกเตอร์ (ความสูงเปลี่ยนตามรหัสคอร์ส)
+    const top = 26 + h % 26, x0 = 60, x1 = 290, xm = (x0 + x1) / 2, y0 = 122;
+    d = `<line x1="40" y1="${y0}" x2="305" y2="${y0}" stroke="${ink}" stroke-width="2"/>
+      <path d="M${x0} ${y0} Q ${xm} ${2 * top - y0} ${x1} ${y0}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-dasharray="6 6"/>
+      <circle cx="${xm}" cy="${top}" r="8" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
+      <path d="M${xm} ${top} l34 0 m-7 -4 l7 4 l-7 4" stroke="#e8693a" stroke-width="2.4" fill="none"/>
+      <path d="M${xm} ${top} l0 24 m-4 -7 l4 7 l4 -7" stroke="#e8693a" stroke-width="2.4" fill="none"/>
+      <path d="M${x0 + 34} ${y0} A 34 34 0 0 0 ${x0 + 26} ${y0 - 20}" fill="none" stroke="${ink}" stroke-width="1.6"/>`;
+  }
+  return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/><g stroke="${ink}" stroke-opacity=".09">${g.join('')}</g>${d}<text x="18" y="${H - 16}" font-family="Itim, cursive" font-size="19" fill="${ink}">${esc(c.subject || 'วิทยาศาสตร์')}${c.level ? ' · ' + esc(c.level) : ''}</text></svg>`;
+}
+function ring(pct, s) {
+  const r = 24, C = 2 * Math.PI * r;
+  return `<span class="ring" style="--s:${s || 58}px" role="img" aria-label="เรียนแล้ว ${pct}%"><svg viewBox="0 0 58 58"><circle class="bg" cx="29" cy="29" r="${r}"/><circle class="fg" cx="29" cy="29" r="${r}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - pct / 100)).toFixed(1)}"/></svg><span>${pct}%</span></span>`;
+}
+const medal = pct => pct >= 100 ? '<span class="medal done">เรียนครบแล้ว!</span>' : pct >= 75 ? '<span class="medal">อีกนิดเดียว</span>' : pct >= 50 ? '<span class="medal">ผ่านครึ่งทางแล้ว</span>' : pct >= 25 ? '<span class="medal">เริ่มได้สวย</span>' : '';
 
 /* ===================== สถานะ ===================== */
 const S = { courses: null, listErr: '', progress: {}, request: {}, lessonCache: {} };
@@ -372,25 +460,37 @@ async function loadUserCourseState(list) {
     else S.request[c.id] = await KPC.getMyRequest(c.id);
   }));
 }
-const pctOf = c => { const p = S.progress[c.id], o = c.outline || []; if (!p || !o.length) return 0; return Math.round((p.done || []).filter(x => o.some(l => l.id === x)).length / o.length * 100); };
+const doneOf = c => ((S.progress[c.id] || {}).done || []).filter(x => (c.outline || []).some(l => l.id === x));
+const pctOf = c => { const o = c.outline || []; return o.length ? Math.round(doneOf(c).length / o.length * 100) : 0; };
+// บทที่ควรเรียนต่อ: บทล่าสุดถ้ายังไม่จบ ไม่งั้นบทถัดไปที่ยังไม่ได้ติ๊ก
+function nextIndex(c) {
+  const o = c.outline || [], p = S.progress[c.id] || {}, done = doneOf(c);
+  const li = o.findIndex(l => l.id === p.last);
+  if (li >= 0 && !done.includes(p.last)) return li;
+  const after = o.findIndex((l, j) => j > li && !done.includes(l.id));
+  if (after >= 0) return after;
+  const any = o.findIndex(l => !done.includes(l.id));
+  return any >= 0 ? any : Math.max(0, li);
+}
 const firstFree = () => { for (const c of S.courses || []) { const j = (c.outline || []).findIndex(l => l.free); if (j >= 0) return [c, j + 1]; } return null; };
+const findLesson = re => { for (const c of S.courses || []) { const j = (c.outline || []).findIndex(l => re.test(l.title)); if (j >= 0) return [c, j + 1]; } return null; };
 
 /* ===================== การ์ดคอร์ส ===================== */
 function card(c) {
-  const [a, b, en] = subjOf(c.subject), n = (c.outline || []).length, free = (c.outline || []).filter(l => l.free).length;
-  const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c);
-  const st = !user ? (free ? '<span class="pill ok">🎁 ทดลองเรียนฟรี</span>' : '')
-    : own ? '<span class="pill role">🧑‍🏫 คอร์สที่ฉันสอน</span>'
-    : ok ? '<span class="pill ok">✓ เข้าเรียนได้</span>'
-    : S.request[c.id] ? '<span class="pill warn">⏳ รอครูอนุมัติ</span>' : '<span class="pill">🔒 ขอสิทธิ์เรียน</span>';
-  return `<a class="cc" href="${courseUrl(c)}" style="--a:${a};--b:${b}">
-    <div class="cc-cv">${safeUrl(c.cover) ? `<img src="${esc(c.cover)}" alt="" loading="lazy">` : `<em>${esc(en)}</em>`}<span class="cc-st">${st}</span>${c.published === false ? '<span class="cc-dr"><span class="pill warn">ร่าง</span></span>' : ''}</div>
+  const n = (c.outline || []).length, free = (c.outline || []).filter(l => l.free).length;
+  const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c), track = ok && user && !own;
+  const st = !user ? (free ? '<span class="sticker free">ลองเรียนฟรี</span>' : '')
+    : own ? '<span class="sticker role">คอร์สที่ฉันสอน</span>'
+    : ok ? (pct >= 100 ? '<span class="sticker ok">✓ เรียนครบ</span>' : '<span class="sticker ok">เข้าเรียนได้</span>')
+    : S.request[c.id] ? '<span class="sticker warn">รอครูอนุมัติ</span>' : '<span class="sticker">ขอสิทธิ์เรียน</span>';
+  return `<a class="cc" href="${courseUrl(c, track ? nextIndex(c) + 1 : 0)}">
+    <div class="cc-cv">${coverArt(c)}${st}${c.published === false ? '<span class="sticker l">ร่าง</span>' : ''}</div>
     <div class="cc-bd">
-      <div class="cc-tags">${[c.subject, c.level].filter(Boolean).map(x => `<span class="pill">${esc(x)}</span>`).join('')}</div>
+      <div class="cc-tags">${[c.subject, c.level].filter(Boolean).map(esc).join(' · ')}</div>
       <h3>${esc(c.title)}</h3>
       ${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
-      <div class="cc-meta"><span>📖 ${n} บทเรียน${free ? ` · <span class="free">ฟรี ${free} บท</span>` : ''}</span><span>${esc(c.author || '')}</span></div>
-      ${ok && user && !own ? `<div class="cc-pr"><span class="bar"><i style="width:${pct}%"></i></span>${pct}%</div>` : ''}
+      ${track ? `<div class="cc-pr"><span class="bar"><i style="width:${pct}%"></i></span>${doneOf(c).length}/${n}</div>${medal(pct)}`
+        : `<div class="cc-meta"><span>${n} บทเรียน${free ? ` · <span class="free">ฟรี ${free} บท</span>` : ''}</span><span>${esc(c.author || '')}</span></div>`}
     </div></a>`;
 }
 const grid = list => `<div class="cgrid">${list.map(card).join('')}</div>`;
@@ -400,57 +500,118 @@ function renderHome() {
   document.title = 'คอร์สออนไลน์ · KP Science';
   setNav('home');
   $('app').innerHTML = KPC.user() ? homeUser() : homeGuest();
+  if (!KPC.user()) initQuiz();
 }
+
+const ICONS = {
+  watch: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1c2230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="38" height="26" rx="4"/><path d="M19 16v12l10-6z" fill="#ffe270"/><path d="M15 40h16"/></svg>',
+  play: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1c2230" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 36h34"/><path d="M8 36 Q 23 2 38 36" stroke-dasharray="4 4"/><circle cx="23" cy="19" r="4" fill="#ffe270"/><path d="M12 30v-8M9 25l3-3 3 3" stroke="#e8693a"/></svg>',
+  check: '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#1c2230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="5" width="30" height="36" rx="4"/><path d="M14 26h19" stroke="#ffe270" stroke-width="6"/><path d="M14 15l3 3 6-6" stroke="#17845a"/><path d="M27 15h6M14 26h19M14 33h12"/></svg>',
+};
 
 function homeGuest() {
   const L = S.courses || [], ff = firstFree();
-  const tryBtn = ff ? `<a class="btn solid lg" href="${courseUrl(ff[0], ff[1])}">▶ ลองเรียนบทฟรี</a>` : '';
   return `
-  <section class="hero">
+  <section class="hero-band paper"><div class="wrap hero">
     <div>
-      <span class="eyebrow"><i></i>KP SCIENCE · ONLINE COURSE</span>
-      <h1>เรียนฟิสิกส์<br>ให้<em>เห็นภาพ</em> ไม่ใช่แค่จำสูตร</h1>
-      <p class="lead">ดูคลิปบรรยายสั้น ๆ แล้วลองปรับค่าในซิมูเลชันด้วยตัวเอง เรียนเป็นบท ตามจังหวะของตัวเอง เห็นความคืบหน้าทุกบท</p>
-      <div class="cta">${tryBtn}<button class="btn lg" type="button" data-login="register">สมัครฟรี</button></div>
-      <div class="trust"><span>สมัครฟรี</span><span>เรียนบนมือถือได้</span><span>มีบทให้ลองก่อน</span></div>
+      <span class="byline">ครูโกเมน · KP Science</span>
+      <h1>เรียนฟิสิกส์ให้<span class="mark">เห็นภาพ</span><br>ไม่ใช่แค่ท่องสูตร</h1>
+      <p class="lead">ดูคลิปสั้น ๆ แล้วลองเล่นกับซิมูเลชันด้วยมือตัวเอง เรียนทีละบทตามจังหวะของตัวเอง และรู้เสมอว่าตัวเองไปถึงไหนแล้ว</p>
+      <div class="cta">${ff ? `<a class="btn solid lg" href="${courseUrl(ff[0], ff[1])}">ลองเรียนบทฟรี</a>` : ''}<button class="btn lg" type="button" data-login="register">สมัครฟรี</button></div>
+      <p class="fine"><b>ไม่มีค่าใช้จ่าย</b> · ใช้ Google หรืออีเมลก็ได้ · เปิดบนมือถือได้</p>
     </div>
-    <div class="mock" aria-hidden="true">
-      <div class="mock-v">
-        <svg viewBox="0 0 320 180" preserveAspectRatio="none"><path d="M10 160 Q 110 -20 210 70 T 310 150" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2.5" stroke-dasharray="6 6"/><circle cx="210" cy="70" r="9" fill="#fff"/><line x1="10" y1="160" x2="310" y2="160" stroke="rgba(255,255,255,.35)"/></svg>
-        <span class="play">▶</span>
+    <div class="quiz-wrap">
+      <span class="quiz-note">ทายก่อน แล้วค่อยดูเฉลยนะ</span>
+      <div class="quiz" id="quiz">
+        <div class="quiz-h"><small>คำถามอุ่นเครื่อง</small><b>เตะลูกบอลแรงเท่ากันทุกครั้ง… เตะทำมุมเท่าไรถึงไปไกลที่สุด?</b></div>
+        <svg class="sim" id="qsvg" viewBox="0 0 400 220" role="img" aria-label="ภาพจำลองการเคลื่อนที่แบบโพรเจกไทล์"></svg>
+        <div class="quiz-c">
+          <div class="quiz-opts" id="qopts"><button type="button" data-a="30">30°</button><button type="button" data-a="45">45°</button><button type="button" data-a="60">60°</button></div>
+          <div class="quiz-msg" id="qmsg" aria-live="polite">เลือกคำตอบที่คิดว่าใช่</div>
+          <div class="quiz-hook" id="qhook"></div>
+          <label class="quiz-try" id="qtry">ลองมุมอื่น <input type="range" id="qang" min="5" max="85" value="45" aria-label="มุมที่เตะ"><output id="qout">45° · 40.8 m</output></label>
+        </div>
       </div>
-      <div class="mock-b">
-        <b>การเคลื่อนที่แบบโพรเจกไทล์</b>
-        <div class="mock-row"><span class="on">📄 เนื้อหา</span><span>🧪 Simulation</span><span>✅ แบบทดสอบ</span></div>
-        <div class="mock-p"><span class="bar"><i style="width:75%"></i></span>เรียนแล้ว 3/4 บท</div>
-      </div>
-      <div class="float">✓ <b>บันทึกแล้ว</b> — เก่งมาก!</div>
+    </div>
+  </div></section>
+
+  <section class="wrap sec">
+    <div class="sec-h"><div><h2>เรียนแต่ละบทแบบนี้</h2><p>ไม่ต้องนั่งฟังบรรยายยาว ๆ — ดู ลอง แล้วเช็กตัวเอง</p></div></div>
+    <div class="how">
+      <div><span class="n">1</span>${ICONS.watch}<h3>ดูคลิปสั้น</h3><p>บทละไม่กี่นาที หยุด ย้อน ดูซ้ำได้ตามใจ</p></div>
+      <div><span class="n">2</span>${ICONS.play}<h3>ลองเล่นซิมูเลชัน</h3><p>ปรับมุม แรง ความเร็ว แล้วดูผลทันที เห็นว่าสูตรมาจากไหน</p></div>
+      <div><span class="n">3</span>${ICONS.check}<h3>เช็กแล้วติ๊กว่าเรียนแล้ว</h3><p>ทำแบบทดสอบท้ายบท ระบบจำไว้ว่าถึงบทไหน กลับมาเรียนต่อได้ทุกเครื่อง</p></div>
     </div>
   </section>
 
-  <section class="sec">
-    <div class="feats">
-      <div class="feat"><div class="fi">🎬</div><h3>คลิปสั้น ตรงประเด็น</h3><p>บทละไม่กี่นาที ดูซ้ำได้ไม่จำกัด หยุดตรงไหนกลับมาเรียนต่อได้</p></div>
-      <div class="feat"><div class="fi">🧪</div><h3>ซิมูเลชันลองเองได้</h3><p>ปรับมุม ความเร็ว แรง แล้วดูผลทันที เข้าใจที่มาของสูตร</p></div>
-      <div class="feat"><div class="fi">📈</div><h3>เห็นความคืบหน้า</h3><p>ติ๊กบทที่เรียนจบ ระบบจำบทล่าสุดให้ ครูก็ช่วยติดตามได้</p></div>
-    </div>
+  <section class="wrap sec" id="all">
+    <div class="sec-h"><div><h2>คอร์สที่เปิดสอน</h2><p>บทที่เขียนว่า <b style="color:var(--orange)">ฟรี</b> เปิดดูได้เลย ไม่ต้องสมัคร</p></div></div>
+    ${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน — เร็ว ๆ นี้')}</div>`}
   </section>
 
-  <section class="sec" id="all">
-    <div class="sec-h"><div><h2>คอร์สที่เปิดสอน</h2><p>บทที่มีป้าย <span class="pill ok">ฟรี</span> เปิดดูได้เลยไม่ต้องสมัคร</p></div></div>
-    ${L.length ? grid(L) : `<div class="empty"><span class="ic">📚</span>${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน — เร็ว ๆ นี้')}</div>`}
-  </section>
+  <section class="wrap sec"><div class="start">
+    <div><span class="hand" style="color:var(--orange);font-size:19px">เริ่มยังไงดี?</span><h2>เริ่มเรียนได้ใน 3 ขั้น</h2><p class="sub">สมัครครั้งเดียว เรียนได้ทุกคอร์สที่ครูอนุมัติ</p>
+      <div class="cta">${ff ? `<a class="btn" href="${courseUrl(ff[0], ff[1])}">ลองบทฟรีก่อน</a>` : ''}<button class="btn solid" type="button" data-login="register">สมัครฟรี</button></div></div>
+    <ol>
+      <li><div><b>สมัครบัญชีฟรี</b><span>ใช้ Google หรืออีเมลก็ได้ ไม่ถึงนาที</span></div></li>
+      <li><div><b>กดขอสิทธิ์เรียน</b><span>เลือกคอร์ส แล้วบอกครูว่าเป็นใคร (ชื่อ · ห้อง · โรงเรียน)</span></div></li>
+      <li><div><b>ครูอนุมัติ แล้วเริ่มเรียนได้เลย</b><span>ทุกบทเปิดให้ เรียนต่อจากบทล่าสุดได้ทุกเครื่อง</span></div></li>
+    </ol>
+  </div></section>`;
+}
 
-  <section class="sec">
-    <div class="sec-h"><h2>เริ่มเรียนใน 3 ขั้น</h2></div>
-    <div class="steps">
-      <div class="step"><h3>สมัครบัญชีฟรี</h3><p>ใช้ Google หรืออีเมลก็ได้ ใช้เวลาไม่ถึงนาที</p></div>
-      <div class="step"><h3>กดขอสิทธิ์เรียน</h3><p>เลือกคอร์ส บอกครูว่าเป็นใคร (ชื่อ · ห้อง · โรงเรียน)</p></div>
-      <div class="step"><h3>ครูอนุมัติ เริ่มเรียนได้เลย</h3><p>ทุกบทเปิดให้ เรียนต่อจากบทล่าสุดได้ทุกเครื่อง</p></div>
-    </div>
-  </section>
-
-  <section class="sec"><div class="band"><div><h3>พร้อมเริ่มแล้วใช่ไหม</h3><p>สมัครฟรี แล้วขอสิทธิ์คอร์สที่สนใจ</p></div><span class="sp"></span>${ff ? `<a class="btn" href="${courseUrl(ff[0], ff[1])}">ลองบทฟรีก่อน</a>` : ''}<button class="btn solid" type="button" data-login="register">สมัครฟรี</button></div></section>`;
+/* ---------- ซิมจิ๋ว: ทายมุมที่เตะไปไกลสุด (v = 20 m/s, g = 9.8 m/s²) ---------- */
+function initQuiz() {
+  const svg = $('qsvg'); if (!svg) return;
+  const V = 20, G = 9.8, SC = 8, X0 = 30, Y0 = 196, COL = { 30: '#e8693a', 45: '#2456c9', 60: '#17845a' };
+  const R = a => V * V * Math.sin(2 * a * Math.PI / 180) / G;
+  const T = a => 2 * V * Math.sin(a * Math.PI / 180) / G;
+  const pt = (a, t) => { const r = a * Math.PI / 180; return [X0 + SC * V * Math.cos(r) * t, Y0 - SC * (V * Math.sin(r) * t - G * t * t / 2)]; };
+  const pathD = (a, tt) => { const n = Math.max(2, Math.round(40 * tt / T(a))); let d = ''; for (let i = 0; i <= n; i++) { const [x, y] = pt(a, tt * i / n); d += (i ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); } return d; };
+  const grid = [];
+  for (let x = X0; x < 400; x += 40) grid.push(`<line x1="${x}" y1="0" x2="${x}" y2="220"/>`);
+  for (let y = Y0; y > 0; y -= 40) grid.push(`<line x1="0" y1="${y}" x2="400" y2="${y}"/>`);
+  const ticks = [10, 20, 30, 40].map(m => `<text x="${X0 + m * SC}" y="${Y0 + 16}" text-anchor="middle">${m} m</text>`).join('');
+  svg.innerHTML = `<g stroke="#2456c9" stroke-opacity=".08">${grid.join('')}</g><line x1="0" y1="${Y0}" x2="400" y2="${Y0}" stroke="#1c2230" stroke-width="2"/>
+    <g font-family="Share Tech Mono, monospace" font-size="11" fill="#6a7180">${ticks}</g><circle cx="${X0}" cy="${Y0 - 5}" r="5" fill="#1c2230"/><g id="qpaths"></g><g id="qballs"></g><g id="qlabels" font-family="Share Tech Mono, monospace" font-size="12"></g>`;
+  const paths = svg.querySelector('#qpaths'), balls = svg.querySelector('#qballs'), labels = svg.querySelector('#qlabels');
+  function launch(angles, done) {
+    labels.innerHTML = '';
+    paths.innerHTML = angles.map(a => `<path fill="none" stroke="${COL[a] || '#2456c9'}" stroke-width="2.4" stroke-dasharray="5 5" data-a="${a}"/>`).join('');
+    balls.innerHTML = angles.map(a => `<circle r="7" fill="#fff" stroke="${COL[a] || '#2456c9'}" stroke-width="2.4" data-a="${a}"/>`).join('');
+    const tMax = Math.max(...angles.map(T)), speed = 1.7;
+    const draw = t => angles.forEach(a => {
+      const tt = Math.min(t, T(a));
+      paths.querySelector(`[data-a="${a}"]`).setAttribute('d', pathD(a, tt));
+      const [bx, by] = pt(a, tt), b = balls.querySelector(`[data-a="${a}"]`); b.setAttribute('cx', bx); b.setAttribute('cy', by - 6);
+    });
+    const end = () => { labels.innerHTML = angles.length > 1 ? angles.map(a => { const [x, y] = pt(a, T(a) / 2); return `<text x="${x}" y="${y - 12}" text-anchor="middle" fill="${COL[a]}">${a}°</text>`; }).join('') : ''; done && done(); };
+    if (REDUCED) { draw(tMax); end(); return; }
+    const t0 = performance.now();
+    const step = now => { const t = (now - t0) / 1000 * speed; draw(t); if (t < tMax) requestAnimationFrame(step); else end(); };
+    requestAnimationFrame(step);
+  }
+  launch([45], null);
+  $('qopts').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    const pick = Number(b.dataset.a);
+    $('qopts').querySelectorAll('button').forEach(x => { x.disabled = true; x.classList.toggle('pick', x === b); });
+    $('qmsg').innerHTML = 'ดูกัน… <b>เตะ 3 ลูกพร้อมกัน</b>';
+    launch([30, 45, 60], () => {
+      $('qopts').querySelectorAll('button').forEach(x => x.classList.toggle('best', x.dataset.a === '45'));
+      $('qmsg').innerHTML = pick === 45 ? '<b>ถูกต้อง!</b> 45° ไปไกลสุด ประมาณ 40.8 m' : `<b>เกือบแล้ว!</b> ${pick}° ไปได้ ${R(pick).toFixed(1)} m แต่ 45° ไปไกลสุด 40.8 m`;
+      const pj = findLesson(/โพรเจกไทล์|projectile/i);
+      $('qhook').innerHTML = `<span class="q">เอ๊ะ… 30° กับ 60° ตกจุดเดียวกันพอดีเลย ทำไมนะ?</span><br>${pj ? `คำตอบอยู่ในบท <a href="${courseUrl(pj[0], pj[1])}">${esc(pj[0].outline[pj[1] - 1].title)} →</a>` : 'สมัครแล้วมาหาคำตอบในคอร์สกัน'}`;
+      $('qhook').classList.add('on'); $('qtry').classList.add('on');
+    });
+  });
+  $('qang').addEventListener('input', e => {
+    const a = Number(e.target.value);
+    labels.innerHTML = '';
+    paths.innerHTML = `<path d="${pathD(a, T(a))}" fill="none" stroke="#2456c9" stroke-width="2.4" stroke-dasharray="5 5"/>`;
+    const [bx] = pt(a, T(a)); balls.innerHTML = `<circle cx="${bx}" cy="${Y0 - 6}" r="7" fill="#fff" stroke="#2456c9" stroke-width="2.4"/>`;
+    $('qout').textContent = `${a}° · ${R(a).toFixed(1)} m`;
+  });
 }
 
 function homeUser() {
@@ -459,66 +620,66 @@ function homeUser() {
   const mine = L.filter(c => KPC.canCourse(c.id, c) && !teach.includes(c) && role !== 'admin');
   const pending = L.filter(c => !KPC.canCourse(c.id, c) && S.request[c.id]);
   const others = L.filter(c => !mine.includes(c) && !teach.includes(c) && !pending.includes(c));
-  // บทล่าสุดที่เปิด (คอร์สที่ last ใหม่สุด)
-  const last = mine.map(c => ({ c, p: S.progress[c.id] })).filter(x => x.p && x.p.last)
+  const active = mine.filter(c => pctOf(c) < 100);
+  const recent = (active.length ? active : mine).map(c => ({ c, p: S.progress[c.id] || {} }))
     .sort((x, y) => ((y.p.lastAt && y.p.lastAt.seconds) || 0) - ((x.p.lastAt && x.p.lastAt.seconds) || 0))[0];
-  const name = KPC.displayName();
   let resume = '';
-  if (last || mine[0]) {
-    const c = last ? last.c : mine[0], o = c.outline || [];
-    const j = last ? Math.max(0, o.findIndex(l => l.id === last.p.last)) : 0;
-    const [a, b] = subjOf(c.subject), pct = pctOf(c);
-    resume = `<a class="resume" href="${courseUrl(c, j + 1)}" style="--a:${a};--b:${b}">
-      <div class="resume-cv"><span class="play">▶</span></div>
-      <div class="resume-bd"><small>${last ? 'เรียนต่อจากครั้งก่อน' : 'เริ่มเรียนได้เลย'}</small><h3>${esc((o[j] || {}).title || c.title)}</h3>
-        <div class="meta">${esc(c.title)} · บทที่ ${j + 1}/${o.length}</div>
-        <div class="pr"><span class="bar"><i style="width:${pct}%"></i></span><span>${pct}%</span></div></div></a>`;
+  if (recent) {
+    const c = recent.c, o = c.outline || [], j = nextIndex(c), pct = pctOf(c), started = !!recent.p.last;
+    resume = `<a class="resume" href="${courseUrl(c, j + 1)}">
+      <div class="resume-cv">${coverArt(c)}</div>
+      <div class="resume-bd"><small>${pct >= 100 ? 'ทบทวนได้ทุกเมื่อ' : started ? 'เรียนต่อจากครั้งก่อน' : 'เริ่มบทแรกกันเลย'}</small><h3>${esc((o[j] || {}).title || c.title)}</h3>
+        <div class="meta">${esc(c.title)} · บทที่ ${j + 1} จาก ${o.length}</div></div>
+      <div class="go">${ring(pct)}<span class="btn solid">${started ? 'เรียนต่อ' : 'เริ่มเรียน'} →</span></div></a>`;
   }
-  const staff = KPC.isStaff() ? `<div class="staffbar"><span class="pill role">${KPC.ROLE[role].icon} ${KPC.ROLE[role].label}</span><span>${role === 'admin' ? 'คุณดูเว็บนี้ในฐานะแอดมิน — เห็นทุกคอร์ส รวมถึงร่าง' : 'คุณดูเว็บนี้ในฐานะครู — เปิดบทเรียนของคอร์สที่สอนได้ทุกบท'}</span><span class="sp"></span><a class="btn sm" href="admin.html">ไปห้องครู →</a></div>` : '';
-  const hello = new Date().getHours() < 12 ? 'สวัสดีตอนเช้า' : new Date().getHours() < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น';
-  return `
-  <section class="dash-h"><div><h1>${hello}, ${esc(name)} 👋</h1><p>${mine.length ? `คุณมี ${mine.length} คอร์สที่เรียนได้` : role === 'student' ? 'ยังไม่มีคอร์ส — เลือกคอร์สด้านล่างแล้วกดขอสิทธิ์เรียน' : ''}</p></div></section>
+  const allPct = mine.length ? Math.round(mine.reduce((s, c) => s + pctOf(c), 0) / mine.length) : 0;
+  const cheer = !mine.length ? (role === 'student' ? 'ยังไม่มีคอร์ส — เลือกคอร์สด้านล่างแล้วกดขอสิทธิ์เรียน' : '')
+    : allPct >= 100 ? 'เรียนครบทุกคอร์สแล้ว เยี่ยมมาก!' : allPct >= 50 ? 'มาได้ครึ่งทางแล้ว ไปต่อกัน' : allPct > 0 ? 'เริ่มต้นได้ดี วันนี้เรียนต่ออีกสักบทไหม' : 'พร้อมเริ่มบทแรกแล้ว';
+  const staff = KPC.isStaff() ? `<div class="staffbar"><span class="pill role">${KPC.ROLE[role].label}</span><span>${role === 'admin' ? 'คุณดูเว็บนี้ในฐานะแอดมิน — เห็นทุกคอร์ส รวมถึงร่าง' : 'คุณดูเว็บนี้ในฐานะครู — เปิดบทเรียนของคอร์สที่สอนได้ทุกบท'}</span><span class="sp"></span><a class="btn sm" href="admin.html">ไปห้องครู →</a></div>` : '';
+  const hr = new Date().getHours(), hello = hr < 12 ? 'สวัสดีตอนเช้า' : hr < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น';
+  return `<div class="wrap">
+  <section class="dash-h"><span class="hand">${hello},</span><h1>${esc(KPC.displayName())}</h1>${cheer ? `<p>${cheer}</p>` : ''}</section>
   ${staff}
-  ${resume ? `<section class="sec" style="padding-top:22px">${resume}</section>` : ''}
+  ${resume ? `<section class="sec" style="padding-top:24px">${resume}</section>` : ''}
   ${teach.length ? `<section class="sec"><div class="sec-h"><h2>คอร์สที่ฉันสอน</h2><a class="btn sm" href="admin.html">จัดการคอร์ส →</a></div>${grid(teach)}</section>` : ''}
   ${mine.length ? `<section class="sec"><div class="sec-h"><h2>คอร์สของฉัน</h2></div>${grid(mine)}</section>` : ''}
-  ${pending.length ? `<section class="sec"><div class="sec-h"><div><h2>รอครูอนุมัติ</h2><p>ครูจะอนุมัติให้เร็ว ๆ นี้ — กด “ตรวจอีกครั้ง” เพื่ออัปเดต</p></div><button class="btn sm" type="button" data-recheck>🔄 ตรวจอีกครั้ง</button></div>
-    <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">⏳ รออนุมัติ</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
-  ${others.length ? `<section class="sec"><div class="sec-h"><div><h2>${mine.length || teach.length || role === 'admin' ? (role === 'admin' ? 'คอร์สทั้งหมด' : 'คอร์สอื่นที่เปิดสอน') : 'เลือกคอร์สที่อยากเรียน'}</h2>${role === 'student' ? '<p>เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”</p>' : ''}</div></div>${grid(others)}</section>` : ''}
-  ${!L.length ? `<div class="empty" style="margin-top:24px"><span class="ic">📚</span>${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>` : ''}`;
+  ${pending.length ? `<section class="sec"><div class="sec-h"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะย้ายขึ้นไปอยู่ใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
+    <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">รออนุมัติ</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
+  ${others.length ? `<section class="sec"><div class="sec-h"><div><h2>${role === 'admin' ? 'คอร์สทั้งหมด' : mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน'}</h2>${role === 'student' ? '<p>เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”</p>' : ''}</div></div>${grid(others)}</section>` : ''}
+  ${!L.length ? `<div class="empty" style="margin-top:24px">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>` : ''}</div>`;
 }
 
 function renderAll() {
   document.title = 'คอร์สทั้งหมด · KP Science';
   setNav('courses');
   const L = S.courses || [];
-  $('app').innerHTML = `<section class="dash-h"><div><h1>คอร์สทั้งหมด</h1><p>${L.length} คอร์ส${KPC.user() ? '' : ' · บทที่มีป้ายฟรีเปิดดูได้เลย'}</p></div></section>
-    <section class="sec" style="padding-top:18px">${L.length ? grid(L) : `<div class="empty"><span class="ic">📚</span>${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section>`;
+  $('app').innerHTML = `<div class="wrap"><section class="dash-h"><span class="hand">เลือกเรียนได้เลย</span><h1>คอร์สทั้งหมด</h1><p>${L.length} คอร์ส${KPC.user() ? '' : ' · บทที่เขียนว่าฟรีเปิดดูได้เลย'}</p></section>
+    <section class="sec" style="padding-top:20px">${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section></div>`;
 }
 
 /* ===================== หน้าคอร์ส ===================== */
-const L_ICON = { text: '📄', sim: '🧪', doc: '📑', quiz: '✅' };
+const L_ICON = { sim: '🧪', quiz: '✅' };
 
 function tocHtml(c, i) {
-  const outline = c.outline || [], done = (S.progress[c.id] || {}).done || [], ok = KPC.canCourse(c.id, c), track = ok && KPC.user() && !KPC.ownsCourse(c);
-  const pct = pctOf(c), units = [];
+  const outline = c.outline || [], done = doneOf(c), ok = KPC.canCourse(c.id, c), track = ok && KPC.user() && !KPC.ownsCourse(c);
+  const units = [];
   outline.forEach((l, j) => { const u = l.unit || ''; if (!units.length || units[units.length - 1].name !== u) units.push({ name: u, items: [] }); units[units.length - 1].items.push([l, j]); });
   const row = ([l, j]) => {
     const d = done.includes(l.id), locked = !ok && !l.free;
     return `<button type="button" class="${j === i ? 'on' : ''}${d ? ' done' : ''}" data-go="${courseUrl(c, j + 1)}"><span class="n">${d ? '✓' : j + 1}</span><span class="t">${esc(l.title)}</span>${locked ? '<span class="lk" aria-label="ล็อก">🔒</span>' : !ok && l.free ? '<span class="d free">ฟรี</span>' : l.dur ? `<span class="d">${esc(l.dur)}</span>` : ''}</button>`;
   };
-  return `<div class="toc-h"><b><span>สารบัญ · ${outline.length} บท</span>${track ? `<small>${pct}%</small>` : ''}</b>${track ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}</div>
-    ${units.map((u, ui) => u.name ? `<details class="unit"${u.items.some(([, j]) => j === i) || units.length < 4 ? ' open' : ''}><summary><span class="un">${String(ui + 1).padStart(2, '0')}</span><span class="ut">${esc(u.name.replace(/^\d+\s*[.·:-]?\s*/, ''))}</span><small>${u.items.length} บท</small></summary>${u.items.map(row).join('')}</details>` : u.items.map(row).join('')).join('')}`;
+  return `<div class="toc-h"><b>สารบัญ<small>${outline.length} บท${track ? ` · เรียนแล้ว ${done.length}` : ''}</small></b>${track ? ring(pctOf(c), 46) : ''}</div>
+    ${units.map((u, ui) => u.name ? `<details class="unit"${u.items.some(([, j]) => j === i) || units.length < 4 ? ' open' : ''}><summary><span class="un">${ui + 1}.</span><span class="ut">${esc(u.name.replace(/^\d+\s*[.·:-]?\s*/, ''))}</span><small>${u.items.length} บท</small></summary>${u.items.map(row).join('')}</details>` : u.items.map(row).join('')).join('')}`;
 }
 
 function lockPanel(c) {
   const user = KPC.user(), req = S.request[c.id];
   let inner;
-  if (!user) inner = `<div class="ic">🔑</div><h3>สมัครฟรีเพื่อเรียนบทนี้</h3><p>บทนี้สำหรับนักเรียนในคอร์ส สมัครบัญชีฟรี แล้วกด “ขอสิทธิ์จากครู” ระหว่างนี้ลองบทที่มีป้ายฟรีในสารบัญได้เลย</p><div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว · เข้าสู่ระบบ</button></div>`;
-  else if (req) inner = `<div class="ic">⏳</div><h3>ส่งคำขอแล้ว — รอครูอนุมัติ</h3><p>ส่งเมื่อ ${esc(fmtDate(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b> ครูอนุมัติแล้วบทเรียนจะเปิดให้ทันที</p><div class="row"><button class="btn solid sm" type="button" data-recheck>🔄 ตรวจสิทธิ์อีกครั้ง</button><button class="btn bad sm" type="button" data-cancel="${esc(c.id)}">ยกเลิกคำขอ</button></div>`;
-  else inner = `<div class="ic">🔒</div><h3>ขอสิทธิ์เรียนคอร์สนี้</h3><p>บอกครูสั้น ๆ ว่าเป็นใคร แล้วกดขอสิทธิ์ ครูจะอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
+  if (!user) inner = `<div class="ic">🔑</div><h3>สมัครฟรีเพื่อเรียนบทนี้</h3><p>บทนี้สำหรับนักเรียนในคอร์ส สมัครบัญชีฟรี แล้วกด “ขอสิทธิ์จากครู”</p><span class="hand">ระหว่างนี้ลองบทที่เขียนว่า “ฟรี” ในสารบัญได้เลย</span><div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว</button></div>`;
+  else if (req) inner = `<div class="ic">⏳</div><h3>ส่งคำขอแล้ว รอครูอนุมัติ</h3><p>ส่งเมื่อ ${esc(fmtDate(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b> พอครูอนุมัติ บทเรียนจะเปิดให้ทันที</p><div class="row"><button class="btn solid sm" type="button" data-recheck>ตรวจสิทธิ์อีกครั้ง</button><button class="btn bad sm" type="button" data-cancel="${esc(c.id)}">ยกเลิกคำขอ</button></div>`;
+  else inner = `<div class="ic">🙋</div><h3>ขอสิทธิ์เรียนคอร์สนี้</h3><p>บอกครูสั้น ๆ ว่าเป็นใคร แล้วกดขอสิทธิ์ ครูจะอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
     <textarea id="reqNote" maxlength="300" placeholder="เช่น ด.ญ. ใจดี เรียนดี ม.4/2 โรงเรียน…" aria-label="ข้อความถึงครู"></textarea>
-    <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">🙋 ขอสิทธิ์จากครู</button></div>`;
+    <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
   return `<div class="lock">${inner}</div>`;
 }
 
@@ -527,28 +688,30 @@ async function renderCourse(cid, n) {
   setNav('courses');
   let c = (S.courses || []).find(x => x.id === cid);
   if (!c) {
-    $('app').innerHTML = '<div class="view"><div class="skel" style="width:40%"></div><div class="skel"></div></div>';
+    $('app').innerHTML = '<div class="wrap view"><div class="skel" style="width:40%"></div><div class="skel"></div></div>';
     try { c = await KPC.getCourse(cid); } catch (e) { c = null; }
     if (seq !== renderSeq) return;
-    if (!c) { $('app').innerHTML = `<div class="view">${crumb()}<div class="empty"><span class="ic">🔎</span>ไม่พบคอร์สนี้ หรือคอร์สยังไม่เปิด</div></div>`; return; }
+    if (!c) { $('app').innerHTML = `<div class="wrap view">${crumb()}<div class="empty">ไม่พบคอร์สนี้ หรือคอร์สยังไม่เปิด</div></div>`; return; }
   }
   if (KPC.user() && !(cid in S.progress) && !(cid in S.request)) await loadUserCourseState([c]);
-  const outline = c.outline || [];
+  const outline = c.outline || [], ok = KPC.canCourse(cid, c);
+  // ไม่ระบุบท → นักเรียนไปบทที่ควรเรียนต่อ
+  if (!n && ok && KPC.user() && !KPC.ownsCourse(c) && S.progress[cid]) n = nextIndex(c) + 1;
   const i = Math.min(Math.max(0, (Number(n) || 1) - 1), Math.max(0, outline.length - 1));
-  const meta = outline[i], ok = KPC.canCourse(cid, c);
+  const meta = outline[i];
   let L = null;
   if (meta && (ok || meta.free)) {
     const key = cid + '/' + meta.id;
     L = S.lessonCache[key];
     if (!L) {
-      $('app').innerHTML = `<div class="view">${head(c)}<div class="skel" style="margin-top:30px;height:260px"></div></div>`;
+      $('app').innerHTML = `<div class="wrap view">${head(c, i)}<div class="skel" style="margin-top:30px;height:260px"></div></div>`;
       try { L = await KPC.getLesson(cid, meta.id); } catch (e) { L = null; }
       if (seq !== renderSeq) return;
       if (L) S.lessonCache[key] = L;
     }
   }
   document.title = c.title + ' · KP Science';
-  $('app').innerHTML = `<div class="view">${viewCourse(c, i, meta, L, ok)}</div>`;
+  $('app').innerHTML = `<div class="wrap view">${viewCourse(c, i, meta, L, ok)}</div>`;
   typeset($('app'));
   // บันทึกว่าเรียนถึงบทไหน (ครูดูในห้องครู) — เฉพาะนักเรียน
   if (ok && L && KPC.user() && !KPC.ownsCourse(c)) {
@@ -558,34 +721,43 @@ async function renderCourse(cid, n) {
 }
 
 const crumb = c => `<div class="crumb"><a href="#/">หน้าแรก</a>›<a href="#/courses">คอร์สทั้งหมด</a>${c ? '›<span>' + esc(c.title) + '</span>' : ''}</div>`;
-function head(c) {
+function head(c, i) {
+  const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), track = ok && user && !own, o = c.outline || [];
+  const ff = o.findIndex(l => l.free);
+  let cta;
+  if (own) cta = `<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a><span class="meta">คุณดูแลคอร์สนี้</span>`;
+  else if (track) cta = `${ring(pctOf(c))}<span class="meta">เรียนแล้ว ${doneOf(c).length} จาก ${o.length} บท<br>${medal(pctOf(c)) || 'ค่อย ๆ ไปทีละบท'}</span>`;
+  else if (!ok && ff >= 0 && i !== ff) cta = `<a class="btn solid sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a><span class="meta">${o.length} บทเรียน · ฟรี ${o.filter(l => l.free).length} บท</span>`;
+  else cta = `<span class="meta">${o.length} บทเรียน${c.author ? ' · โดย ' + esc(c.author) : ''}</span>`;
   return `${crumb(c)}
-    <div class="c-head"><div>
-      <div class="c-tags">${[c.subject, c.level].filter(Boolean).map(x => `<span class="pill">${esc(x)}</span>`).join('')}${c.published === false ? '<span class="pill warn">ร่าง</span>' : ''}${KPC.ownsCourse(c) ? '<span class="pill role">🧑‍🏫 คอร์สที่คุณดูแล</span>' : ''}</div>
+    <div class="c-hero"><div class="c-hero-bd">
+      <div class="c-tags">${[c.subject, c.level].filter(Boolean).map(esc).join(' · ')}${c.published === false ? '<span class="pill warn">ร่าง</span>' : ''}</div>
       <h1>${esc(c.title)}</h1>
       ${c.summary ? `<p class="c-sum">${esc(c.summary)}</p>` : ''}
-      <div class="c-by">${c.author ? 'โดย ' + esc(c.author) + ' · ' : ''}${(c.outline || []).length} บทเรียน</div>
-    </div>${KPC.ownsCourse(c) ? `<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">✏️ แก้คอร์สนี้</a>` : ''}</div>`;
+      <div class="c-cta">${cta}</div>
+    </div><div class="c-hero-cv">${coverArt(c)}</div></div>`;
 }
 
 function viewCourse(c, i, meta, L, ok) {
-  const [a, b] = subjOf(c.subject);
   const intro = i === 0 && c.body ? `<div class="prose cintro">${renderBody(c.body)}</div>` : '';
   CUR = { c, i };
-  if (!meta) return `${head(c)}${intro}<div class="empty" style="margin-top:20px"><span class="ic">📝</span>คอร์สนี้ยังไม่มีบทเรียน</div>`;
-  const outline = c.outline;
-  const nav = `<span class="pn">${i > 0 ? `<a class="btn sm" href="${courseUrl(c, i)}">← ก่อนหน้า</a>` : ''}${i < outline.length - 1 ? `<a class="btn sm solid" href="${courseUrl(c, i + 2)}">บทถัดไป →</a>` : ''}</span>`;
-  const lh = `<div class="ls-h"><small>บทที่ ${i + 1} / ${outline.length}${meta.unit ? ' · ' + esc(meta.unit) : ''}</small><h2>${esc(meta.title)}</h2></div>`;
+  if (!meta) return `${head(c, i)}${intro}<div class="empty" style="margin-top:20px">คอร์สนี้ยังไม่มีบทเรียน</div>`;
+  const outline = c.outline, nx = outline[i + 1];
+  const canNext = nx && (ok || nx.free);
+  const nextCard = nx ? `<a class="next" href="${courseUrl(c, i + 2)}"><span><small>${canNext ? 'บทต่อไป' : 'บทต่อไป (ต้องมีสิทธิ์)'}</small><b>${esc(nx.title)}</b></span><span class="go">→</span></a>`
+    : `<span class="next" style="pointer-events:none"><span><small>จบคอร์สแล้ว</small><b>นี่คือบทสุดท้ายของคอร์ส</b></span><span class="go" style="background:var(--ok)">✓</span></span>`;
+  const prev = i > 0 ? `<a class="prevlink" href="${courseUrl(c, i)}">← บทก่อนหน้า: ${esc(outline[i - 1].title)}</a>` : '';
+  const lh = `<div class="ls-h"><small>บทที่ ${i + 1} จาก ${outline.length}${meta.unit ? ' · ' + esc(meta.unit) : ''}</small><h2>${esc(meta.title)}</h2></div>`;
   let main;
   if (!L) {
-    main = `${lockPanel(c)}${lh}<div class="ls-nav"><span></span>${nav}</div>`;
+    main = `${lockPanel(c)}${lh}<div class="ls-nav"><div class="left">${prev}</div>${nextCard}</div>`;
   } else {
     const { sims, text } = splitSims(L.body);
     const embSims = sims.filter(s => !KPC.noEmbed(s.url));
     const file = safeUrl(L.file), quiz = safeUrl(L.quiz);
     const player = L.video && ytId(L.video) ? `<div class="player"><iframe src="${esc(embedSrc(L.video))}" allow="fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(L.title)}"></iframe></div>`
       : embSims.length ? `<div class="player"><iframe src="${esc(embedSrc(embSims[0].url))}" loading="lazy" allowfullscreen title="${esc(L.title)}"></iframe></div>`
-      : `<div class="player ph" style="--a:${a};--b:${b}"><div><small>บทที่ ${i + 1}</small><b>${esc(L.title)}</b></div></div>`;
+      : `<div class="player ph">${coverArt(c)}<div class="cap"><small>บทที่ ${i + 1}</small><b>${esc(L.title)}</b></div></div>`;
     const tabs = [['text', 'เนื้อหา', true], ['sim', `Simulation${sims.length > 1 ? ' (' + sims.length + ')' : ''}`, sims.length], ['doc', 'เอกสาร', file], ['quiz', 'แบบทดสอบ', quiz]].filter(t => t[2]);
     const first = text ? 'text' : (tabs.find(t => t[0] !== 'text') || ['text'])[0];
     const panel = {
@@ -595,17 +767,32 @@ function viewCourse(c, i, meta, L, ok) {
       doc: file ? `<div class="embed doc" style="margin-top:0"><iframe src="${esc(embedSrc(file))}" loading="lazy" title="เอกสารประกอบ"></iframe></div><div class="embed-cap"><a href="${esc(file)}" target="_blank" rel="noopener">เปิดเอกสารในแท็บใหม่ ${ICON.out}</a></div>` : '',
       quiz: quiz ? `<div class="res"><span class="ri">${L_ICON.quiz}</span><span><b>แบบทดสอบท้ายบท</b><small>ทำแล้วส่งได้ทันที</small></span><span class="sp"></span><a class="btn sm solid" href="${esc(quiz)}" target="_blank" rel="noopener">ทำแบบทดสอบ ${ICON.out}</a></div>` : '',
     };
-    const done = ((S.progress[c.id] || {}).done || []).includes(L.id);
+    const done = doneOf(c).includes(L.id);
     const check = KPC.ownsCourse(c) ? '<span class="freenote">มุมมองครู · นักเรียนจะเห็นปุ่ม “เรียนบทนี้แล้ว” ตรงนี้</span>'
-      : ok && KPC.user() ? `<button type="button" class="donebtn${done ? ' on' : ''}" data-done="${esc(L.id)}" aria-pressed="${done}"><span class="bx">✓</span>${done ? 'เรียนบทนี้แล้ว' : 'ทำเครื่องหมายว่าเรียนแล้ว'}</button>`
-      : `<span class="freenote">🎁 บทเรียนทดลองฟรี${KPC.user() ? '' : ' · <button type="button" class="btn xs" data-login="register">สมัครฟรี</button> เพื่อเรียนบทอื่นและบันทึกความคืบหน้า'}</span>`;
+      : ok && KPC.user() ? `<button type="button" class="donebtn${done ? ' on' : ''}" data-done="${esc(L.id)}" aria-pressed="${done}"><span class="bx">✓</span><span class="lb">${done ? 'เรียนบทนี้แล้ว' : 'ติ๊กว่าเรียนบทนี้แล้ว'}</span></button>`
+      : `<span class="freenote">บทเรียนทดลองฟรี${KPC.user() ? '' : ' · <button type="button" class="btn xs" data-login="register">สมัครฟรี</button> เพื่อเรียนบทอื่นและบันทึกความคืบหน้า'}</span>`;
     main = `${player}${lh}
-      <div class="ls-meta">${[c.subject, c.level, L.dur && '⏱ ' + L.dur].filter(Boolean).map(x => `<span class="pill">${esc(x)}</span>`).join('')}${!ok && L.free ? '<span class="pill ok">ทดลองเรียนฟรี</span>' : ''}</div>
-      ${tabs.length > 1 ? `<div class="ltabs" role="tablist">${tabs.map(t => `<button type="button" role="tab" data-ltab="${t[0]}" class="${t[0] === first ? 'on' : ''}">${L_ICON[t[0]]} ${esc(t[1])}</button>`).join('')}</div>` : ''}
+      <div class="ls-meta">${L.dur ? `<span class="pill">⏱ ${esc(L.dur)}</span>` : ''}${!ok && L.free ? '<span class="pill warn">ทดลองเรียนฟรี</span>' : ''}</div>
+      ${tabs.length > 1 ? `<div class="ltabs" role="tablist">${tabs.map(t => `<button type="button" role="tab" data-ltab="${t[0]}" class="${t[0] === first ? 'on' : ''}">${esc(t[1])}</button>`).join('')}</div>` : ''}
       ${tabs.map(t => `<div class="lpanel" data-lpanel="${t[0]}"${t[0] === first ? '' : ' hidden'}>${panel[t[0]]}</div>`).join('')}
-      <div class="ls-nav">${check}${nav}</div>`;
+      <div class="ls-nav"><div class="left">${check}${prev}</div>${nextCard}</div>`;
   }
-  return `${head(c)}${intro}<div class="course"><div>${main}</div><nav class="toc" id="toc" aria-label="สารบัญ">${tocHtml(c, i)}</nav></div>`;
+  return `${head(c, i)}${intro}<div class="course"><div>${main}</div><nav class="toc" id="toc" aria-label="สารบัญ">${tocHtml(c, i)}</nav></div>`;
+}
+
+/* ---------- ฉลองเมื่อติ๊กเรียนแล้ว ---------- */
+function confetti(big) {
+  if (REDUCED) return;
+  const box = document.createElement('div'); box.className = 'confetti';
+  const cols = ['#2456c9', '#e8693a', '#ffe270', '#17845a', '#7046d8'];
+  for (let k = 0; k < (big ? 60 : 26); k++) {
+    const i = document.createElement('i'), a = Math.random() * Math.PI * 2, d = 90 + Math.random() * (big ? 260 : 150);
+    i.style.background = cols[k % cols.length];
+    i.style.setProperty('--x', Math.cos(a) * d + 'px'); i.style.setProperty('--y', Math.sin(a) * d + 60 + 'px'); i.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+    i.style.animationDelay = Math.random() * .12 + 's';
+    box.appendChild(i);
+  }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1500);
 }
 
 /* ===================== เหตุการณ์ ===================== */
@@ -613,7 +800,7 @@ async function recheck() {
   await KPC.refreshMe(); S.progress = {}; S.request = {}; S.lessonCache = {};
   await loadUserCourseState(S.courses || []);
   route();
-  if (CUR && location.hash.startsWith('#/c/')) toast(KPC.canCourse(CUR.c.id, CUR.c) ? '🎉 ครูอนุมัติแล้ว เข้าเรียนได้เลย' : 'ยังรอครูอนุมัติอยู่');
+  if (CUR && location.hash.startsWith('#/c/')) toast(KPC.canCourse(CUR.c.id, CUR.c) ? 'ครูอนุมัติแล้ว เข้าเรียนได้เลย' : 'ยังรอครูอนุมัติอยู่');
 }
 document.addEventListener('click', async e => {
   const t = e.target.closest('[data-ltab]');
@@ -626,7 +813,7 @@ document.addEventListener('click', async e => {
   const pl = e.target.closest('[data-play]');
   if (pl) {
     const box = document.querySelector('.player');
-    box.className = 'player'; box.removeAttribute('style');
+    box.className = 'player';
     box.innerHTML = `<iframe src="${esc(pl.dataset.play)}" allowfullscreen title="Simulation"></iframe>`;
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
@@ -643,7 +830,7 @@ document.addEventListener('click', async e => {
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
       toast('ส่งคำขอถึงครูแล้ว');
       route();
-    } catch (err) { rq.disabled = false; rq.textContent = '🙋 ขอสิทธิ์จากครู'; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
+    } catch (err) { rq.disabled = false; rq.textContent = 'ขอสิทธิ์จากครู'; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
     return;
   }
   const cn = e.target.closest('[data-cancel]');
@@ -661,10 +848,13 @@ document.addEventListener('click', async e => {
     const list = (p.done || []).filter(x => x !== lid); if (on) list.push(lid);
     p.done = list;
     dn.classList.toggle('on', on); dn.setAttribute('aria-pressed', on);
-    dn.lastChild.textContent = on ? 'เรียนบทนี้แล้ว' : 'ทำเครื่องหมายว่าเรียนแล้ว';
+    dn.querySelector('.lb').textContent = on ? 'เรียนบทนี้แล้ว' : 'ติ๊กว่าเรียนบทนี้แล้ว';
     if ($('toc')) $('toc').innerHTML = tocHtml(c, CUR.i);
+    const cta = document.querySelector('.c-cta'); if (cta && cta.querySelector('.ring')) cta.innerHTML = `${ring(pctOf(c))}<span class="meta">เรียนแล้ว ${doneOf(c).length} จาก ${(c.outline || []).length} บท<br>${medal(pctOf(c)) || 'ค่อย ๆ ไปทีละบท'}</span>`;
+    const all = doneOf(c).length >= (c.outline || []).length;
+    if (on) confetti(all);
     KPC.saveProgress(c, { done: list, total: (c.outline || []).length })
-      .then(() => { if (on) toast(list.length >= (c.outline || []).length ? '🎉 เรียนครบทุกบทแล้ว!' : 'บันทึกแล้ว — เก่งมาก!'); })
+      .then(() => { if (on) toast(all ? 'เรียนครบทุกบทแล้ว เก่งมาก!' : 'บันทึกแล้ว ไปบทต่อไปกัน'); })
       .catch(err => toast('บันทึกไม่สำเร็จ: ' + (err.code || err.message), true));
   }
 });
@@ -685,7 +875,7 @@ function openLogin(tab) { $('loginModal').classList.add('open'); loginTab(tab ||
 function closeLogin() { $('loginModal').classList.remove('open'); ['li-err', 'rg-err'].forEach(i => { $(i).textContent = ''; $(i).style.color = ''; }); }
 function loginTab(tab) {
   ['login', 'register'].forEach(t => { $('seg-' + t).classList.toggle('on', t === tab); $('pane-' + t).classList.toggle('on', t === tab); });
-  $('loginTitle').textContent = tab === 'register' ? 'สมัครบัญชีนักเรียน' : 'ยินดีต้อนรับกลับ 👋';
+  $('loginTitle').textContent = tab === 'register' ? 'สมัครบัญชีนักเรียน' : 'ยินดีต้อนรับกลับมา';
 }
 async function run(errId, fn) {
   const el = $(errId); el.style.color = 'var(--muted)'; el.textContent = 'กำลังดำเนินการ…';
@@ -716,7 +906,7 @@ $('loginModal').addEventListener('click', e => {
 });
 $('loginModal').addEventListener('keydown', e => {
   if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
-  const pane = e.target.closest('.pane'); pane.querySelector('[data-do]').click();
+  e.target.closest('.pane').querySelector('[data-do]').click();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLogin(); closeMenu(); } });
 
@@ -735,16 +925,16 @@ function updateTopbar(user) {
   const name = KPC.displayName();
   $('whoAv').textContent = (name || '?').trim().charAt(0).toUpperCase();
   $('whoName').textContent = name;
-  $('whoRole').textContent = R.icon + ' ' + R.label;
+  $('whoRole').textContent = R.label;
   $('mName').textContent = name;
   $('mEmail').textContent = user.email || '';
   $('mStaff').classList.toggle('hide', !KPC.isStaff());
-  $('mStaff').textContent = role === 'admin' ? '👑 ห้องครู (แอดมิน)' : '🧑‍🏫 ห้องครู';
+  $('mStaff').textContent = role === 'admin' ? 'ห้องครู (แอดมิน)' : 'ห้องครู';
 }
 
 // เริ่ม + เมื่อเข้า/ออกจากระบบ → โหลดบทบาท + สิทธิ์ แล้ววาดใหม่
 if (!KPC.configured) {
-  $('app').innerHTML = '<section class="dash-h"><div><h1>⚙️ ตั้งค่าเว็บ</h1><p>ยังไม่ได้ใส่ค่า Firebase ของเว็บคอร์ส — เปิดไฟล์ <b>firebase-config.js</b> แล้ววาง firebaseConfig ของโปรเจกต์คอร์ส</p></div></section>';
+  $('app').innerHTML = '<div class="wrap"><section class="dash-h"><h1>ตั้งค่าเว็บ</h1><p>ยังไม่ได้ใส่ค่า Firebase ของเว็บคอร์ส — เปิดไฟล์ <b>firebase-config.js</b> แล้ววาง firebaseConfig ของโปรเจกต์คอร์ส</p></section></div>';
 } else {
   let firstAuth = true;
   KPC.onUser(async user => {

@@ -12,32 +12,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#06090f">
+<meta name="theme-color" content="#faf7f1">
 <title>ห้องครู · คอร์สออนไลน์ KP Science</title>
 <script>
 /* KP Science — Frame Protection */
 (function(){ try{ if(window.self !== window.top){ window.top.location.href = window.self.location.href; } }catch(e){ document.documentElement.innerHTML = ''; } })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Itim&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=2">
+<link rel="stylesheet" href="course-ui.css?v=3">
 <style>
 body{font-size:15px;line-height:1.6}
 /* ---------- ประตูเข้า ---------- */
-.gate{max-width:440px;margin:10vh auto;padding:34px 30px;border:1px solid var(--line2);border-radius:18px;background:radial-gradient(70% 80% at 50% 0%,rgba(167,139,250,.14),transparent 70%),var(--surface);text-align:center;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
-.gate .ic{width:64px;height:64px;margin:0 auto;border-radius:18px;display:grid;place-items:center;font-size:30px;background:var(--surface3)}
+.gate{max-width:440px;margin:10vh auto;padding:34px 30px;border:1px solid var(--line);border-radius:18px;background:var(--surface);text-align:center;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.gate .ic{width:64px;height:64px;margin:0 auto;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--surface2)}
 .gate h1{font:700 23px var(--head)}
 .gate p{color:var(--text2);font-size:15px}
 .gate .email{font:600 15px var(--mono);background:var(--surface2);border:1px dashed var(--line2);border-radius:9px;padding:8px 12px;word-break:break-all}
 .gate .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:0;padding:12px;border-radius:10px;font:600 15px var(--head);cursor:pointer;width:100%}
-.gbtn:hover{background:#f1f5f9}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid var(--line2);box-shadow:var(--shadow-s);padding:12px;border-radius:10px;font:600 15px var(--head);cursor:pointer;width:100%}
+.gbtn:hover{background:var(--surface2)}
 
 /* ---------- โครงหน้า ---------- */
 .layout{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:calc(100vh - 60px)}
 .side{border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:4px;background:var(--surface);position:sticky;top:60px;height:calc(100vh - 60px);overflow:auto}
-.me{display:flex;align-items:center;gap:11px;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--role) 9%,var(--surface2));border:1px solid color-mix(in srgb,var(--role) 30%,transparent);margin-bottom:12px}
+.me{display:flex;align-items:center;gap:11px;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--role) 8%,#fff);border:1px solid color-mix(in srgb,var(--role) 28%,transparent);margin-bottom:12px}
 .me .avatar{width:38px;height:38px;font-size:16px}
 .me b{display:block;font:600 14.5px/1.3 var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px}
 .side h4{font:700 11.5px var(--head);letter-spacing:.1em;color:var(--muted);margin:14px 10px 6px;display:flex;align-items:center;justify-content:space-between}
@@ -55,10 +55,11 @@ body{font-size:15px;line-height:1.6}
 /* ---------- หัวหน้า ---------- */
 .ph{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:22px}
 .ph h1{font:700 26px/1.3 var(--head)}
+.ph .hand{display:block;font-size:19px;color:var(--orange)}
 .ph p{color:var(--muted)}
 .ph .sp{flex:1}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
-.stat{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px 18px}
+.stat{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px 18px;box-shadow:var(--shadow-s)}
 .stat small{display:block;font:600 13px var(--head);color:var(--muted)}
 .stat b{display:block;font:700 30px/1.25 var(--mono);margin-top:4px}
 .stat span{font-size:12.5px;color:var(--muted)}
@@ -81,7 +82,7 @@ td small{color:var(--muted)}
 .req b{font:600 14.5px var(--head)}
 .req .q{font-size:13.5px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px;margin-top:6px}
 .req small{color:var(--muted);font-size:12.5px}
-.crow{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface2);margin-bottom:8px;text-decoration:none;cursor:pointer}
+.crow{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:8px;text-decoration:none;cursor:pointer}
 .crow:hover{border-color:var(--line2)}
 .crow .bd{flex:1;min-width:0}
 .crow b{display:block;font:600 14.5px var(--head)}
@@ -93,7 +94,7 @@ td small{color:var(--muted)}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:20px;width:fit-content;max-width:100%}
 .tabs button{border:0;background:none;border-radius:8px;padding:7px 14px;font:600 14px var(--head);cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .tabs button:hover{color:var(--text)}
-.tabs button.on{background:var(--surface3);color:var(--text)}
+.tabs button.on{background:var(--accent-soft);color:var(--accent)}
 .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
 .form .full{grid-column:1/-1}
 .field textarea{min-height:100px;resize:vertical;font-family:var(--mono),monospace;font-size:14px;line-height:1.6}
@@ -105,7 +106,7 @@ td small{color:var(--muted)}
 .switchrow small{display:block;color:var(--muted);font-size:13px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .row .sp{flex:1}
-.lrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);margin-bottom:6px}
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:6px}
 .lrow .n{font:700 12px var(--mono);color:var(--muted);width:26px;text-align:center}
 .lrow .t{flex:1;min-width:0}
 .lrow .t b{display:block;font:600 14.5px var(--head)}
@@ -123,7 +124,7 @@ td small{color:var(--muted)}
 .prev .embed-cap{font-size:12px;text-align:right;margin-top:-.4em}
 .prev .lbtn{display:inline-block;padding:6px 12px;border:1px solid var(--accent);border-radius:7px;text-decoration:none}
 .prev img{max-width:100%}
-.danger-zone{border-color:rgba(248,113,113,.3)}
+.danger-zone{border-color:rgba(197,59,59,.28)}
 
 @media (max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
 @media (max-width:860px){
@@ -243,9 +244,10 @@ else KPC.onUser(async user => {
 
 // ย้ายข้อมูลระบบเดิม (ครั้งแรกที่แอดมินเปิด) — ทำซ้ำได้ ไม่มีอะไรให้ย้ายก็ไม่เขียน
 async function autoMigrate(force) {
-  let done = false; try { done = localStorage.getItem('kpc-migrated-v2') === '1'; } catch (e) { /* ข้าม */ }
+  const key = 'kpc-migrated-v2:' + KPC.db.app.options.projectId;
+  let done = false; try { done = localStorage.getItem(key) === '1'; } catch (e) { /* ข้าม */ }
   if (done && !force) return;
-  try { const n = await A.migrate(); try { localStorage.setItem('kpc-migrated-v2', '1'); } catch (e) { /* ข้าม */ } if (n || force) toast(n ? `ปรับข้อมูลเข้าระบบ 4 บทบาทแล้ว (${n} รายการ)` : 'ข้อมูลเรียบร้อยดี ไม่มีอะไรต้องแก้'); }
+  try { const n = await A.migrate(); try { localStorage.setItem(key, '1'); } catch (e) { /* ข้าม */ } if (n || force) toast(n ? `ปรับข้อมูลเข้าระบบ 4 บทบาทแล้ว (${n} รายการ)` : 'ข้อมูลเรียบร้อยดี ไม่มีอะไรต้องแก้'); }
   catch (e) { console.warn('migrate', e); if (force) fail(e); }
 }
 
@@ -308,23 +310,23 @@ function drawDash() {
   const avg = withSt.length ? Math.round(withSt.reduce((s, x) => s + x.avg, 0) / withSt.length) : 0;
   const hour = new Date().getHours(), hello = hour < 12 ? 'สวัสดีตอนเช้า' : hour < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น';
   if (!C.length && !isAdmin()) {
-    $('main').innerHTML = `<div class="ph"><div><h1>${hello}, ${esc(KPC.displayName())} 👋</h1><p>ยินดีต้อนรับสู่ห้องครู</p></div></div>
+    $('main').innerHTML = `<div class="ph"><div><span class="hand">${hello},</span><h1>${esc(KPC.displayName())}</h1><p>ยินดีต้อนรับสู่ห้องครู</p></div></div>
       <div class="empty" style="padding:50px 20px"><span class="ic">📚</span><b style="font:700 18px var(--head);color:var(--text)">เริ่มสร้างคอร์สแรกของคุณ</b><p style="margin:6px 0 16px">สร้างคอร์ส → เพิ่มบทเรียน (คลิป YouTube + เนื้อหา + ซิมูเลชัน) → ติ๊กเผยแพร่ แล้วนักเรียนจะขอสิทธิ์เข้ามาได้</p>
       <div class="row" style="justify-content:center"><a class="btn solid" href="#/new">＋ สร้างคอร์สใหม่</a><button class="btn" type="button" data-act="import">📥 นำเข้าจากไฟล์</button></div></div>`;
     return;
   }
   $('main').innerHTML = `
-    <div class="ph"><div><h1>${hello}, ${esc(KPC.displayName())} 👋</h1><p>${isAdmin() ? 'ภาพรวมทุกคอร์สในระบบ' : 'ภาพรวมคอร์สที่คุณสอน'}</p></div><span class="sp"></span><a class="btn solid" href="#/new">＋ คอร์สใหม่</a></div>
+    <div class="ph"><div><span class="hand">${hello},</span><h1>${esc(KPC.displayName())}</h1><p>${isAdmin() ? 'ภาพรวมทุกคอร์สในระบบ' : 'ภาพรวมคอร์สที่คุณสอน'}</p></div><span class="sp"></span><a class="btn solid" href="#/new">＋ คอร์สใหม่</a></div>
     <div class="stats">
-      <div class="stat"><small>📚 คอร์ส</small><b>${C.length}</b><span>เผยแพร่ ${C.filter(c => c.published).length} · ร่าง ${C.filter(c => !c.published).length}</span></div>
-      <div class="stat"><small>🎓 นักเรียน</small><b>${students}</b><span>${S.enroll.length} สิทธิ์เข้าเรียน</span></div>
-      <div class="stat${S.requests.length ? ' warn' : ''}"><small>🙋 คำขอรออนุมัติ</small><b>${S.requests.length}</b><span>${S.requests.length ? 'รอคุณอนุมัติ' : 'ไม่มีค้าง'}</span></div>
-      <div class="stat"><small>📈 ความคืบหน้าเฉลี่ย</small><b>${avg}%</b><span>${withSt.length ? 'จาก ' + withSt.length + ' คอร์สที่มีนักเรียน' : 'ยังไม่มีข้อมูล'}</span></div>
+      <div class="stat"><small>คอร์ส</small><b>${C.length}</b><span>เผยแพร่ ${C.filter(c => c.published).length} · ร่าง ${C.filter(c => !c.published).length}</span></div>
+      <div class="stat"><small>นักเรียน</small><b>${students}</b><span>${S.enroll.length} สิทธิ์เข้าเรียน</span></div>
+      <div class="stat${S.requests.length ? ' warn' : ''}"><small>คำขอรออนุมัติ</small><b>${S.requests.length}</b><span>${S.requests.length ? 'รอคุณอนุมัติ' : 'ไม่มีค้าง'}</span></div>
+      <div class="stat"><small>ความคืบหน้าเฉลี่ย</small><b>${avg}%</b><span>${withSt.length ? 'จาก ' + withSt.length + ' คอร์สที่มีนักเรียน' : 'ยังไม่มีข้อมูล'}</span></div>
     </div>
     <div class="grid2">
-      <div class="card"><div class="card-h"><h2>🙋 คำขอรออนุมัติ</h2><span class="sp"></span>${S.requests.length > 5 ? `<a class="btn xs" href="#/requests">ดูทั้งหมด (${S.requests.length})</a>` : ''}</div>
+      <div class="card"><div class="card-h"><h2>คำขอรออนุมัติ</h2><span class="sp"></span>${S.requests.length > 5 ? `<a class="btn xs" href="#/requests">ดูทั้งหมด (${S.requests.length})</a>` : ''}</div>
         ${S.requests.length ? reqList(S.requests.slice(0, 5), true) : '<div class="empty"><span class="ic">✅</span>ไม่มีคำขอค้าง</div>'}</div>
-      <div class="card"><div class="card-h"><h2>📚 ${isAdmin() ? 'คอร์สทั้งหมด' : 'คอร์สของฉัน'}</h2></div>
+      <div class="card"><div class="card-h"><h2>${isAdmin() ? 'คอร์สทั้งหมด' : 'คอร์สของฉัน'}</h2></div>
         ${all.map(x => `<a class="crow" href="#/c/${encodeURIComponent(x.c.id)}"><span class="bd"><b>${esc(x.c.title)}</b><small>${x.c.published ? '<span style="color:var(--ok)">● เผยแพร่</span>' : '○ ร่าง'} · ${(x.c.outline || []).length} บท · ${x.n} คน${isAdmin() ? ' · ' + esc(staffName(x.c.owner)) : ''}</small></span><span class="bar"><i style="width:${x.avg}%"></i></span><span class="pc">${x.avg}%</span></a>`).join('') || '<div class="empty">ยังไม่มีคอร์ส</div>'}</div>
     </div>`;
 }
@@ -488,7 +490,7 @@ async function drawStudents() {
   if (!S.students) { try { S.students = await A.enrollments(c.id); } catch (e) { S.students = []; fail(e); } }
   const reqs = S.requests.filter(r => r.courseId === c.id);
   $('pane').innerHTML = `<div class="stack">
-    ${reqs.length ? `<div class="card" style="border-color:rgba(251,191,36,.35)"><div class="card-h"><h2>🙋 คำขอรออนุมัติ</h2><span class="count">${reqs.length}</span></div>${reqList(reqs, false)}</div>` : ''}
+    ${reqs.length ? `<div class="card" style="border-color:rgba(251,191,36,.35)"><div class="card-h"><h2>คำขอรออนุมัติ</h2><span class="count">${reqs.length}</span></div>${reqList(reqs, false)}</div>` : ''}
     <div class="card"><div class="card-h"><h2>➕ ให้สิทธิ์ด้วยอีเมล</h2></div>
       <div class="row"><div class="field" style="flex:1;min-width:220px"><input type="email" id="grantEmail" placeholder="อีเมลที่นักเรียนใช้สมัครเว็บคอร์ส" aria-label="อีเมลนักเรียน"></div><button class="btn solid" type="button" data-act="grant">ให้สิทธิ์</button></div>
       <p class="sub" style="margin-top:8px">นักเรียนต้องสมัคร/เข้าสู่ระบบเว็บคอร์สอย่างน้อย 1 ครั้งก่อน จึงจะค้นเจอ</p>
@@ -520,10 +522,10 @@ async function drawProgress() {
   const perLesson = outline.map(l => act.filter(r => r.done.includes(l.id)).length);
   $('pane').innerHTML = `<div class="stack">
     <div class="stats" style="margin:0">
-      <div class="stat"><small>🎓 นักเรียน</small><b>${act.length}</b></div>
-      <div class="stat"><small>📈 เฉลี่ย</small><b>${avg}%</b></div>
-      <div class="stat"><small>🏁 เรียนครบ</small><b>${act.filter(r => r.pct === 100).length}</b></div>
-      <div class="stat"><small>💤 ยังไม่เริ่ม</small><b>${act.filter(r => !r.n && !r.last).length}</b></div>
+      <div class="stat"><small>นักเรียน</small><b>${act.length}</b></div>
+      <div class="stat"><small>เฉลี่ย</small><b>${avg}%</b></div>
+      <div class="stat"><small>เรียนครบ</small><b>${act.filter(r => r.pct === 100).length}</b></div>
+      <div class="stat"><small>ยังไม่เริ่ม</small><b>${act.filter(r => !r.n && !r.last).length}</b></div>
     </div>
     <div class="card"><div class="card-h"><h2>รายคน</h2><span class="sp"></span><button class="btn xs" type="button" data-act="csv">⬇ ดาวน์โหลด CSV</button></div>
       ${rows.length ? `<div class="tw"><table><tr><th>นักเรียน</th><th>เรียนแล้ว</th><th>บทล่าสุดที่เปิด</th><th>เมื่อ</th></tr>
