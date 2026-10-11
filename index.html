@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=6">
+<link rel="stylesheet" href="course-ui.css?v=7">
 <style>
 .wrap{max-width:1024px;margin:0 auto;padding:0 22px}
 
@@ -242,6 +242,62 @@
 .embed-cap{display:flex;justify-content:flex-end;font-size:13px;margin:-1.2em 0 1.5em}
 .lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:980px;font:500 15px var(--body);text-decoration:none!important;color:#fff!important;background:var(--accent)}
 .lbtn:hover{background:var(--accent-hover)}
+
+/* ---------- กระเบื้องภาพ (โครงแบบหน้าแรก apple.com: แผ่นเต็มกว้าง + กริด 2 คอลัมน์) ---------- */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tiles.bleed{padding:12px;background:#fff}
+.tile{grid-column:span 1;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:560px;padding:52px 28px 0;background:#f5f5f7;overflow:hidden;text-decoration:none;color:var(--text);border-radius:var(--r)}
+.tiles.bleed .tile{border-radius:0}
+.tiles:not(.bleed) .tile{background:var(--surface)}
+.tile.full{grid-column:1/-1;min-height:620px}
+.tile.dark{background:#000!important;color:#f5f5f7}
+.tile.dark p{color:#a1a1a6}
+.tile .eyebrow{font:600 15px var(--head);color:var(--orange)}
+.tile.dark .eyebrow{color:#ff9f45}
+.tile h1,.tile h2{font:700 clamp(1.8rem,3.4vw,2.6rem)/1.3 var(--head);margin-top:4px}
+.tile.full h1,.tile.full h2{font-size:clamp(2.1rem,5vw,3.6rem)}
+.tile p.t{font:400 clamp(1.05rem,1.8vw,1.35rem)/1.45 var(--body);color:var(--text2);margin-top:8px;max-width:640px}
+.tile .links{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:20px;flex-wrap:wrap}
+.btn.outline{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btn.outline:hover{background:var(--accent);color:#fff}
+.tile .prog{display:flex;align-items:center;gap:10px;margin-top:14px;font:500 14px var(--body);color:var(--muted)}
+.tile .prog .bar{width:160px}
+.tile .pic{margin-top:auto;width:min(86%,720px);aspect-ratio:16/8.5;position:relative;border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 -4px 30px rgba(0,0,0,.08);transition:transform .7s var(--ease-out)}
+.tile.full .pic{width:min(80%,880px)}
+a.tile:hover .pic{transform:translateY(-8px)}
+.tile .pic .sticker{top:14px;right:14px}
+/* แผ่นแรก: คำถามเตะบอลเป็นภาพเด่น */
+.hero-tile .quiz-wrap{margin-top:40px;width:min(100%,640px);margin-bottom:44px}
+.hero-tile .quiz{background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+.hero-tile .fine{margin-top:12px;color:var(--muted);font-size:14px}
+/* แผ่นวิธีเรียน */
+.how3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:auto 0;padding:36px 0 44px;width:100%;max-width:520px}
+.how3 div{display:flex;flex-direction:column;align-items:center;gap:8px;font:600 15px var(--head)}
+.how3 small{font:400 13.5px var(--body);color:var(--muted)}
+/* แผ่นเริ่มเรียน */
+.steps3{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:16px;text-align:left;margin:auto 0;padding:30px 0 44px;max-width:420px}
+.steps3 li{counter-increment:s;display:flex;gap:14px;align-items:flex-start}
+.steps3 li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--text);color:#fff;display:grid;place-items:center;font:600 14px var(--head)}
+.steps3 b{display:block;font:600 16px var(--head)}
+.steps3 span{color:var(--muted);font-size:14.5px}
+/* แผ่นความคืบหน้า (ภาพจำลอง) */
+.mockprog{margin:auto 0;padding:30px 0 44px;display:flex;align-items:center;gap:22px}
+.mockprog .ring{--s:120px}
+.mockprog .ring>span{font-size:24px}
+.mockprog ul{list-style:none;text-align:left;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.mockprog li{display:flex;gap:10px;align-items:center}
+.mockprog li i{width:20px;height:20px;border-radius:50%;background:var(--surface3);display:grid;place-items:center;font:600 11px var(--head);font-style:normal;color:#fff}
+.mockprog li.d i{background:var(--ok)}
+.tile.dark .simart{margin:auto 0 0;width:min(92%,520px)}
+@media (max-width:734px){
+  .tiles{grid-template-columns:1fr}
+  .tiles.bleed{padding:0;gap:10px}
+  .tile,.tile.full{min-height:0;padding:40px 18px 0}
+  .tile .pic,.tile.full .pic{width:94%;margin-top:28px}
+  .hero-tile .quiz-wrap{margin-top:28px;margin-bottom:28px}
+  .how3{grid-template-columns:1fr;max-width:none;gap:16px}
+  .mockprog{flex-direction:column}
+}
 
 /* ชำระเงิน */
 .pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;text-align:left;width:min(640px,100%);margin-top:6px}
@@ -495,25 +551,30 @@ function nextIndex(c) {
 const firstFree = () => { for (const c of S.courses || []) { const j = (c.outline || []).findIndex(l => l.free); if (j >= 0) return [c, j + 1]; } return null; };
 const findLesson = re => { for (const c of S.courses || []) { const j = (c.outline || []).findIndex(l => re.test(l.title)); if (j >= 0) return [c, j + 1]; } return null; };
 
-/* ===================== การ์ดคอร์ส ===================== */
-function card(c) {
-  const n = (c.outline || []).length, free = (c.outline || []).filter(l => l.free).length;
+/* ===================== แผ่นคอร์ส (กระเบื้องภาพ) ===================== */
+function card(c, full) {
+  const o = c.outline || [], n = o.length, free = o.filter(l => l.free).length, ffi = o.findIndex(l => l.free);
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c), track = ok && user && !own;
-  const st = !user ? (free ? '<span class="sticker free">ลองเรียนฟรี</span>' : '')
-    : own ? '<span class="sticker role">คอร์สที่ฉันสอน</span>'
-    : ok ? (pct >= 100 ? '<span class="sticker ok">✓ เรียนครบ</span>' : '<span class="sticker ok">เข้าเรียนได้</span>')
-    : S.request[c.id] ? '<span class="sticker warn">รอครูอนุมัติ</span>' : '<span class="sticker">ขอสิทธิ์เรียน</span>';
-  return `<a class="cc" href="${courseUrl(c, track ? nextIndex(c) + 1 : 0)}">
-    <div class="cc-cv">${coverArt(c)}${st}${c.published === false ? '<span class="sticker l">ร่าง</span>' : ''}</div>
-    <div class="cc-bd">
-      <div class="cc-tags">${[c.subject, c.level].filter(Boolean).map(esc).join(' · ')}</div>
-      <h3>${esc(c.title)}</h3>
-      ${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
-      ${track ? `<div class="cc-pr"><span class="bar"><i style="width:${pct}%"></i></span>${doneOf(c).length}/${n}</div>${medal(pct)}`
-        : `<div class="cc-meta"><span>${n} บทเรียน${free ? ` · <span class="free">ฟรี ${free} บท</span>` : ''}</span><span>${c.price > 0 && !ok ? `<span class="pr">${KPC.baht(c.price)}</span>` : esc(c.author || '')}</span></div>`}
-    </div></a>`;
+  const st = own ? '<span class="sticker role">คอร์สที่ฉันสอน</span>'
+    : track ? (pct >= 100 ? '<span class="sticker ok">✓ เรียนครบ</span>' : '')
+    : user && S.request[c.id] ? '<span class="sticker warn">รอครูอนุมัติ</span>' : '';
+  // ปุ่มหลักตามสถานะ (ทั้งแผ่นเป็นลิงก์เดียว)
+  let href = courseUrl(c), cta;
+  if (own) cta = 'เปิดคอร์ส';
+  else if (track) { href = courseUrl(c, nextIndex(c) + 1); cta = pct >= 100 ? 'ทบทวน' : (S.progress[c.id] || {}).last ? 'เรียนต่อ' : 'เริ่มเรียน'; }
+  else if (ffi >= 0) { href = courseUrl(c, ffi + 1); cta = 'ลองเรียนฟรี'; }
+  else cta = c.price > 0 ? 'ดูคอร์ส · ' + KPC.baht(c.price) : 'ดูคอร์ส';
+  const eyebrow = [c.subject, c.level].filter(Boolean).join(' · ') + (c.published === false ? ' · ร่าง' : '');
+  return `<a class="tile${full ? ' full' : ''}" href="${href}">
+    <span class="eyebrow">${esc(eyebrow)}</span>
+    <h2>${esc(c.title)}</h2>
+    ${c.summary ? `<p class="t">${esc(c.summary)}</p>` : ''}
+    <div class="links"><span class="btn solid sm">${esc(cta)}</span><span class="link">${n} บทเรียน${free && !ok ? ` · ฟรี ${free} บท` : ''} ›</span></div>
+    ${track ? `<div class="prog"><span class="bar"><i style="width:${pct}%"></i></span>${doneOf(c).length}/${n} บท${medal(pct) ? ' · ' + medal(pct) : ''}</div>` : ''}
+    <div class="pic">${coverArt(c)}${st}</div></a>`;
 }
-const grid = list => `<div class="cgrid">${list.map(card).join('')}</div>`;
+// จำนวนคี่ → แผ่นแรกกินเต็มแถว
+const grid = (list, bleed) => `<div class="tiles${bleed ? ' bleed' : ''}">${list.map((c, i) => card(c, list.length % 2 === 1 && i === 0)).join('')}</div>`;
 
 /* ===================== หน้าแรก ===================== */
 function renderHome() {
@@ -521,7 +582,7 @@ function renderHome() {
   setNav('home');
   $('app').innerHTML = KPC.user() ? homeUser() : homeGuest();
   if (!KPC.user()) initQuiz();
-  KPC.motion($('app'), '.hero > div > *, .quiz-wrap, .sec-h, .how > div, .cc, .start, .dash-h > *, .staffbar, .resume, .pend-i');
+  KPC.motion($('app'), '.hero-tile > *, .tiles > .tile:not(.hero-tile), .sec-h, .dash-h > *, .staffbar, .resume, .pend-i');
 }
 
 const ICONS = {
@@ -532,17 +593,16 @@ const ICONS = {
 
 function homeGuest() {
   const L = S.courses || [], ff = firstFree();
-  return `
-  <section class="hero-band"><div class="wrap hero">
-    <div>
-      <span class="byline">ครูโกเมน · KP Science</span>
-      <h1>เรียนฟิสิกส์ให้<span class="mark">เห็นภาพ</span><br>ไม่ใช่แค่ท่องสูตร</h1>
-      <p class="lead">ดูคลิปสั้น ๆ แล้วลองเล่นกับซิมูเลชันด้วยมือตัวเอง เรียนทีละบทตามจังหวะของตัวเอง และรู้เสมอว่าตัวเองไปถึงไหนแล้ว</p>
-      <div class="cta">${ff ? `<a class="btn solid lg" href="${courseUrl(ff[0], ff[1])}">ลองเรียนบทฟรี</a>` : ''}<button class="btn ghost lg" type="button" data-login="register">สมัครฟรี ›</button></div>
-      <p class="fine"><b>ไม่มีค่าใช้จ่าย</b> · ใช้ Google หรืออีเมลก็ได้ · เปิดบนมือถือได้</p>
-    </div>
+  const tiles = L.map((c, i) => card(c, L.length % 2 === 1 && i === 0)).join('');
+  return `<div class="tiles bleed">
+  <section class="tile full hero-tile">
+    <span class="eyebrow">ครูโกเมน · KP Science</span>
+    <h1>เรียนฟิสิกส์ให้เห็นภาพ<br>ไม่ใช่แค่ท่องสูตร</h1>
+    <p class="t">ดูคลิปสั้น ๆ แล้วลองเล่นกับซิมูเลชันด้วยมือตัวเอง เรียนทีละบทตามจังหวะของตัวเอง</p>
+    <div class="links">${ff ? `<a class="btn solid" href="${courseUrl(ff[0], ff[1])}">ลองเรียนบทฟรี</a>` : ''}<button class="btn outline" type="button" data-login="register">สมัครฟรี</button></div>
+    <p class="fine">ไม่มีค่าใช้จ่าย · ใช้ Google หรืออีเมลก็ได้ · เปิดบนมือถือได้</p>
     <div class="quiz-wrap">
-            <div class="quiz" id="quiz">
+      <div class="quiz" id="quiz">
         <div class="quiz-h"><small>ทายก่อน แล้วค่อยดูเฉลย</small><b>เตะลูกบอลแรงเท่ากันทุกครั้ง… เตะทำมุมเท่าไรถึงไปไกลที่สุด?</b></div>
         <svg class="sim" id="qsvg" viewBox="0 0 400 220" role="img" aria-label="ภาพจำลองการเคลื่อนที่แบบโพรเจกไทล์"></svg>
         <div class="quiz-c">
@@ -553,31 +613,42 @@ function homeGuest() {
         </div>
       </div>
     </div>
-  </div></section>
-
-  <section class="wrap sec">
-    <div class="sec-h"><div><h2>เรียนแต่ละบทแบบนี้</h2><p>ไม่ต้องนั่งฟังบรรยายยาว ๆ — ดู ลอง แล้วเช็กตัวเอง</p></div></div>
-    <div class="how">
-      <div><span class="n">1</span>${ICONS.watch}<h3>ดูคลิปสั้น</h3><p>บทละไม่กี่นาที หยุด ย้อน ดูซ้ำได้ตามใจ</p></div>
-      <div><span class="n">2</span>${ICONS.play}<h3>ลองเล่นซิมูเลชัน</h3><p>ปรับมุม แรง ความเร็ว แล้วดูผลทันที เห็นว่าสูตรมาจากไหน</p></div>
-      <div><span class="n">3</span>${ICONS.check}<h3>เช็กแล้วติ๊กว่าเรียนแล้ว</h3><p>ทำแบบทดสอบท้ายบท ระบบจำไว้ว่าถึงบทไหน กลับมาเรียนต่อได้ทุกเครื่อง</p></div>
+  </section>
+  ${tiles || `<section class="tile full"><h2>คอร์สกำลังจะมา</h2><p class="t">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน — เร็ว ๆ นี้')}</p></section>`}
+  <section class="tile">
+    <span class="eyebrow">วิธีเรียน</span>
+    <h2>ดู ลอง แล้วเช็กตัวเอง</h2>
+    <p class="t">ไม่ต้องนั่งฟังบรรยายยาว ๆ แต่ละบทสั้น กระชับ</p>
+    <div class="how3">
+      <div>${ICONS.watch}ดูคลิปสั้น<small>หยุด ย้อน ดูซ้ำได้</small></div>
+      <div>${ICONS.play}ลองซิมูเลชัน<small>ปรับค่า เห็นผลทันที</small></div>
+      <div>${ICONS.check}เช็กความเข้าใจ<small>แบบทดสอบท้ายบท</small></div>
     </div>
   </section>
-
-  <section class="wrap sec" id="all">
-    <div class="sec-h"><div><h2>คอร์สที่เปิดสอน</h2><p>บทที่เขียนว่า <b style="color:var(--orange)">ฟรี</b> เปิดดูได้เลย ไม่ต้องสมัคร</p></div></div>
-    ${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน — เร็ว ๆ นี้')}</div>`}
-  </section>
-
-  <section class="wrap sec"><div class="start">
-    <div><span class="hand">เริ่มยังไงดี</span><h2>เริ่มเรียนได้ใน 3 ขั้น</h2><p class="sub">สมัครครั้งเดียว เรียนได้ทุกคอร์สที่ครูอนุมัติ</p>
-      <div class="cta"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button>${ff ? `<a class="link" href="${courseUrl(ff[0], ff[1])}">ลองบทฟรีก่อน ›</a>` : ''}</div></div>
-    <ol>
-      <li><div><b>สมัครบัญชีฟรี</b><span>ใช้ Google หรืออีเมลก็ได้ ไม่ถึงนาที</span></div></li>
-      <li><div><b>กดขอสิทธิ์เรียน</b><span>เลือกคอร์ส แล้วบอกครูว่าเป็นใคร (ชื่อ · ห้อง · โรงเรียน)</span></div></li>
-      <li><div><b>ครูอนุมัติ แล้วเริ่มเรียนได้เลย</b><span>ทุกบทเปิดให้ เรียนต่อจากบทล่าสุดได้ทุกเครื่อง</span></div></li>
+  <a class="tile dark" href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">
+    <span class="eyebrow">KP Science Simulation</span>
+    <h2>คลังซิมูเลชันฟิสิกส์</h2>
+    <p class="t">เปิดเล่นได้ฟรีบนเว็บ ไม่ต้องติดตั้งอะไร</p>
+    <div class="links"><span class="btn solid sm">เปิดคลังซิมูเลชัน ↗</span></div>
+    <svg class="simart" viewBox="0 0 520 240" aria-hidden="true"><ellipse cx="260" cy="130" rx="190" ry="62" fill="none" stroke="#2997ff" stroke-width="2" stroke-dasharray="6 7" opacity=".8"/><ellipse cx="260" cy="130" rx="120" ry="40" fill="none" stroke="#ff9f45" stroke-width="2" opacity=".8"/><circle cx="260" cy="130" r="26" fill="#ffd60a"/><circle cx="450" cy="130" r="10" fill="#2997ff"/><circle cx="160" cy="104" r="7" fill="#ff9f45"/><path d="M30 225 C 120 170, 200 250, 290 205 S 450 170, 500 215" fill="none" stroke="#30d158" stroke-width="2.5"/></svg>
+  </a>
+  <section class="tile">
+    <span class="eyebrow">เริ่มยังไงดี</span>
+    <h2>เริ่มเรียนได้ใน 3 ขั้น</h2>
+    <ol class="steps3">
+      <li><div><b>สมัครบัญชีฟรี</b><span>ใช้ Google หรืออีเมลก็ได้</span></div></li>
+      <li><div><b>กดขอสิทธิ์เรียน</b><span>บอกครูว่าเป็นใคร · ห้อง · โรงเรียน</span></div></li>
+      <li><div><b>ครูอนุมัติ แล้วเริ่มเรียน</b><span>เรียนต่อจากบทล่าสุดได้ทุกเครื่อง</span></div></li>
     </ol>
-  </div></section>`;
+    <div class="links" style="margin:0 0 44px"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button></div>
+  </section>
+  <section class="tile">
+    <span class="eyebrow">ความคืบหน้า</span>
+    <h2>รู้เสมอว่าเรียนถึงไหน</h2>
+    <p class="t">ติ๊กบทที่เรียนจบ ระบบจำบทล่าสุดให้ กลับมาเรียนต่อได้ทันที</p>
+    <div class="mockprog">${ring(75, 120)}<ul><li class="d"><i>✓</i>ความเร็วและความเร่ง</li><li class="d"><i>✓</i>สมการการเคลื่อนที่</li><li class="d"><i>✓</i>การตกอย่างเสรี</li><li><i></i>โพรเจกไทล์</li></ul></div>
+  </section>
+  </div>`;
 }
 
 /* ---------- ซิมจิ๋ว: ทายมุมที่เตะไปไกลสุด (v = 20 m/s, g = 9.8 m/s²) ---------- */
@@ -679,7 +750,7 @@ function renderAll() {
   const L = S.courses || [];
   $('app').innerHTML = `<div class="wrap"><section class="dash-h"><span class="hand">เลือกเรียนได้เลย</span><h1>คอร์สทั้งหมด</h1><p>${L.length} คอร์ส${KPC.user() ? '' : ' · บทที่เขียนว่าฟรีเปิดดูได้เลย'}</p></section>
     <section class="sec" style="padding-top:20px">${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section></div>`;
-  KPC.motion($('app'), '.dash-h > *, .cc');
+  KPC.motion($('app'), '.dash-h > *, .tiles > .tile');
 }
 
 /* ===================== หน้าคอร์ส ===================== */
