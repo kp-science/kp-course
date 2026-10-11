@@ -146,21 +146,26 @@
 .view{padding:22px 0 40px}
 .crumb{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-bottom:14px;flex-wrap:wrap}
 .crumb a{text-decoration:none}.crumb a:hover{color:var(--accent)}
-.c-hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow-s)}
-.c-hero-bd{padding:24px 28px;display:flex;flex-direction:column;gap:4px;justify-content:center}
-.c-hero-cv{position:relative;min-height:180px;border-left:1px solid var(--line)}
+/* หัวหน้าเรียน: แถบเดียว ไม่มีภาพปก — ให้คลิปอยู่ใกล้ด้านบนเสมอ */
+.lhead{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:4px 0 14px;border-bottom:1px solid var(--line)}
+.lhead h1{font:700 20px/1.35 var(--head);margin-right:auto;min-width:0}
+.lhead .prog{font:600 13.5px var(--mono);color:var(--ok);white-space:nowrap}
+.lhead .prog .bar{display:inline-block;width:70px;vertical-align:middle;margin-right:6px}
+.lhead .meta{font-size:14px;color:var(--muted)}
+.lhead .price{font-size:17px}
+/* หน้าต่างข้อมูลคอร์ส */
+.info-box{max-width:620px}
+.info-body{padding:6px 24px 24px}
+.info-body .meta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px;font-size:14px;color:var(--muted)}
+.info-body .prose{font-size:16px}
 .c-tags{font-size:13.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.c-hero h1{font:700 clamp(1.5rem,3vw,2.1rem)/1.3 var(--head)}
 .c-sum{color:var(--text2);max-width:640px}
-.c-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
-.c-cta .meta{font-size:14px;color:var(--muted)}
-.course{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;margin-top:26px}
+.course{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;margin-top:18px}
 .player{position:relative;aspect-ratio:16/9;border:1px solid var(--line2);border-radius:14px;background:#000;overflow:hidden;box-shadow:var(--shadow-s)}
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
-.player.ph{background:var(--surface)}
-.player.ph .cap{position:absolute;left:20px;bottom:18px;background:#fff;border-radius:10px;padding:8px 14px;box-shadow:var(--shadow-s)}
-.player.ph .cap small{display:block;font:400 15px var(--hand);color:var(--orange)}
-.player.ph .cap b{font:700 19px/1.4 var(--head)}
+.player.ph{background:var(--surface2);display:grid;place-items:center;text-align:center;padding:20px}
+.player.ph small{display:block;font:400 16px var(--hand);color:var(--orange)}
+.player.ph b{font:700 20px/1.4 var(--head)}
 .lock{border:1.5px dashed var(--line2);border-radius:16px;background:var(--surface);padding:36px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:300px;justify-content:center}
 .lock .ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--surface2)}
 .lock h3{font:700 21px var(--head)}
@@ -249,7 +254,6 @@
 .embed-cap{display:flex;justify-content:flex-end;font-size:13px;margin:-1.2em 0 1.5em}
 .lbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1.5px solid var(--accent);border-radius:10px;font:600 15px var(--head);text-decoration:none!important;color:var(--accent)!important;background:#fff}
 .lbtn:hover{background:var(--accent-soft)}
-.cintro{margin-top:18px;max-width:860px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px 22px}
 
 /* ชำระเงิน */
 .pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;text-align:left;width:min(640px,100%);margin-top:4px}
@@ -306,8 +310,6 @@ footer a{color:var(--accent);text-decoration:none}
   .how{grid-template-columns:1fr}
   .how>div+div{border-left:0;border-top:1px dashed var(--line2)}
   .start{grid-template-columns:1fr}
-  .c-hero{grid-template-columns:1fr}
-  .c-hero-cv{border-left:0;border-bottom:1px solid var(--line);min-height:0;aspect-ratio:32/17;order:-1}
   .resume{grid-template-columns:1fr}
   .resume-cv{min-height:0;aspect-ratio:32/17}
   .resume .go{margin:0 24px 20px}
@@ -323,7 +325,7 @@ footer a{color:var(--accent);text-decoration:none}
   .lock{padding:28px 16px}
   .res .btn{flex:1}
   .start{padding:22px}
-  .c-hero-bd{padding:20px}
+  .lhead h1{font-size:18px;flex-basis:100%}
   .tb-auth .btn.ghost{display:none}
   .next{max-width:none}
   .pay{grid-template-columns:1fr}
@@ -400,6 +402,13 @@ footer a{color:var(--accent);text-decoration:none}
       <button class="btn solid" type="button" data-do="register">สมัครบัญชีนักเรียน</button>
       <div class="switch">มีบัญชีแล้ว? <button type="button" data-tab="login">เข้าสู่ระบบ</button></div>
     </div>
+  </div>
+</div>
+
+<div class="modal" id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="modal-box info-box">
+    <div class="modal-head"><div><span class="hand" style="color:var(--orange)">ข้อมูลคอร์ส</span><h3 id="infoTitle"></h3></div><button class="modal-x" type="button" data-close-info aria-label="ปิด">✕</button></div>
+    <div class="info-body" id="infoBody"></div>
   </div>
 </div>
 
@@ -753,25 +762,32 @@ const crumb = c => `<div class="crumb"><a href="#/">หน้าแรก</a>›
 function head(c, i) {
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), track = ok && user && !own, o = c.outline || [];
   const ff = o.findIndex(l => l.free);
-  let cta;
-  if (own) cta = `<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a><span class="meta">คุณดูแลคอร์สนี้</span>`;
-  else if (track) cta = `${ring(pctOf(c))}<span class="meta">เรียนแล้ว ${doneOf(c).length} จาก ${o.length} บท<br>${medal(pctOf(c)) || 'ค่อย ๆ ไปทีละบท'}</span>`;
-  else if (!ok && c.price > 0) cta = `<span class="price">${KPC.baht(c.price)}<small>จ่ายครั้งเดียว เรียนได้ทุกบท</small></span>${ff >= 0 && i !== ff ? `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรีก่อน</a>` : ''}`;
-  else if (!ok && ff >= 0 && i !== ff) cta = `<a class="btn solid sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a><span class="meta">${o.length} บทเรียน · ฟรี ${o.filter(l => l.free).length} บท</span>`;
-  else cta = `<span class="meta">${o.length} บทเรียน${c.author ? ' · โดย ' + esc(c.author) : ''}</span>`;
-  return `${crumb(c)}
-    <div class="c-hero"><div class="c-hero-bd">
-      <div class="c-tags">${[c.subject, c.level].filter(Boolean).map(esc).join(' · ')}${c.published === false ? '<span class="pill warn">ร่าง</span>' : ''}</div>
-      <h1>${esc(c.title)}</h1>
-      ${c.summary ? `<p class="c-sum">${esc(c.summary)}</p>` : ''}
-      <div class="c-cta">${cta}</div>
-    </div><div class="c-hero-cv">${coverArt(c)}</div></div>`;
+  let side = '';
+  if (own) side = `<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a>`;
+  else if (track) side = `<span class="prog" id="hdrProg">${progTxt(c)}</span>`;
+  else if (!ok && c.price > 0) side = `<span class="price">${KPC.baht(c.price)}</span>${ff >= 0 && i !== ff ? `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>` : ''}`;
+  else if (!ok && ff >= 0 && i !== ff) side = `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>`;
+  return `${crumb()}
+    <div class="lhead"><h1>${esc(c.title)}${c.published === false ? ' <span class="pill warn">ร่าง</span>' : ''}</h1>${side}<button class="btn sm ghost" type="button" data-info>ข้อมูลคอร์ส</button></div>`;
 }
+const progTxt = c => `<span class="bar"><i style="width:${pctOf(c)}%"></i></span>เรียนแล้ว ${doneOf(c).length}/${(c.outline || []).length}`;
+
+/* ---------- หน้าต่างข้อมูลคอร์ส (คำแนะนำคอร์สอยู่ที่นี่ ไม่ดันเนื้อหาบท) ---------- */
+function openInfo() {
+  const c = CUR && CUR.c; if (!c) return;
+  const o = c.outline || [], free = o.filter(l => l.free).length;
+  $('infoTitle').textContent = c.title;
+  $('infoBody').innerHTML = `<div class="meta">${[c.subject, c.level, o.length + ' บทเรียน', free && 'ฟรี ' + free + ' บท', c.price > 0 && KPC.baht(c.price), c.author && 'โดย ' + c.author].filter(Boolean).map(x => `<span class="pill">${esc(x)}</span>`).join('')}</div>
+    ${c.summary ? `<p style="font-weight:600;margin-bottom:10px">${esc(c.summary)}</p>` : ''}
+    <div class="prose">${renderBody(c.body) || '<p class="sub">ครูยังไม่ได้เขียนคำแนะนำคอร์ส</p>'}</div>`;
+  $('infoModal').classList.add('open');
+  typeset($('infoBody'));
+}
+const closeInfo = () => $('infoModal').classList.remove('open');
 
 function viewCourse(c, i, meta, L, ok) {
-  const intro = i === 0 && c.body ? `<div class="prose cintro">${renderBody(c.body)}</div>` : '';
   CUR = { c, i };
-  if (!meta) return `${head(c, i)}${intro}<div class="empty" style="margin-top:20px">คอร์สนี้ยังไม่มีบทเรียน</div>`;
+  if (!meta) return `${head(c, i)}<div class="empty" style="margin-top:20px">คอร์สนี้ยังไม่มีบทเรียน</div>`;
   const outline = c.outline, nx = outline[i + 1];
   const canNext = nx && (ok || nx.free);
   const nextCard = nx ? `<a class="next" href="${courseUrl(c, i + 2)}"><span><small>${canNext ? 'บทต่อไป' : 'บทต่อไป (ต้องมีสิทธิ์)'}</small><b>${esc(nx.title)}</b></span><span class="go">→</span></a>`
@@ -787,7 +803,7 @@ function viewCourse(c, i, meta, L, ok) {
     const file = safeUrl(L.file), quiz = safeUrl(L.quiz);
     const player = L.video && ytId(L.video) ? `<div class="player"><iframe src="${esc(embedSrc(L.video))}" allow="fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(L.title)}"></iframe></div>`
       : embSims.length ? `<div class="player"><iframe src="${esc(embedSrc(embSims[0].url))}" loading="lazy" allowfullscreen title="${esc(L.title)}"></iframe></div>`
-      : `<div class="player ph">${coverArt(c)}<div class="cap"><small>บทที่ ${i + 1}</small><b>${esc(L.title)}</b></div></div>`;
+      : `<div class="player ph"><div><small>บทที่ ${i + 1}</small><b>${esc(L.title)}</b></div></div>`;
     const tabs = [['text', 'เนื้อหา', true], ['sim', `Simulation${sims.length > 1 ? ' (' + sims.length + ')' : ''}`, sims.length], ['doc', 'เอกสาร', file], ['quiz', 'แบบทดสอบ', quiz]].filter(t => t[2]);
     const first = text ? 'text' : (tabs.find(t => t[0] !== 'text') || ['text'])[0];
     const panel = {
@@ -807,7 +823,7 @@ function viewCourse(c, i, meta, L, ok) {
       ${tabs.map(t => `<div class="lpanel" data-lpanel="${t[0]}"${t[0] === first ? '' : ' hidden'}>${panel[t[0]]}</div>`).join('')}
       <div class="ls-nav"><div class="left">${check}${prev}</div>${nextCard}</div>`;
   }
-  return `${head(c, i)}${intro}<div class="course"><div>${main}</div><nav class="toc" id="toc" aria-label="สารบัญ">${tocHtml(c, i)}</nav></div>`;
+  return `${head(c, i)}<div class="course"><div>${main}</div><nav class="toc" id="toc" aria-label="สารบัญ">${tocHtml(c, i)}</nav></div>`;
 }
 
 /* ---------- QR พร้อมเพย์ (ข้อมูลรับเงินอยู่ใน courses/{cid}/meta/pay) ---------- */
@@ -863,6 +879,8 @@ document.addEventListener('click', async e => {
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
+  if (e.target.closest('[data-info]')) { openInfo(); return; }
+  if (e.target.id === 'infoModal' || e.target.closest('[data-close-info]')) { closeInfo(); return; }
   const lg = e.target.closest('[data-login]'); if (lg) { openLogin(lg.dataset.login); return; }
   if (e.target.closest('[data-logout]')) { closeMenu(); KPC.logout(); toast('ออกจากระบบแล้ว'); location.hash = '#/'; return; }
   const go = e.target.closest('[data-go]'); if (go) { location.hash = go.dataset.go; return; }
@@ -897,7 +915,7 @@ document.addEventListener('click', async e => {
     dn.classList.toggle('on', on); dn.setAttribute('aria-pressed', on);
     dn.querySelector('.lb').textContent = on ? 'เรียนบทนี้แล้ว' : 'ติ๊กว่าเรียนบทนี้แล้ว';
     if ($('toc')) $('toc').innerHTML = tocHtml(c, CUR.i);
-    const cta = document.querySelector('.c-cta'); if (cta && cta.querySelector('.ring')) cta.innerHTML = `${ring(pctOf(c))}<span class="meta">เรียนแล้ว ${doneOf(c).length} จาก ${(c.outline || []).length} บท<br>${medal(pctOf(c)) || 'ค่อย ๆ ไปทีละบท'}</span>`;
+    if ($('hdrProg')) $('hdrProg').innerHTML = progTxt(c);
     const all = doneOf(c).length >= (c.outline || []).length;
     if (on) confetti(all);
     KPC.saveProgress(c, { done: list, total: (c.outline || []).length })
@@ -955,7 +973,7 @@ $('loginModal').addEventListener('keydown', e => {
   if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
   e.target.closest('.pane').querySelector('[data-do]').click();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLogin(); closeMenu(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLogin(); closeMenu(); closeInfo(); } });
 
 /* ---------- เมนูผู้ใช้ ---------- */
 function closeMenu() { $('who').classList.remove('open'); $('whoBtn').setAttribute('aria-expanded', 'false'); }
