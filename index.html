@@ -32,13 +32,13 @@
 <link rel="stylesheet" href="course-ui.css?v=4">
 <style>
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
-/* กระดาษกราฟ */
+/* กระดาษกราฟ: พื้นหลังทุกหน้า (การ์ด/เนื้อหาเป็นพื้นขาวทับ อ่านง่าย) */
+body{background-color:var(--bg);background-image:linear-gradient(rgba(36,86,201,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(36,86,201,.055) 1px,transparent 1px);background-size:24px 24px;background-attachment:fixed}
 .paper{background-image:linear-gradient(rgba(36,86,201,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(36,86,201,.07) 1px,transparent 1px);background-size:24px 24px}
 
 /* ---------- หน้าแรก: ผู้เยี่ยมชม ---------- */
 .hero-band{position:relative;border-bottom:1px solid var(--line)}
-.hero-band::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,var(--bg));pointer-events:none}
-.hero{position:relative;z-index:1;padding:56px 0 64px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;align-items:center}
+.hero{position:relative;z-index:1;padding-block:56px 64px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;align-items:center}
 .byline{font:400 19px var(--hand);color:var(--orange);display:inline-block;transform:rotate(-2deg)}
 .hero h1{font:700 clamp(2.1rem,4.6vw,3.4rem)/1.25 var(--head);margin:10px 0 18px;letter-spacing:-.015em}
 .hero p.lead{color:var(--text2);font-size:18px;max-width:520px}
@@ -72,7 +72,7 @@
 .quiz-try input{flex:1;accent-color:var(--accent)}
 .quiz-try output{font:700 14px var(--mono);color:var(--accent);width:92px;text-align:right}
 
-.sec{padding:46px 0}
+.sec{padding-block:46px}
 .sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
 .sec-h h2{font:700 clamp(1.4rem,2.6vw,1.85rem)/1.3 var(--head)}
 .sec-h p{color:var(--muted)}
@@ -143,7 +143,7 @@
 .ring>span{position:absolute;inset:0;display:grid;place-items:center;font:700 13px var(--mono)}
 
 /* ---------- หน้าคอร์ส ---------- */
-.view{padding:22px 0 40px}
+.view{padding-block:22px 40px}
 .crumb{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-bottom:14px;flex-wrap:wrap}
 .crumb a{text-decoration:none}.crumb a:hover{color:var(--accent)}
 /* หัวหน้าเรียน: แถบเดียว ไม่มีภาพปก — ให้คลิปอยู่ใกล้ด้านบนเสมอ */
@@ -303,7 +303,7 @@ footer a{color:var(--accent);text-decoration:none}
 .switch button{background:none;border:0;color:var(--accent);font:600 14px var(--head);cursor:pointer}
 
 @media (max-width:980px){
-  .hero{grid-template-columns:1fr;gap:56px;padding:40px 0 48px}
+  .hero{grid-template-columns:1fr;gap:56px;padding-block:40px 48px}
   .quiz-wrap{max-width:520px}
   .course{grid-template-columns:1fr}
   .toc{position:static;max-height:none;order:2}
@@ -541,7 +541,7 @@ const ICONS = {
 function homeGuest() {
   const L = S.courses || [], ff = firstFree();
   return `
-  <section class="hero-band paper"><div class="wrap hero">
+  <section class="hero-band"><div class="wrap hero">
     <div>
       <span class="byline">ครูโกเมน · KP Science</span>
       <h1>เรียนฟิสิกส์ให้<span class="mark">เห็นภาพ</span><br>ไม่ใช่แค่ท่องสูตร</h1>
