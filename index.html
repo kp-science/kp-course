@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=10">
+<link rel="stylesheet" href="course-ui.css?v=11">
 <style>
 .wrap{max-width:1024px;margin:0 auto;padding:0 22px}
 
@@ -400,6 +400,75 @@ a.tile:hover .pic{transform:translateY(-8px)}
 .cine-stats{margin-top:-1px;padding-bottom:70px}
 .cine-show,.cine-stmt{margin-top:-1px}
 @media (max-width:760px){.cine-stats .in{grid-template-columns:1fr;gap:34px}.cine-show .pbar{margin:16px auto 0}}
+
+/* ---------- หน้าเรียน: โทนมืดแบบเดียวกับหน้าแรก (body.lesson-dark) — คลีน ไม่มีอะไรดันคลิป ---------- */
+body.lesson-dark{background:#000;color:var(--on-dark)}
+body.lesson-dark::before{content:"";position:fixed;top:-30vmax;left:-25vmax;width:70vmax;height:70vmax;border-radius:50%;background:radial-gradient(circle,rgba(255,95,109,.16),transparent 60%);filter:blur(60px);pointer-events:none;z-index:0}
+body.lesson-dark::after{content:"";position:fixed;bottom:-35vmax;right:-25vmax;width:70vmax;height:70vmax;border-radius:50%;background:radial-gradient(circle,rgba(166,108,255,.14),transparent 60%);filter:blur(60px);pointer-events:none;z-index:0}
+body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
+.lesson-dark .crumb{color:var(--on-dark-2)}.lesson-dark .crumb a:hover{color:#2997ff}
+.lesson-dark .lhead h1{color:var(--on-dark)}
+.lesson-dark .lhead .prog{color:var(--on-dark-2)}
+.lesson-dark .lhead .btn.ghost,.lesson-dark .prevlink{color:#2997ff}
+.lesson-dark .lhead .price{color:var(--on-dark)}
+.lesson-dark .lhead .btn:not(.ghost):not(.solid){background:#2c2c2e;color:var(--on-dark)}
+.lesson-dark .bar{background:#3a3a3c}
+.lesson-dark .bar i{background:var(--ap-grad)}
+.lesson-dark .player{box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.lesson-dark .player.ph{background:#1d1d1f}
+.lesson-dark .player.ph b,.lesson-dark .ls-h h2{background:var(--ap-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lesson-dark .player.ph small,.lesson-dark .ls-h small{color:#ff9f45}
+.lesson-dark .pill{background:#2c2c2e;color:#d2d2d7}
+.lesson-dark .pill.warn{background:rgba(255,159,69,.16);color:#ffb067}
+.lesson-dark .ltabs{background:#1d1d1f}
+.lesson-dark .ltabs button{color:#d2d2d7}
+.lesson-dark .ltabs button.on{background:#3a3a3c;color:#fff;box-shadow:none}
+.lesson-dark .prose{color:#c7c7cc}
+.lesson-dark .prose b,.lesson-dark .prose h2,.lesson-dark .prose h3{color:var(--on-dark)}
+.lesson-dark .prose li::marker{color:#6e6e73}
+.lesson-dark .prose blockquote{background:#1d1d1f;color:var(--on-dark)}
+.lesson-dark .prose a,.lesson-dark .embed-cap a{color:#2997ff}
+.lesson-dark .prose figure img{border:0}
+.lesson-dark .embed.doc{background:#1d1d1f}
+.lesson-dark .res{background:#1d1d1f}
+.lesson-dark .res .ri{background:#2c2c2e}
+.lesson-dark .res b{color:var(--on-dark)}.lesson-dark .res small{color:var(--on-dark-2)}
+.lesson-dark .res .btn:not(.solid){background:#2c2c2e;color:var(--on-dark)}
+.lesson-dark .lock{background:#1d1d1f}
+.lesson-dark .lock .ic{background:#2c2c2e}
+.lesson-dark .lock h3{color:var(--on-dark)}
+.lesson-dark .lock p,.lesson-dark .lock .hand{color:var(--on-dark-2)}
+.lesson-dark .lock p b{color:var(--on-dark)}
+.lesson-dark .lock textarea,.lesson-dark .lock .field input{background:#2c2c2e;border-color:#3a3a3c;color:var(--on-dark)}
+.lesson-dark .lock .field>label{color:#d2d2d7}
+.lesson-dark .lock .btn:not(.solid):not(.bad){background:#2c2c2e;color:var(--on-dark)}
+.lesson-dark .pay-s ol{color:#d2d2d7}
+.lesson-dark .note{background:#2c2c2e;color:#d2d2d7}
+.lesson-dark .ls-nav{border-top-color:#2c2c2e}
+.lesson-dark .freenote{color:var(--on-dark-2)}
+.lesson-dark .freenote .btn{background:#2c2c2e;color:var(--on-dark)}
+.lesson-dark .donebtn{background:#2c2c2e;color:var(--on-dark)}
+.lesson-dark .donebtn:hover{background:#3a3a3c}
+.lesson-dark .donebtn .bx{border-color:#86868b}
+.lesson-dark .donebtn.on{background:rgba(48,209,88,.16);color:#30d158}
+.lesson-dark .donebtn.on .bx{background:#30d158;border-color:#30d158;color:#000}
+.lesson-dark .next{background:#1d1d1f;color:var(--on-dark)}
+.lesson-dark .next small{color:#ff9f45}
+.lesson-dark .next:hover{box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.lesson-dark .toc{background:#1d1d1f;color:var(--on-dark)}
+.lesson-dark .toc-h b small,.lesson-dark .unit summary,.lesson-dark .unit summary small,.lesson-dark .toc .d{color:var(--on-dark-2)}
+.lesson-dark .toc button{color:#d2d2d7}
+.lesson-dark .toc button:hover{background:#2c2c2e}
+.lesson-dark .toc button.on{background:rgba(0,113,227,.28);color:#fff}
+.lesson-dark .toc .n{background:#3a3a3c;color:#d2d2d7}
+.lesson-dark .toc .on .n{background:#0071e3;color:#fff}
+.lesson-dark .toc .done .n{background:#30d158;color:#000}
+.lesson-dark .toc .d.free{color:#ff9f45}
+.lesson-dark .ring .bg{stroke:#3a3a3c}
+.lesson-dark .empty{background:#1d1d1f;color:var(--on-dark-2)}
+.lesson-dark footer{border-top-color:#1d1d1f;color:var(--on-dark-2)}
+.lesson-dark footer a{color:#2997ff}
+.lesson-dark .skel{background:linear-gradient(90deg,#1d1d1f,#2c2c2e,#1d1d1f);background-size:200% 100%}
 
 /* ชำระเงิน */
 .pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;text-align:left;width:min(640px,100%);margin-top:6px}
@@ -811,7 +880,7 @@ function cineScroll() {
     });
   }
   const tb = document.querySelector('.topbar');
-  if (tb) tb.classList.toggle('dark', [...document.querySelectorAll('.cine-dark')].some(el => { const r = el.getBoundingClientRect(); return r.top <= 52 && r.bottom > 52; }));
+  if (tb) tb.classList.toggle('dark', document.body.classList.contains('lesson-dark') || [...document.querySelectorAll('.cine-dark')].some(el => { const r = el.getBoundingClientRect(); return r.top <= 70 && r.bottom > 52; }));
 }
 addEventListener('scroll', cineScroll, { passive: true });
 addEventListener('resize', cineScroll);
@@ -981,7 +1050,7 @@ function lockPanel(c) {
 
 async function renderCourse(cid, n) {
   const seq = ++renderSeq;
-  setNav('courses');
+  setNav('courses', true);
   let c = (S.courses || []).find(x => x.id === cid);
   if (!c) {
     $('app').innerHTML = '<div class="wrap view"><div class="skel" style="width:40%"></div><div class="skel"></div></div>';
@@ -1185,13 +1254,18 @@ document.addEventListener('click', async e => {
 });
 
 /* ---------- เส้นทาง: #/ · #/courses · #/c/รหัส · #/c/รหัส/บทที่ ---------- */
-function setNav(k) { $('navHome').classList.toggle('on', k === 'home'); $('navCourses').classList.toggle('on', k === 'courses'); document.querySelector('.topbar').classList.remove('dark'); }
+function setNav(k, lesson) {
+  $('navHome').classList.toggle('on', k === 'home'); $('navCourses').classList.toggle('on', k === 'courses');
+  document.body.classList.toggle('lesson-dark', !!lesson);
+  document.querySelector('.topbar').classList.toggle('dark', !!lesson);
+}
 function route() {
   const h = decodeURIComponent(location.hash.replace(/^#/, ''));
   const m = /^[/]c[/]([^/]+)(?:[/](\d+))?/.exec(h);
   if (m) renderCourse(m[1], m[2]);
   else { renderSeq++; if (h === '/courses') renderAll(); else renderHome(); }
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  cineScroll();
 }
 addEventListener('hashchange', route);
 
