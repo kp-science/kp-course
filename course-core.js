@@ -81,6 +81,43 @@ const ICON = KPC.ICON = {
   out: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M8 7h9v9"/></svg>',
 };
 
+/* ===================== การเคลื่อนไหว =====================
+   KPC.motion(root, selector) — องค์ประกอบที่ตรง selector ลอยขึ้นทีละชิ้นเมื่อเลื่อนมาเห็น
+   (ไล่ลำดับในพ่อเดียวกัน 70ms) · แถบ % และวงแหวนวิ่งจาก 0 · เสร็จแล้วถอดคลาสออก (ไม่กวน hover)
+   KPC.pageIn(el) — จางเข้าตอนเปลี่ยนหน้า */
+const REDUCED = () => W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
+KPC.motion = function (root, sel) {
+  if (!root || REDUCED() || !('IntersectionObserver' in W)) return;
+  const show = el => {
+    io.unobserve(el);
+    setTimeout(() => {   // ไม่ใช้ requestAnimationFrame — แท็บที่ถูกซ่อนจะไม่รัน
+      el.classList.add('in');
+      el.querySelectorAll('[data-w]').forEach(b => { b.style.width = b.dataset.w; });
+      el.querySelectorAll('[data-off]').forEach(c => { c.style.strokeDashoffset = c.dataset.off; });
+    }, 30);
+    setTimeout(() => { el.classList.remove('reveal', 'in'); el.style.removeProperty('--d'); }, 1000 + (parseInt(el.style.getPropertyValue('--d')) || 0));
+  };
+  const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting && e.target.classList.contains('reveal') && !e.target.classList.contains('in')) show(e.target); }), { rootMargin: '0px 0px -6% 0px' });
+  const order = new Map();
+  root.querySelectorAll(sel).forEach(el => {
+    if (el.classList.contains('reveal')) return;
+    const i = order.get(el.parentElement) || 0; order.set(el.parentElement, i + 1);
+    el.style.setProperty('--d', Math.min(i, 6) * 70 + 'ms');
+    el.classList.add('reveal');
+    el.querySelectorAll('.bar > i').forEach(b => { b.dataset.w = b.style.width; b.style.width = '0'; });
+    el.querySelectorAll('.ring .fg').forEach(c => { c.dataset.off = c.getAttribute('stroke-dashoffset'); c.style.strokeDashoffset = c.getAttribute('stroke-dasharray'); });
+    io.observe(el);
+  });
+  // กันพลาด: ถ้าผ่านไป 2.5 วิ แล้วอะไรที่อยู่บนจออยู่แล้วยังไม่ขึ้น (เช่น แท็บถูกซ่อน) ให้แสดงเลย
+  setTimeout(() => root.querySelectorAll('.reveal:not(.in)').forEach(el => { if (el.getBoundingClientRect().top < innerHeight) show(el); }), 2500);
+};
+KPC.pageIn = function (el) {
+  if (!el || REDUCED()) return;
+  el.classList.remove('page-in'); void el.offsetWidth; el.classList.add('page-in');
+};
+// แถบเมนูทึบขึ้นเล็กน้อยเมื่อเลื่อนลง
+W.addEventListener('scroll', () => { const t = document.querySelector('.topbar'); if (t) t.classList.toggle('scrolled', W.scrollY > 8); }, { passive: true });
+
 /* ===================== แปลงเนื้อหาบท =====================
    ## หัวข้อ · ### หัวข้อย่อย · - รายการ · 1. รายการ · > กล่องเน้น · **ตัวหนา** · $สมการ$ · $$สมการ$$
    [รูป: ลิงก์ | คำบรรยาย] · [คลิป: ลิงก์ YouTube] · [PDF: ลิงก์ Drive] · [ฝัง: ลิงก์ | ชื่อ] · [ลิงก์: ข้อความ | ลิงก์]

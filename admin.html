@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=5">
+<link rel="stylesheet" href="course-ui.css?v=6">
 <style>
 body{font-size:15px;line-height:1.55}
 .topbar{padding:0 22px}
@@ -184,7 +184,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=4"></script>
+<script src="course-core.js?v=6"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -310,6 +310,8 @@ function route() {
   else if (h === '/new') drawNewCourse();
   else drawDash();
   drawSide();
+  KPC.pageIn($('main'));
+  KPC.motion($('main'), '.stat, .grid2 > .card, .stack > .card');
   window.scrollTo(0, 0);
 }
 addEventListener('hashchange', route);

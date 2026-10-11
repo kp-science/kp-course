@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<link rel="stylesheet" href="course-ui.css?v=5">
+<link rel="stylesheet" href="course-ui.css?v=6">
 <style>
 .wrap{max-width:1024px;margin:0 auto;padding:0 22px}
 
@@ -410,7 +410,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=4"></script>
+<script src="course-core.js?v=6"></script>
 <script>
 (function () {
 const { esc, safeUrl, ytId, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -521,6 +521,7 @@ function renderHome() {
   setNav('home');
   $('app').innerHTML = KPC.user() ? homeUser() : homeGuest();
   if (!KPC.user()) initQuiz();
+  KPC.motion($('app'), '.hero > div > *, .quiz-wrap, .sec-h, .how > div, .cc, .start, .dash-h > *, .staffbar, .resume, .pend-i');
 }
 
 const ICONS = {
@@ -610,7 +611,11 @@ function initQuiz() {
     const step = now => { const t = (now - t0) / 1000 * speed; draw(t); if (t < tMax) requestAnimationFrame(step); else end(); };
     requestAnimationFrame(step);
   }
-  launch([45], null);
+  // เล่นวิถี 45° ครั้งแรกเมื่อเลื่อนมาเห็นกล่องคำถาม
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); setTimeout(() => { if (!$('qopts').querySelector('.pick')) launch([45], null); }, 500); } }, { threshold: .5 });
+    io.observe(svg);
+  } else launch([45], null);
   $('qopts').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     const pick = Number(b.dataset.a);
@@ -674,6 +679,7 @@ function renderAll() {
   const L = S.courses || [];
   $('app').innerHTML = `<div class="wrap"><section class="dash-h"><span class="hand">เลือกเรียนได้เลย</span><h1>คอร์สทั้งหมด</h1><p>${L.length} คอร์ส${KPC.user() ? '' : ' · บทที่เขียนว่าฟรีเปิดดูได้เลย'}</p></section>
     <section class="sec" style="padding-top:20px">${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section></div>`;
+  KPC.motion($('app'), '.dash-h > *, .cc');
 }
 
 /* ===================== หน้าคอร์ส ===================== */
@@ -740,6 +746,7 @@ async function renderCourse(cid, n) {
   }
   document.title = c.title + ' · KP Science';
   $('app').innerHTML = `<div class="wrap view">${viewCourse(c, i, meta, L, ok)}</div>`;
+  KPC.pageIn($('app'));
   typeset($('app'));
   if ($('payQr')) fillPay(c);
   // บันทึกว่าเรียนถึงบทไหน (ครูดูในห้องครู) — เฉพาะนักเรียน
