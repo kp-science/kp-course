@@ -90,6 +90,7 @@ const imgSrc = s => {
   const d = driveId(s); if (d) return 'https://drive.google.com/thumbnail?id=' + d + '&sz=w1600';
   return safeUrl(s);
 };
+KPC.imgSrc = imgSrc;   // ลิงก์รูป: ลิงก์แชร์ Google Drive → ลิงก์รูปตรง
 const inline = s => esc(s)
   .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
   .replace(/(^|[\s(])(https?:[/][/][^\s<]+)/g, (m, a, u) => `${a}<a href="${u}" target="_blank" rel="noopener">${u.length > 60 ? u.slice(0, 57) + '…' : u}</a>`);

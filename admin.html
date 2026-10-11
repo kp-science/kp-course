@@ -180,7 +180,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=3"></script>
+<script src="course-core.js?v=4"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -410,7 +410,7 @@ function courseForm(c, isNew) {
     <div class="field"><label>สาขา</label><select name="subject">${opt(SUBJECTS, c.subject || 'ฟิสิกส์')}</select></div>
     <div class="field"><label>ระดับชั้น</label><select name="level">${opt(LEVELS, c.level || 'ม.4')}</select></div>
     <div class="field full"><label>คำโปรย (บรรทัดเดียว แสดงบนการ์ด)</label><input type="text" name="summary" value="${esc(c.summary || '')}"></div>
-    <div class="field"><label>ภาพปก (ลิงก์ ถ้ามี)</label><input type="url" name="cover" value="${esc(c.cover || '')}" placeholder="https://…"></div>
+    <div class="field"><label>ภาพปก (ลิงก์ ถ้ามี)</label><input type="url" name="cover" value="${esc(c.cover || '')}" placeholder="วางลิงก์แชร์ Google Drive หรือลิงก์รูป"><span class="hint">Google Drive: แชร์ไฟล์เป็น “ทุกคนที่มีลิงก์” · ขนาดแนะนำ 1600×850 (แนวนอน)</span><div id="coverPrev"></div></div>
     <div class="field"><label>ลำดับการแสดง (น้อยขึ้นก่อน)</label><input type="number" name="order" value="${esc(c.order || 0)}"></div>
     <div class="field full"><label>คำแนะนำคอร์ส (แสดงเหนือบทที่ 1 · ทุกคนอ่านได้)</label><textarea name="body">${esc(c.body || '')}</textarea></div>
     ${isAdmin() && !isNew ? `<div class="field full"><label>ครูเจ้าของคอร์ส</label><select name="owner">${owners.map(o => `<option value="${esc(o.id)}"${o.id === c.owner ? ' selected' : ''}>${esc(o.name || o.id)}${o.id !== KPC.ADMIN_EMAIL ? ' · ' + esc(o.id) : ''}</option>`).join('')}</select><span class="hint">ครูเจ้าของแก้คอร์ส อนุมัตินักเรียน และดูความคืบหน้าได้ · เปลี่ยนแล้ว สิทธิ์/คำขอ/ความคืบหน้าจะย้ายตาม</span></div>` : ''}
@@ -449,7 +449,15 @@ function payPreview() {
 }
 // ตรวจก่อนบันทึก: คอร์สมีราคาต้องมีพร้อมเพย์ที่ถูกรูปแบบ
 function payError(c, p) { return c.price > 0 && !KPC.promptpay(p.promptpay, c.price) ? 'คอร์สมีราคา ต้องใส่เลขพร้อมเพย์ให้ถูกรูปแบบ (มือถือ 10 หลัก หรือบัตรประชาชน 13 หลัก)' : ''; }
-document.addEventListener('input', e => { if (e.target.closest('#cform') && /^(price|promptpay|payName)$/.test(e.target.name)) payPreview(); });
+document.addEventListener('input', e => { if (e.target.closest('#cform') && /^(price|promptpay|payName)$/.test(e.target.name)) payPreview(); if (e.target.name === 'cover') coverPreview(); });
+// ตัวอย่างภาพปก — แจ้งทันทีถ้าโหลดไม่ได้ (เช่น ไฟล์ Drive ยังไม่ได้แชร์สาธารณะ)
+function coverPreview() {
+  const f = $('cform'), box = $('coverPrev'); if (!f || !box) return;
+  const u = f.querySelector('[name=cover]').value.trim(), src = KPC.imgSrc(u);
+  if (!u) { box.innerHTML = ''; return; }
+  if (!src) { box.innerHTML = '<span class="err">ลิงก์ต้องขึ้นต้นด้วย https://</span>'; return; }
+  box.innerHTML = `<img src="${esc(src)}" referrerpolicy="no-referrer" alt="ตัวอย่างภาพปก" style="margin-top:8px;width:100%;max-width:320px;aspect-ratio:16/8.5;object-fit:cover;border-radius:10px;border:1px solid var(--line2);display:block" onerror="this.outerHTML='<span class=&quot;err&quot;>โหลดรูปไม่ได้ — ถ้าเป็น Google Drive ให้ตั้งแชร์เป็น “ทุกคนที่มีลิงก์”</span>'">`;
+}
 async function fillPayForm(cid) {
   const info = await KPC.getPayInfo(cid), f = $('cform'); if (!f || !info) { payPreview(); return; }
   f.querySelector('[name=promptpay]').value = info.promptpay || ''; f.querySelector('[name=payName]').value = info.name || ''; f.querySelector('[name=payNote]').value = info.note || '';
@@ -460,7 +468,7 @@ function drawInfo() {
     <div class="row" style="margin-top:16px"><button class="btn solid" type="button" data-act="save-course">💾 บันทึก</button></div></div>
     <div class="note">ข้อมูลในแท็บนี้ + รายชื่อบท (ไม่รวมเนื้อหา) ทุกคนเห็นได้เมื่อเผยแพร่ ส่วนเนื้อหาบท คลิป เอกสาร แบบทดสอบ เปิดเฉพาะนักเรียนที่ได้รับสิทธิ์ หรือบทที่ติ๊ก “ทดลองเรียนฟรี”</div>
     <div class="card danger-zone"><div class="card-h"><h3>ลบคอร์ส</h3></div><p class="sub" style="margin-bottom:12px">ลบคอร์สและบทเรียนทั้งหมด (สิทธิ์และความคืบหน้าของนักเรียนยังเก็บไว้) — ย้อนกลับไม่ได้</p><button class="btn bad sm" type="button" data-act="del-course">🗑 ลบคอร์สนี้</button></div></div>`;
-  fillPayForm(S.cur.id);
+  fillPayForm(S.cur.id); coverPreview();
 }
 function drawNewCourse() {
   document.title = 'คอร์สใหม่ · ห้องครู';

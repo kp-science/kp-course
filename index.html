@@ -419,7 +419,7 @@ footer a{color:var(--accent);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=3"></script>
+<script src="course-core.js?v=4"></script>
 <script>
 (function () {
 const { esc, safeUrl, ytId, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -433,7 +433,8 @@ const courseUrl = (c, n) => '#/c/' + encodeURIComponent(c.id) + (n ? '/' + n : '
 const PAL = { 'ฟิสิกส์': ['#eaf1ff', '#2456c9'], 'ดาราศาสตร์': ['#f0ebff', '#6a3fd0'], 'เคมี': ['#e7f6ef', '#17845a'], 'ชีววิทยา': ['#f1f6e3', '#5c7d12'] };
 const seedOf = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
 function coverArt(c) {
-  if (safeUrl(c.cover)) return `<img class="art" src="${esc(c.cover)}" alt="" loading="lazy" style="object-fit:cover">`;
+  // ภาพปกของครู (รองรับลิงก์แชร์ Google Drive) วางทับภาพวาด — โหลดไม่ได้ก็เห็นภาพวาดแทน
+  const img = KPC.imgSrc(c.cover) ? `<img class="art" src="${esc(KPC.imgSrc(c.cover))}" alt="" loading="lazy" referrerpolicy="no-referrer" style="object-fit:cover" onerror="this.remove()">` : '';
   const [bg, ink] = PAL[c.subject] || ['#f5f1e8', '#3c4555'];
   const h = seedOf(c.id), W = 320, H = 170, g = [];
   for (let x = 16; x < W; x += 16) g.push(`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`);
@@ -465,7 +466,7 @@ function coverArt(c) {
       <path d="M${xm} ${top} l0 24 m-4 -7 l4 7 l4 -7" stroke="#e8693a" stroke-width="2.4" fill="none"/>
       <path d="M${x0 + 34} ${y0} A 34 34 0 0 0 ${x0 + 26} ${y0 - 20}" fill="none" stroke="${ink}" stroke-width="1.6"/>`;
   }
-  return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/><g stroke="${ink}" stroke-opacity=".09">${g.join('')}</g>${d}<text x="18" y="${H - 16}" font-family="Itim, cursive" font-size="19" fill="${ink}">${esc(c.subject || 'วิทยาศาสตร์')}${c.level ? ' · ' + esc(c.level) : ''}</text></svg>`;
+  return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/><g stroke="${ink}" stroke-opacity=".09">${g.join('')}</g>${d}<text x="18" y="${H - 16}" font-family="Itim, cursive" font-size="19" fill="${ink}">${esc(c.subject || 'วิทยาศาสตร์')}${c.level ? ' · ' + esc(c.level) : ''}</text></svg>${img}`;
 }
 function ring(pct, s) {
   const r = 24, C = 2 * Math.PI * r;
