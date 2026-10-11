@@ -28,6 +28,7 @@
 - แอดมินเปิดห้องครูครั้งแรก → `A.migrate()` ย้ายข้อมูลระบบเดิมอัตโนมัติ (ปุ่ม “ตรวจและซ่อมข้อมูล” ในหน้าจัดการครู)
 
 ## ⚠️ กติกา
+- **Firebase แผนฟรี (Spark)** — ครูเลือกเมื่อ 11 ต.ค. 69 · ไม่มี Cloud Functions / Cloud Storage / backup อัตโนมัติ → อย่าออกแบบฟีเจอร์ที่ต้องใช้สิ่งเหล่านี้ (อัปโหลดไฟล์, จ่ายเงินอัตโนมัติ, แจ้งเตือน) โดยไม่ถามครูก่อน · ถ้าจะเปลี่ยนเป็น Blaze ให้ตั้ง budget alert ทันที
 - **ห้ามใส่เนื้อหาบท (คลิป/เอกสาร/แบบทดสอบ) ในไฟล์ใน repo** — repo เป็น public · เนื้อหาอยู่ใน Firestore เท่านั้น
 - แก้ `course-core.js` · `course-ui.css` · `firebase-config.js` → เพิ่มเลข `?v=` ในแท็ก `<script>` ของ `index.html` + `admin.html` (cache busting)
 - ทุกหน้า HTML มี Google Analytics `G-2YTJBNHP6D` ต่อจาก `<head>` และ frame protection
