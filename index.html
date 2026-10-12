@@ -12,7 +12,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>คอร์สออนไลน์ · KP Science</title>
-<meta name="description" content="คอร์สออนไลน์ฟิสิกส์ของ KP Science เรียนเป็นบท คลิป + Simulation โต้ตอบ + เอกสาร ติดตามความคืบหน้าได้">
+<meta name="description" content="คอร์สออนไลน์วิทยาศาสตร์ของ KP Science เรียนเป็นบท คลิป + Simulation โต้ตอบ + เอกสาร ติดตามความคืบหน้าได้">
 <meta name="theme-color" content="#f5f5f7">
 <script>
 /* KP Science — Frame Protection */
@@ -594,7 +594,7 @@ footer a{color:var(--link);text-decoration:none}
 <main id="app"><div class="wrap view"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div></main>
 
 <footer><div class="wrap">
-  <span>KP Science · คอร์สออนไลน์ฟิสิกส์ โดยครูโกเมน</span>
+  <span>KP Science · คอร์สออนไลน์วิทยาศาสตร์</span>
   <span><a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">KP Science Simulation ↗</a></span>
 </div></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -778,10 +778,10 @@ const ICONS = {
 function homeGuest() {
   const L = S.courses || [], ff = firstFree();
   // ประโยคปักหมุด: {คำ} = ไฮไลต์ไล่สี · คำติดกันไม่มีช่องว่าง (ภาษาไทย)
-  const stmt = ['เรียนฟิสิกส์', 'ไม่ใช่', 'การ', 'ท่อง', 'สูตร ', 'แต่', 'คือ', 'การ', '{เห็นภาพ}', 'ว่า', 'ธรรมชาติ', 'ทำงาน', 'อย่างไร ', 'แล้ว', '{ลองด้วยมือ}', 'ตัวเอง']
+  const stmt = ['เรียนวิทยาศาสตร์', 'ไม่ใช่', 'การ', 'ท่อง', 'สูตร ', 'แต่', 'คือ', 'การ', '{เห็นภาพ}', 'ว่า', 'ธรรมชาติ', 'ทำงาน', 'อย่างไร ', 'แล้ว', '{ลองด้วยมือ}', 'ตัวเอง']
     .map(w => w[0] === '{' ? `<span class="w hl">${esc(w.slice(1, -1))}</span>` : `<span class="w">${esc(w)}</span>`).join('');
   const tick = L.map(c => `<a href="${courseUrl(c)}">${esc(c.title)}${c.outline ? ' · ' + c.outline.length + ' บท' : ''}</a>`).join('')
-    + '<a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">คลังซิมูเลชันฟิสิกส์ KP Science</a>';
+    + '<a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">คลังซิมูเลชันวิทยาศาสตร์ KP Science</a>';
   const ffOf = c => (c.outline || []).findIndex(l => l.free);
   const show = showcase(L, 'คอร์สที่เปิดสอน', c => ({
     small: [c.subject, c.level].filter(Boolean).join(' · '), para: c.summary,
@@ -790,8 +790,8 @@ function homeGuest() {
   <header class="cine-hero cine-dark">
     <div class="orb a"></div><div class="orb b"></div>
     <div class="cine-in">
-      <div class="eyebrow intro" style="--d:.1s">ครูโกเมน · KP Science · คอร์สออนไลน์</div>
-      <h1 class="intro" style="--d:.25s">เรียนฟิสิกส์<br><span class="grad">ให้เห็นภาพ</span></h1>
+      <div class="eyebrow intro" style="--d:.1s">KP Science · คอร์สออนไลน์</div>
+      <h1 class="intro" style="--d:.25s">เรียนวิทยาศาสตร์<br><span class="grad">ให้เห็นภาพ</span></h1>
       <p class="deck intro" style="--d:.45s">ดูคลิปสั้น ๆ ลองเล่นซิมูเลชันด้วยมือตัวเอง เรียนทีละบทตามจังหวะของตัวเอง — สมัครฟรี</p>
       <div class="btns intro" style="--d:.6s">${ff ? `<a class="btn solid" href="${courseUrl(ff[0], ff[1])}">ลองเรียนบทฟรี</a>` : ''}<button class="btn fb" type="button" data-login="register">สมัครฟรี</button><a class="btn ghost" href="#/courses">ดูคอร์สทั้งหมด ›</a></div>
     </div>
@@ -829,7 +829,7 @@ function homeGuest() {
   </section>
   <a class="tile dark" href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">
     <span class="eyebrow">KP Science Simulation</span>
-    <h2>คลังซิมูเลชันฟิสิกส์</h2>
+    <h2>คลังซิมูเลชันวิทยาศาสตร์</h2>
     <p class="t">เปิดเล่นได้ฟรีบนเว็บ ไม่ต้องติดตั้งอะไร</p>
     <div class="links"><span class="btn solid sm">เปิดคลังซิมูเลชัน ↗</span></div>
     <svg class="simart" viewBox="0 0 520 240" aria-hidden="true"><ellipse cx="260" cy="130" rx="190" ry="62" fill="none" stroke="#2997ff" stroke-width="2" stroke-dasharray="6 7" opacity=".8"/><ellipse cx="260" cy="130" rx="120" ry="40" fill="none" stroke="#ff9f45" stroke-width="2" opacity=".8"/><circle cx="260" cy="130" r="26" fill="#ffd60a"/><circle cx="450" cy="130" r="10" fill="#2997ff"/><circle cx="160" cy="104" r="7" fill="#ff9f45"/><path d="M30 225 C 120 170, 200 250, 290 205 S 450 170, 500 215" fill="none" stroke="#30d158" stroke-width="2.5"/></svg>
