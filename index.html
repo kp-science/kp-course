@@ -250,7 +250,6 @@
 .tiles.bleed{padding:12px;background:#fff}
 .tile{grid-column:span 1;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:560px;padding:52px 28px 0;background:#f5f5f7;overflow:hidden;text-decoration:none;color:var(--text);border-radius:var(--r)}
 .tiles.bleed .tile{border-radius:0}
-.tiles:not(.bleed) .tile{background:var(--surface)}
 .tile.full{grid-column:1/-1;min-height:620px}
 .tile.dark{background:#000!important;color:#f5f5f7}
 .tile.dark p{color:#a1a1a6}
@@ -262,12 +261,6 @@
 .tile .links{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:20px;flex-wrap:wrap}
 .btn.outline{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .btn.outline:hover{background:var(--accent);color:#fff}
-.tile .prog{display:flex;align-items:center;gap:10px;margin-top:14px;font:500 14px var(--body);color:var(--muted)}
-.tile .prog .bar{width:160px}
-.tile .pic{margin-top:auto;width:min(86%,720px);aspect-ratio:16/8.5;position:relative;border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 -4px 30px rgba(0,0,0,.08);transition:transform .7s var(--ease-out)}
-.tile.full .pic{width:min(80%,880px)}
-a.tile:hover .pic{transform:translateY(-8px)}
-.tile .pic .sticker{top:14px;right:14px}
 /* แผ่นแรก: คำถามเตะบอลเป็นภาพเด่น */
 .hero-tile .quiz-wrap{margin-top:40px;width:min(100%,640px);margin-bottom:44px}
 .hero-tile .quiz{background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.08)}
@@ -295,7 +288,6 @@ a.tile:hover .pic{transform:translateY(-8px)}
   .tiles{grid-template-columns:1fr}
   .tiles.bleed{padding:0;gap:10px}
   .tile,.tile.full{min-height:0;padding:40px 18px 0}
-  .tile .pic,.tile.full .pic{width:94%;margin-top:28px}
   .hero-tile .quiz-wrap{margin-top:28px;margin-bottom:28px}
   .how3{grid-template-columns:1fr;max-width:none;gap:16px}
   .mockprog{flex-direction:column}
@@ -344,47 +336,14 @@ a.tile:hover .pic{transform:translateY(-8px)}
 .cine-stmt .w.on{color:var(--on-dark)}
 .cine-stmt .w.hl.on{background:var(--ap-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 /* โชว์คอร์สปักหมุด: เปลี่ยนคอร์สตามการเลื่อน */
-.cine-show{background:#000;color:var(--on-dark);position:relative}
-.cine-show .pin{position:sticky;top:0;height:100svh;display:flex;align-items:center;overflow:hidden}
-.cine-show .glow{position:absolute;width:70vmax;height:70vmax;border-radius:50%;right:-18vmax;top:50%;transform:translateY(-50%);background:radial-gradient(circle,#4f46e5,transparent 60%);opacity:.32;filter:blur(50px)}
-.cine-show .glow.b{right:auto;left:-30vmax;top:80%;background:radial-gradient(circle,#ff5f6d,transparent 60%);opacity:.18}
-.cine-show .in{position:relative;display:grid;grid-template-columns:1fr 1.1fr;gap:40px;align-items:center;width:100%;max-width:1100px;margin:0 auto;padding:0 22px}
-.cine-show .eyebrow{color:var(--on-dark-2);font:600 17px var(--head);margin-bottom:10px}
-.cine-show .names{position:relative;height:clamp(300px,30vw,360px)}
-.cine-show .nm{position:absolute;inset:0;opacity:0;transform:translateY(46px);filter:blur(10px);transition:opacity .7s var(--ease-out),transform .8s var(--ease-out),filter .7s;pointer-events:none}
-.cine-show .nm.on{opacity:1;transform:none;filter:none;pointer-events:auto}
-.cine-show .nm.past{transform:translateY(-46px)}
-.cine-show .nm small{display:block;font:600 13px var(--head);letter-spacing:.2em;color:var(--on-dark-2)}
-.cine-show .nm b{display:block;font:700 clamp(30px,3.6vw,52px)/1.3 var(--head);background:var(--ap-grad);-webkit-background-clip:text;background-clip:text;color:transparent;padding:.05em 0}
-.cine-show .nm p{margin:8px 0 0;color:var(--on-dark-2);font-size:clamp(17px,1.6vw,20px);max-width:460px}
-.cine-show .nm .btns{display:flex;gap:16px;align-items:center;margin-top:22px;flex-wrap:wrap}
-.cine-show .nm .btn.ghost{color:#2997ff}
-.cine-show .stage{position:relative;aspect-ratio:16/10;width:100%}
-.cine-show .sc{position:absolute;inset:0;border-radius:24px;overflow:hidden;opacity:0;transform:scale(.82) rotate(-6deg);transition:opacity .8s var(--ease-out),transform 1.1s var(--ease-out);box-shadow:0 30px 80px rgba(0,0,0,.5)}
-.cine-show .sc.on{opacity:1;transform:none}
-.cine-show .sc.past{transform:scale(1.1) rotate(6deg)}
-.cine-show .steps{display:flex;gap:10px;margin-top:26px}
-.cine-show .steps button{flex:1;max-width:140px;border:0;background:none;padding:12px 0 0;color:var(--on-dark-2);font:500 13px var(--body);text-align:left;cursor:pointer;position:relative}
-.cine-show .steps button::before,.cine-show .steps button i{content:"";position:absolute;top:0;left:0;height:3px;border-radius:3px}
-.cine-show .steps button::before{right:0;background:#333}
-.cine-show .steps button i{background:var(--ap-grad);width:calc(var(--p,0) * 100%)}
-.cine-show .steps button.on{color:var(--on-dark)}
 .cine-after{background:#fff}
 @media (max-width:760px){
-  .cine-show .in{grid-template-columns:1fr;gap:10px;text-align:center}
-  .cine-show .stage{width:min(88vw,420px);justify-self:center;order:-1}
-  .cine-show .names{height:300px}
-  .cine-show .nm p{margin:8px auto 0}
-  .cine-show .nm .btns,.cine-show .steps{justify-content:center}
-  .cine-show .steps button span{display:none}
-  .cine-show .steps button{max-width:56px}
   .ticker .lab span{display:none}
   .ticker{bottom:56px}
 }
 @media (prefers-reduced-motion:reduce){
   .intro{opacity:1;transform:none;filter:none;animation:none}
   .cine-stmt{height:auto}.cine-stmt .pin{position:static;height:auto;padding:100px 0}.cine-stmt .w{color:var(--on-dark)}
-  .cine-show{height:auto!important}.cine-show .pin{position:static;height:auto;padding:80px 0}
   .ticker .track{animation:none}
 }
 
@@ -394,14 +353,10 @@ a.tile:hover .pic{transform:translateY(-8px)}
 .cine-stats .in{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
 .cine-stats b{display:block;font:700 clamp(52px,7.4vw,100px)/1.15 var(--head);background:var(--ap-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .cine-stats span{color:var(--on-dark-2);font-size:clamp(15px,1.5vw,18px)}
-.cine-show .pbar{height:4px;border-radius:4px;background:#333;margin-top:16px;max-width:360px;overflow:hidden}
-.cine-show .pbar i{display:block;height:100%;background:var(--ap-grad);border-radius:4px}
-.cine-light{background:var(--bg);padding:10px 0 20px}
-.cine-show.single .pin{position:relative;height:auto;padding:40px 0 110px}
-.cine-show,.cine-stmt,.cine-hero,.cine-stats{overflow-x:clip}
+.cine-stmt,.cine-hero,.cine-stats,.kc-sec{overflow-x:clip}
 .cine-stats{margin-top:-1px;padding-bottom:70px}
-.cine-show,.cine-stmt{margin-top:-1px}
-@media (max-width:760px){.cine-stats .in{grid-template-columns:1fr;gap:34px}.cine-show .pbar{margin:16px auto 0}}
+.cine-stmt,.kc-sec{margin-top:-1px}
+@media (max-width:760px){.cine-stats .in{grid-template-columns:1fr;gap:34px}}
 
 /* ---------- หน้าเรียน: โทนมืดแบบเดียวกับหน้าแรก (body.lesson-dark) — คลีน ไม่มีอะไรดันคลิป ---------- */
 body.lesson-dark{background:#000;color:var(--on-dark)}
@@ -475,14 +430,82 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 /* หน้า "คอร์สทั้งหมด" แบบมืด (ใช้ body.lesson-dark ร่วมกับหน้าเรียน) */
 .cine-hero.all-hero{min-height:auto;padding:90px 22px 60px}
 .all-hero .orb{opacity:.28}
-.all-grid{padding-top:8px;padding-bottom:40px}
-.lesson-dark .tiles:not(.bleed) .tile{background:#1d1d1f;color:var(--on-dark)}
-.lesson-dark .tile p.t{color:#a1a1a6}
-.lesson-dark .tile .eyebrow{color:#ff9f45}
-.lesson-dark .tile .link{color:#2997ff}
-.lesson-dark .tile .prog{color:var(--on-dark-2)}
-.lesson-dark .tile .pic{box-shadow:0 -10px 40px rgba(0,0,0,.5)}
-.lesson-dark a.tile:hover{box-shadow:0 0 0 1px #3a3a3c}
+.all-hero .wave-band{height:80px;opacity:.5}
+.cine-hero.all-hero+.kc-sec{padding-top:8px}
+
+/* ---------- การ์ดคอร์ส (ใช้ทุกหน้าที่แสดงรายการคอร์ส) · .kc-grid.list = แบบลิสต์ ---------- */
+.kc-sec{position:relative;background:#000;color:var(--on-dark);padding:clamp(48px,7vw,96px) 22px clamp(56px,8vw,110px)}
+.kc-sec+.kc-sec{padding-top:0}
+.kc-h{max-width:1120px;margin:0 auto clamp(20px,3vw,32px)}
+.kc-h .eyebrow{font:600 clamp(15px,1.5vw,18px)/1.4 var(--head);color:var(--on-dark-2)}
+.kc-h h2{font:700 clamp(30px,4.4vw,52px)/1.3 var(--head);margin-top:2px}
+.kc-h p{color:var(--on-dark-2);margin-top:6px;font-size:clamp(15px,1.5vw,18px)}
+.kc-h.row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.kc-view{display:inline-flex;gap:2px;padding:3px;border-radius:980px;background:#1d1d1f}
+.kc-view button{display:grid;place-items:center;width:38px;height:32px;border:0;border-radius:980px;background:none;color:var(--on-dark-2);cursor:pointer;transition:background .25s,color .25s}
+.kc-view button:hover{color:var(--on-dark)}
+.kc-view button[aria-pressed="true"]{background:#3a3a3c;color:#fff}
+.kc-view button:focus-visible{outline:2px solid #2997ff;outline-offset:2px}
+.kc-view svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.kc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:20px;max-width:1120px;margin:0 auto}
+.kc{--kc:#64d2ff;position:relative;display:flex;flex-direction:column;min-width:0;border-radius:24px;overflow:hidden;background:#111114;color:var(--on-dark);text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out)}
+.kc:hover{text-decoration:none;transform:translateY(-6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--kc) 45%,transparent),0 30px 70px -24px color-mix(in srgb,var(--kc) 50%,transparent)}
+.kc:focus-visible{outline:2px solid #2997ff;outline-offset:3px}
+.kc.reveal{transform:translateY(56px) scale(.97);transition:opacity .7s var(--ease-out),transform 1s cubic-bezier(.2,1.25,.35,1)!important;transition-delay:var(--d,0s)!important}
+.kc.reveal.in{transform:none}
+.kc-cover{position:relative;aspect-ratio:16/9;overflow:hidden;background:radial-gradient(110% 85% at 30% 0,color-mix(in srgb,var(--kc) 20%,transparent),transparent 72%)}
+.kc-cover img.art{-webkit-mask-image:linear-gradient(#000 62%,transparent);mask-image:linear-gradient(#000 62%,transparent);transition:transform .9s var(--ease-out)}
+.kc:hover .kc-cover img.art{transform:scale(1.04)}
+/* คลื่น: แต่ละชั้นกว้าง 2 ลูกคลื่นเต็ม เลื่อนไปครึ่งหนึ่งแล้ววนได้เนียน */
+.wv-g{position:absolute;inset:0;transform-origin:50% 100%;transition:transform .9s var(--ease-out)}
+.kc:hover .wv-g{transform:scaleY(1.2)}
+.wv{position:absolute;left:0;top:0;width:200%;height:100%;display:block;overflow:visible;animation:wvFlow var(--t,10s) linear infinite;animation-delay:var(--o,0s);will-change:transform}
+.wv.r{animation-direction:reverse}
+@keyframes wvFlow{to{transform:translate3d(-50%,0,0)}}
+.wave-band{position:absolute;left:0;right:0;bottom:0;height:clamp(150px,36%,340px);pointer-events:none;opacity:.6}
+.kc-tag{position:absolute;top:12px;right:12px;z-index:1;font:500 12.5px/1.5 var(--body);padding:4px 11px;border-radius:980px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.kc-tag.ok,.kc-st.ok{color:#5fe08a}.kc-tag.warn,.kc-st.warn{color:#ffc26b}.kc-tag.own,.kc-st.own{color:#d9b8ff}
+.kc-body{flex:1;display:flex;flex-direction:column;padding:4px 22px 20px}
+.kc-main{flex:1;min-width:0}
+.kc-sub{font:600 13.5px/1.5 var(--head);color:var(--kc)}
+.kc-st{display:none}
+.kc h3{font:600 clamp(19px,1.8vw,22px)/1.45 var(--head);margin-top:2px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.kc-sum{margin-top:6px;color:var(--on-dark-2);font-size:15px;line-height:1.6;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.kc-meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;color:var(--on-dark-2);font-size:13.5px}
+.kc-prog{margin-top:12px;font-size:13.5px;color:var(--on-dark-2)}
+.kc-prog .nx{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+.kc-prog .bar{height:5px;background:#333}
+.kc-prog .bar i{background:var(--ap-grad)}
+.kc-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:18px}
+.kc-price{font:600 18px var(--head);white-space:nowrap}
+.kc-price small{font:400 13.5px var(--body);color:var(--on-dark-2)}
+.kc-cta{font:500 14px/1 var(--body);color:#fff;background:#0071e3;padding:9px 16px;border-radius:980px;white-space:nowrap;transition:background .25s}
+.kc:hover .kc-cta{background:#0077ed}
+/* แบบลิสต์: ใช้ markup เดียวกับการ์ด */
+.kc-grid.list{grid-template-columns:minmax(0,1fr);gap:10px}
+.list .kc{flex-direction:row;border-radius:20px}
+.list .kc:hover{transform:translateY(-2px)}
+.list .kc-cover{flex:none;width:clamp(120px,20%,210px);aspect-ratio:auto}
+.list .kc-tag{display:none}
+.list .kc-st{display:inline}
+.list .kc-body{flex-direction:row;align-items:center;gap:24px;padding:16px 22px}
+.list .kc h3{-webkit-line-clamp:1}
+.list .kc-sum{-webkit-line-clamp:1;margin-top:2px}
+.list .kc-meta,.list .kc-prog{margin-top:6px}
+.list .kc-prog .bar{max-width:320px}
+.list .kc-foot{flex:none;padding-top:0;gap:18px}
+.kc-sec .pend{max-width:1120px;margin:0 auto}
+.kc-sec .pend-i{background:#111114;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.kc-sec .pend-i .sub{color:var(--on-dark-2)}
+.kc-sec .empty{max-width:1120px;margin:0 auto;background:#111114;color:var(--on-dark-2)}
+@media (max-width:640px){
+  .kc-sec{padding-left:16px;padding-right:16px}.kc-grid{gap:14px}
+  .list .kc-cover{width:84px}
+  .list .kc-body{flex-direction:column;align-items:stretch;gap:0;padding:12px 14px}
+  .list .kc-sum{display:none}
+  .list .kc-foot{padding-top:10px}
+}
+@media (prefers-reduced-motion:reduce){.wv{animation:none;will-change:auto}.kc:hover .wv-g{transform:none}}
 
 /* ชำระเงิน */
 .pay{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;text-align:left;width:min(640px,100%);margin-top:6px}
@@ -661,44 +684,29 @@ const fmtDate = ts => { try { const d = ts && ts.toDate ? ts.toDate() : null; re
 function toast(m, bad) { const t = $('toast'); t.textContent = m; t.className = 'toast show' + (bad ? ' bad' : ''); clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 2800); }
 const courseUrl = (c, n) => '#/c/' + encodeURIComponent(c.id) + (n ? '/' + n : '');
 
-/* ===================== ปกคอร์ส: วาดเส้นแบบแผนภาพในสมุด ===================== */
-const PAL = { 'ฟิสิกส์': ['#e8f2fd', '#0071e3'], 'ดาราศาสตร์': ['#f1ebfa', '#8944ab'], 'เคมี': ['#e5f4ea', '#1a7f43'], 'ชีววิทยา': ['#f0f5e1', '#5c7d12'] };
+/* ===================== ปกคอร์ส: คลื่นเคลื่อนไหวสีตามวิชา (ถ้าครูใส่ภาพปก ภาพครูทับด้านบน) ===================== */
+const PAL = { 'ฟิสิกส์': ['#0a84ff', '#64d2ff'], 'ดาราศาสตร์': ['#a66cff', '#ff8ec4'], 'เคมี': ['#00c7a8', '#7df0c8'], 'ชีววิทยา': ['#34c759', '#c4ec6a'] };
+const palOf = c => PAL[c.subject] || ['#ff5f6d', '#ffb347'];
 const seedOf = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+// คลื่น sine ความยาว P กว้าง W (W ต้องหาร P ลงตัว · เลื่อนครึ่ง W แล้วรอยต่อตรงกันเมื่อ W/2 หาร P ลงตัว)
+function wavePath(y, a, P, W, fillTo) {
+  let d = `M0 ${y} Q${P / 4} ${y - a} ${P / 2} ${y}`;
+  for (let x = P; x <= W; x += P / 2) d += ` T${x} ${y}`;
+  return fillTo ? d + ` V${fillTo} H0 Z` : d;
+}
 function coverArt(c) {
-  // ภาพปกของครู (รองรับลิงก์แชร์ Google Drive) วางทับภาพวาด — โหลดไม่ได้ก็เห็นภาพวาดแทน
+  // ภาพปกของครู (รองรับลิงก์แชร์ Google Drive) วางทับคลื่น — โหลดไม่ได้ก็เห็นคลื่นแทน
   const img = KPC.imgSrc(c.cover) ? `<img class="art" src="${esc(KPC.imgSrc(c.cover))}" alt="" loading="lazy" referrerpolicy="no-referrer" style="object-fit:cover" onerror="this.remove()">` : '';
-  const [bg, ink] = PAL[c.subject] || ['#f5f1e8', '#3c4555'];
-  const h = seedOf(c.id), W = 320, H = 170, g = [];
-  for (let x = 16; x < W; x += 16) g.push(`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`);
-  for (let y = 10; y < H; y += 16) g.push(`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`);
-  let d = '';
-  if (c.subject === 'ดาราศาสตร์') {
-    const rx = 90 + h % 30;
-    d = `<ellipse cx="190" cy="88" rx="${rx}" ry="${rx * .38}" fill="none" stroke="${ink}" stroke-width="2" stroke-dasharray="5 6"/><circle cx="190" cy="88" r="16" fill="${ink}" opacity=".9"/><circle cx="${190 + rx * .8}" cy="${88 - rx * .22}" r="7" fill="#fff" stroke="${ink}" stroke-width="2"/>`;
-  } else if (c.subject === 'เคมี') {
-    const hex = (x, y) => `<polygon points="${[0, 1, 2, 3, 4, 5].map(i => [x + 22 * Math.cos(Math.PI / 3 * i + Math.PI / 6), y + 22 * Math.sin(Math.PI / 3 * i + Math.PI / 6)].map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${ink}" stroke-width="2"/>`;
-    d = hex(170, 80) + hex(208, 102) + hex(208, 58) + `<circle cx="246" cy="124" r="5" fill="${ink}"/>`;
-  } else if (c.subject === 'ชีววิทยา') {
-    d = `<ellipse cx="200" cy="86" rx="80" ry="48" fill="#fff" stroke="${ink}" stroke-width="2"/><circle cx="214" cy="80" r="17" fill="none" stroke="${ink}" stroke-width="2"/><circle cx="214" cy="80" r="6" fill="${ink}"/><path d="M150 96 q14 -10 26 0 t26 0" fill="none" stroke="${ink}" stroke-width="2"/>`;
-  } else if (/ไฟฟ้า|ประจุ|แม่เหล็ก/.test(c.title)) {
-    // ประจุบวก-ลบ + เส้นสนาม
-    const q = (x, s, col) => `<circle cx="${x}" cy="70" r="15" fill="#fff" stroke="${col}" stroke-width="2.2"/><text x="${x}" y="77" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="20" fill="${col}">${s}</text>`;
-    d = [-46, -24, 24, 46].map(k => `<path d="M118 ${70 + k * .35} C 160 ${70 + k * 1.6} 200 ${70 + k * 1.6} 242 ${70 + k * .35}" fill="none" stroke="${ink}" stroke-width="1.8" stroke-dasharray="5 5"/>`).join('')
-      + `<line x1="118" y1="70" x2="242" y2="70" stroke="${ink}" stroke-width="1.8"/><path d="M184 70 l-8 -4 m8 4 l-8 4" stroke="${ink}" stroke-width="1.8" fill="none"/>` + q(100, '+', '#bf4800') + q(260, '−', ink);
-  } else if (/คลื่น|เสียง|แสง|สั่น/.test(c.title)) {
-    const wave = (amp, y, col, dash) => { let p = `M30 ${y}`; for (let x = 30; x <= 300; x += 5) p += ` L${x} ${(y - amp * Math.sin((x - 30) / 22)).toFixed(1)}`; return `<path d="${p}" fill="none" stroke="${col}" stroke-width="2.2"${dash ? ' stroke-dasharray="5 5"' : ''}/>`; };
-    d = wave(26, 68, ink) + wave(14, 68, '#bf4800', 1) + `<line x1="30" y1="68" x2="300" y2="68" stroke="${ink}" stroke-opacity=".35"/>`;
-  } else {
-    // โพรเจกไทล์ + เวกเตอร์ (ความสูงเปลี่ยนตามรหัสคอร์ส)
-    const top = 26 + h % 26, x0 = 60, x1 = 290, xm = (x0 + x1) / 2, y0 = 122;
-    d = `<line x1="40" y1="${y0}" x2="305" y2="${y0}" stroke="${ink}" stroke-width="2"/>
-      <path d="M${x0} ${y0} Q ${xm} ${2 * top - y0} ${x1} ${y0}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-dasharray="6 6"/>
-      <circle cx="${xm}" cy="${top}" r="8" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
-      <path d="M${xm} ${top} l34 0 m-7 -4 l7 4 l-7 4" stroke="#bf4800" stroke-width="2.4" fill="none"/>
-      <path d="M${xm} ${top} l0 24 m-4 -7 l4 7 l4 -7" stroke="#bf4800" stroke-width="2.4" fill="none"/>
-      <path d="M${x0 + 34} ${y0} A 34 34 0 0 0 ${x0 + 26} ${y0 - 20}" fill="none" stroke="${ink}" stroke-width="1.6"/>`;
-  }
-  return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/>${d}<text x="18" y="${H - 16}" font-family="-apple-system, BlinkMacSystemFont, 'IBM Plex Sans Thai', sans-serif" font-size="14" font-weight="600" fill="${ink}" opacity=".75">${esc(c.subject || 'วิทยาศาสตร์')}${c.level ? ' · ' + esc(c.level) : ''}</text></svg>${img}`;
+  const [a, b] = palOf(c), h = seedOf(c.id), id = 'wf' + h.toString(36), W = 640, H = 200, v = n => h % n;
+  const fill = (i, col, op, y, amp, P, t, rev) => `<svg class="wv${rev ? ' r' : ''}" style="--t:${t}s;--o:-${v(9) + i}s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity="${op}"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs><path d="${wavePath(y, amp, P, W, H)}" fill="url(#${id}${i})"/></svg>`;
+  const line = (i, col, op, y, amp, P, t, rev) => `<svg class="wv${rev ? ' r' : ''}" style="--t:${t}s;--o:-${v(7) + i}s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${wavePath(y, amp, P, W)}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+  return `<div class="wv-g">${fill(1, a, .55, 92 + v(14), 24 + v(10), 320, 15)}${fill(2, b, .32, 116 + v(10), 14 + v(6), 160, 10, 1)}${line(3, b, .95, 104 + v(12), 20 + v(8), 160, 8)}${line(4, a, .8, 90 + v(16), 30 + v(10), 320, 13, 1)}</div>${img}`;
+}
+// แถบคลื่นเส้นบาง ๆ ท้าย hero (ไล่สีเป็นคาบเดียวกับการเลื่อน รอยต่อจึงไม่สะดุด)
+function waveBand() {
+  const W = 1280, H = 200;
+  const ln = (i, y, amp, P, t, rev, op) => `<svg class="wv${rev ? ' r' : ''}" style="--t:${t}s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="wvb${i}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="640" y2="0" spreadMethod="repeat"><stop offset="0" stop-color="#ff5f6d"/><stop offset=".35" stop-color="#ffb347"/><stop offset=".7" stop-color="#a66cff"/><stop offset="1" stop-color="#ff5f6d"/></linearGradient></defs><path d="${wavePath(y, amp, P, W)}" fill="none" stroke="url(#wvb${i})" stroke-opacity="${op}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+  return `<div class="wave-band">${ln(0, 100, 62, 640, 22, 0, .9)}${ln(1, 112, 42, 640, 17, 1, .6)}${ln(2, 92, 26, 320, 13, 0, .45)}${ln(3, 124, 16, 320, 9, 1, .3)}</div>`;
 }
 function ring(pct, s) {
   const r = 24, C = 2 * Math.PI * r;
@@ -736,38 +744,71 @@ function nextIndex(c) {
 const firstFree = () => { for (const c of S.courses || []) { const j = (c.outline || []).findIndex(l => l.free); if (j >= 0) return [c, j + 1]; } return null; };
 const findLesson = re => { for (const c of S.courses || []) { const j = (c.outline || []).findIndex(l => re.test(l.title)); if (j >= 0) return [c, j + 1]; } return null; };
 
-/* ===================== แผ่นคอร์ส (กระเบื้องภาพ) ===================== */
-function card(c, full) {
+/* ===================== การ์ดคอร์ส ===================== */
+const VIEW_ICON = {
+  grid: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></svg>',
+  list: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></svg>',
+};
+// รูปแบบที่เลือกไว้ จำไว้ในเครื่อง (อ่าน/เขียนไม่ได้ก็ใช้แบบการ์ด)
+let VIEW = 'grid';
+try { if (localStorage.getItem('kpc-view') === 'list') VIEW = 'list'; } catch (e) {}
+const viewToggle = () => `<div class="kc-view" role="group" aria-label="รูปแบบการแสดงคอร์ส">${[['grid', 'แบบการ์ด'], ['list', 'แบบลิสต์']].map(([k, t]) => `<button type="button" data-view="${k}" aria-label="${t}" title="${t}" aria-pressed="${VIEW === k}">${VIEW_ICON[k]}</button>`).join('')}</div>`;
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-view]'); if (!b) return;
+  VIEW = b.dataset.view;
+  try { localStorage.setItem('kpc-view', VIEW); } catch (err) {}
+  document.querySelectorAll('.kc-grid').forEach(g => g.classList.toggle('list', VIEW === 'list'));
+  document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', x.dataset.view === VIEW));
+});
+function card(c) {
   const o = c.outline || [], n = o.length, free = o.filter(l => l.free).length, ffi = o.findIndex(l => l.free);
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c), track = ok && user && !own;
-  const st = own ? '<span class="sticker role">คอร์สที่ฉันสอน</span>'
-    : track ? (pct >= 100 ? '<span class="sticker ok">✓ เรียนครบ</span>' : '')
-    : user && S.request[c.id] ? '<span class="sticker warn">รอครูอนุมัติ</span>' : '';
-  // ปุ่มหลักตามสถานะ (ทั้งแผ่นเป็นลิงก์เดียว)
+  const st = c.published === false ? ['warn', 'ร่าง'] : own ? ['own', 'คอร์สที่ฉันสอน']
+    : track && pct >= 100 ? ['ok', 'เรียนครบแล้ว'] : !track && user && S.request[c.id] ? ['warn', 'รอครูอนุมัติ'] : null;
+  // ปุ่มหลักตามสถานะ (ทั้งการ์ดเป็นลิงก์เดียว)
   let href = courseUrl(c), cta;
   if (own) cta = 'เปิดคอร์ส';
   else if (track) { href = courseUrl(c, nextIndex(c) + 1); cta = pct >= 100 ? 'ทบทวน' : (S.progress[c.id] || {}).last ? 'เรียนต่อ' : 'เริ่มเรียน'; }
   else if (ffi >= 0) { href = courseUrl(c, ffi + 1); cta = 'ลองเรียนฟรี'; }
-  else cta = c.price > 0 ? 'ดูคอร์ส · ' + KPC.baht(c.price) : 'ดูคอร์ส';
-  const eyebrow = [c.subject, c.level].filter(Boolean).join(' · ') + (c.published === false ? ' · ร่าง' : '');
-  return `<a class="tile${full ? ' full' : ''}" href="${href}">
-    <span class="eyebrow">${esc(eyebrow)}</span>
-    <h2>${esc(c.title)}</h2>
-    ${c.summary ? `<p class="t">${esc(c.summary)}</p>` : ''}
-    <div class="links"><span class="btn solid sm">${esc(cta)}</span><span class="link">${n} บทเรียน${free && !ok ? ` · ฟรี ${free} บท` : ''} ›</span></div>
-    ${track ? `<div class="prog"><span class="bar"><i style="width:${pct}%"></i></span>${doneOf(c).length}/${n} บท${medal(pct) ? ' · ' + medal(pct) : ''}</div>` : ''}
-    <div class="pic">${coverArt(c)}${st}</div></a>`;
+  else cta = 'ดูคอร์ส';
+  const tag = [c.subject, c.level].filter(Boolean).join(' · ');
+  const nx = (o[nextIndex(c)] || {}).title || '';
+  const foot = track ? `<span class="kc-price">${pct}%<small> · ${doneOf(c).length}/${n} บท</small></span>`
+    : own ? '<span></span>'
+    : `<span class="kc-price">${c.price > 0 ? KPC.baht(c.price) : 'ฟรี'}</span>`;
+  return `<a class="kc" href="${href}" style="--kc:${palOf(c)[1]}">
+    <div class="kc-cover">${coverArt(c)}${st ? `<span class="kc-tag ${st[0]}">${st[1]}</span>` : ''}</div>
+    <div class="kc-body">
+      <div class="kc-main">
+        <div class="kc-sub">${esc(tag)}${st ? `<span class="kc-st ${st[0]}">${tag ? ' · ' : ''}${st[1]}</span>` : ''}</div>
+        <h3>${esc(c.title)}</h3>
+        ${c.summary ? `<p class="kc-sum">${esc(c.summary)}</p>` : ''}
+        ${track ? `<div class="kc-prog">${pct < 100 && nx ? `<span class="nx">บทต่อไป: ${esc(nx)}</span>` : ''}<div class="bar"><i style="width:${pct}%"></i></div></div>`
+          : `<div class="kc-meta"><span>${n} บทเรียน</span>${free && !ok ? `<span>ฟรี ${free} บท</span>` : ''}</div>`}
+      </div>
+      <div class="kc-foot">${foot}<span class="kc-cta">${esc(cta)}</span></div>
+    </div></a>`;
 }
-// จำนวนคี่ → แผ่นแรกกินเต็มแถว
-const grid = (list, bleed) => `<div class="tiles${bleed ? ' bleed' : ''}">${list.map((c, i) => card(c, list.length % 2 === 1 && i === 0)).join('')}</div>`;
+const grid = list => `<div class="kc-grid${VIEW === 'list' ? ' list' : ''}">${list.map(card).join('')}</div>`;
+// หัวข้อ + ปุ่มสลับรูปแบบ + กริด (ไม่มีคอร์สก็ไม่แสดง)
+const kcSection = (eyebrow, title, list, sub) => list.length ? `<section class="kc-sec cine-dark"><div class="kc-h row"><div>${eyebrow ? `<div class="eyebrow">${esc(eyebrow)}</div>` : ''}<h2>${esc(title)}</h2>${sub ? `<p>${esc(sub)}</p>` : ''}</div>${viewToggle()}</div>${grid(list)}</section>` : '';
+// การ์ดเข้าเป็นลูกคลื่น: ไล่จากซ้ายไปขวาตามคอลัมน์ (เรียกหลัง KPC.motion)
+function waveIn() {
+  document.querySelectorAll('.kc-grid').forEach(g => {
+    const kids = [...g.children]; if (!kids.length) return;
+    const w = kids[0].offsetWidth || 1, h = kids[0].offsetHeight || 1, x0 = kids[0].offsetLeft, y0 = kids[0].offsetTop;
+    kids.forEach(k => { if (k.classList.contains('reveal')) k.style.setProperty('--d', Math.round((k.offsetLeft - x0) / w) * 120 + Math.min(2, Math.round((k.offsetTop - y0) / h)) * 70 + 'ms'); });
+  });
+}
 
 /* ===================== หน้าแรก ===================== */
 function renderHome() {
   document.title = 'คอร์สออนไลน์ · KP Science';
-  setNav('home');
+  setNav('home', !!KPC.user());   // ผู้เยี่ยมชมมีส่วนสว่างท้ายหน้า · ล็อกอินแล้วมืดทั้งหน้า
   $('app').innerHTML = KPC.user() ? homeUser() : homeGuest();
   if (!KPC.user()) initQuiz();
-  KPC.motion($('app'), '.cine-after .tiles > .tile, .cine-light .tiles > .tile, .sec-h, .pend-i');
+  KPC.motion($('app'), '.cine-after .tiles > .tile, .kc-h, .kc, .pend-i');
+  waveIn();
   cineScroll();
 }
 
@@ -784,13 +825,9 @@ function homeGuest() {
     .map(w => w[0] === '{' ? `<span class="w hl">${esc(w.slice(1, -1))}</span>` : `<span class="w">${esc(w)}</span>`).join('');
   const tick = L.map(c => `<a href="${courseUrl(c)}">${esc(c.title)}${c.outline ? ' · ' + c.outline.length + ' บท' : ''}</a>`).join('')
     + '<a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">คลังซิมูเลชันวิทยาศาสตร์ KP Science</a>';
-  const ffOf = c => (c.outline || []).findIndex(l => l.free);
-  const show = showcase(L, 'คอร์สที่เปิดสอน', c => ({
-    small: [c.subject, c.level].filter(Boolean).join(' · '), para: c.summary,
-    btns: `${ffOf(c) >= 0 ? `<a class="btn solid" href="${courseUrl(c, ffOf(c) + 1)}">ลองเรียนฟรี</a>` : `<a class="btn solid" href="${courseUrl(c)}">ดูคอร์ส</a>`}<a class="btn ghost" href="${courseUrl(c)}">${(c.outline || []).length} บทเรียน${c.price > 0 ? ' · ' + KPC.baht(c.price) : ''} ›</a>` }));
   return `
   <header class="cine-hero cine-dark">
-    <div class="orb a"></div><div class="orb b"></div>
+    <div class="orb a"></div><div class="orb b"></div>${waveBand()}
     <div class="cine-in">
       <div class="eyebrow intro" style="--d:.1s">KP Science · คอร์สออนไลน์</div>
       <h1 class="intro" style="--d:.25s">เรียนวิทยาศาสตร์<br><span class="grad">ให้เห็นภาพ</span></h1>
@@ -800,8 +837,8 @@ function homeGuest() {
     <div class="ticker intro" style="--d:.8s"><div class="lab"><i></i><span>คอร์สเปิดแล้ว</span></div><div class="run"><div class="track" style="--dur:${Math.max(24, L.length * 14)}s">${tick}${tick}</div></div></div>
     <div class="cine-hint">เลื่อนลง</div>
   </header>
+  ${kcSection('คอร์สที่เปิดสอน', 'เลือกเรื่องที่อยากเข้าใจ', L)}
   <section class="cine-stmt cine-dark" id="cineStmt"><div class="pin"><p>${stmt}</p></div></section>
-  ${show}
   <div class="cine-after"><div class="tiles bleed">
   <section class="tile full hero-tile">
     <span class="eyebrow">ลองดูก่อน</span>
@@ -855,35 +892,13 @@ function homeGuest() {
   </div></div>`;
 }
 
-/* ---------- โชว์คอร์สแบบปักหมุด (ใช้ทั้งหน้าแรกผู้เยี่ยมชมและแดชบอร์ด) ----------
-   item(c, i) → { small, para, extra, btns } */
-function showcase(list, eyebrow, item) {
-  if (!list.length) return '';
-  // คอร์สเดียว: ไม่ต้องปักหมุด (ไม่มีอะไรให้เลื่อนเปลี่ยน)
-  return `<section class="cine-show cine-dark${list.length > 1 ? '' : ' single'}" id="cineShow" data-n="${list.length}"${list.length > 1 ? ` style="height:${list.length * 90 + 60}vh"` : ''}>
-    <div class="pin"><div class="glow"></div><div class="glow b"></div>
-      <div class="in">
-        <div><div class="eyebrow">${esc(eyebrow)}</div>
-          <div class="names">${list.map((c, i) => { const it = item(c, i); return `<div class="nm${i ? '' : ' on'}"><small>${String(i + 1).padStart(2, '0')} · ${esc(it.small)}</small><b>${esc(c.title)}</b>${it.para ? `<p>${esc(it.para)}</p>` : ''}${it.extra || ''}<div class="btns">${it.btns}</div></div>`; }).join('')}</div>
-          ${list.length > 1 ? `<div class="steps">${list.map((c, i) => `<button type="button" data-step="${i}" class="${i ? '' : 'on'}"><i></i><span>${esc(c.subject || 'คอร์ส')} ${esc(c.level || '')}</span></button>`).join('')}</div>` : ''}
-        </div>
-        <div class="stage">${list.map((c, i) => `<a class="sc${i ? '' : ' on'}" href="${item(c, i).href || courseUrl(c)}" aria-label="${esc(c.title)}">${coverArt(c)}</a>`).join('')}</div>
-      </div></div></section>`;
-}
 const ticker = (label, items) => items.length ? `<div class="ticker intro" style="--d:.8s"><div class="lab"><i></i><span>${esc(label)}</span></div><div class="run"><div class="track" style="--dur:${Math.max(24, items.length * 12)}s">${items.join('')}${items.join('')}</div></div></div>` : '';
 
-/* ---------- ฉากเลื่อนจอ (ประโยคสว่างทีละคำ · โชว์คอร์ส · แถบเมนูมืดบนส่วนมืด) ---------- */
+/* ---------- ฉากเลื่อนจอ (ประโยคสว่างทีละคำ · แถบเมนูมืดบนส่วนมืด) ---------- */
 function cineScroll() {
   const vh = innerHeight, prog = el => { const r = el.getBoundingClientRect(); return Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - vh))); };
   const st = $('cineStmt');
   if (st) { const ws = st.querySelectorAll('.w'), k = Math.round(prog(st) * 1.2 * ws.length); ws.forEach((w, i) => w.classList.toggle('on', i < k)); }
-  const sh = $('cineShow');
-  if (sh) {
-    const n = Number(sh.dataset.n) || 1, p = prog(sh) * n, idx = Math.min(n - 1, Math.floor(p));
-    sh.querySelectorAll('.nm').forEach((e, i) => { e.classList.toggle('on', i === idx); e.classList.toggle('past', i < idx); });
-    sh.querySelectorAll('.sc').forEach((e, i) => { e.classList.toggle('on', i === idx); e.classList.toggle('past', i < idx); });
-    sh.querySelectorAll('.steps button').forEach((b, i) => { b.classList.toggle('on', i === idx); b.style.setProperty('--p', i < idx ? 1 : i === idx ? Math.min(1, p - idx) : 0); });
-  }
   const cs = $('cineStats');
   if (cs && !cs.dataset.done && cs.getBoundingClientRect().top < vh * .8) {
     cs.dataset.done = 1;
@@ -898,11 +913,6 @@ function cineScroll() {
 }
 addEventListener('scroll', cineScroll, { passive: true });
 addEventListener('resize', cineScroll);
-document.addEventListener('click', e => {
-  const b = e.target.closest('#cineShow [data-step]'); if (!b) return;
-  const sh = $('cineShow'), n = Number(sh.dataset.n), top = sh.getBoundingClientRect().top + scrollY;
-  scrollTo({ top: top + (sh.offsetHeight - innerHeight) * (Number(b.dataset.step) + .5) / n, behavior: 'smooth' });
-});
 
 /* ---------- ซิมจิ๋ว: ทายมุมที่เตะไปไกลสุด (v = 20 m/s, g = 9.8 m/s²) ---------- */
 function initQuiz() {
@@ -970,7 +980,7 @@ function homeUser() {
   const active = mine.filter(c => pctOf(c) < 100);
   const recent = (active.length ? active : mine).map(c => ({ c, p: S.progress[c.id] || {} }))
     .sort((x, y) => ((y.p.lastAt && y.p.lastAt.seconds) || 0) - ((x.p.lastAt && x.p.lastAt.seconds) || 0))[0];
-  // โชว์คอร์ส: นักเรียน = คอร์สของฉัน (ล่าสุดก่อน) · ครู = คอร์สที่สอน · แอดมิน = ทุกคอร์ส
+  // การ์ดชุดแรก: นักเรียน = คอร์สของฉัน (ล่าสุดก่อน) · ครู = คอร์สที่สอน · แอดมิน = ทุกคอร์ส
   const showList = mine.length ? [recent.c].concat(mine.filter(c => c !== recent.c)) : teach.length ? teach : role === 'admin' ? L : [];
   const others = L.filter(c => !showList.includes(c) && !pending.includes(c) && !teach.includes(c));
   const doneAll = mine.reduce((s, c) => s + doneOf(c).length, 0);
@@ -983,18 +993,9 @@ function homeUser() {
   const staffBtn = KPC.isStaff() ? `<a class="btn ${mainBtn ? 'fb' : 'solid'}" href="admin.html">ไปห้องครู</a>` : '';
   const tickItems = active.length ? active.map(c => { const j = nextIndex(c); return `<a href="${courseUrl(c, j + 1)}">${esc(c.title)} · บทที่ ${j + 1}: ${esc(((c.outline || [])[j] || {}).title || '')}</a>`; })
     : L.map(c => `<a href="${courseUrl(c)}">${esc(c.title)}</a>`);
-  const show = showcase(showList, mine.length ? 'คอร์สของฉัน' : teach.length ? 'คอร์สที่ฉันสอน' : 'คอร์สทั้งหมด', c => {
-    if (!mine.includes(c)) return { small: [c.subject, c.level].filter(Boolean).join(' · ') + (c.published === false ? ' · ร่าง' : ''), para: c.summary,
-      btns: `<a class="btn solid" href="${courseUrl(c)}">เปิดคอร์ส</a><a class="btn ghost" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้ในห้องครู ›</a>` };
-    const o = c.outline || [], j = nextIndex(c), pct = pctOf(c), started = !!(S.progress[c.id] || {}).last;
-    return { small: [c.subject, c.level].filter(Boolean).join(' · ') + ` · เรียนแล้ว ${pct}%`, href: courseUrl(c, j + 1),
-      para: pct >= 100 ? 'เรียนครบทุกบทแล้ว — ทบทวนได้ทุกเมื่อ' : `บทต่อไป: ${(o[j] || {}).title || ''}`,
-      extra: `<div class="pbar"><i style="width:${pct}%"></i></div>`,
-      btns: `<a class="btn solid" href="${courseUrl(c, j + 1)}">${pct >= 100 ? 'ทบทวน' : started ? 'เรียนต่อ' : 'เริ่มเรียน'}</a><a class="btn ghost" href="${courseUrl(c, j + 1)}">บทที่ ${j + 1} จาก ${o.length} ›</a>` };
-  });
   return `
   <header class="cine-hero short cine-dark">
-    <div class="orb a"></div><div class="orb b"></div>
+    <div class="orb a"></div><div class="orb b"></div>${waveBand()}
     <div class="cine-in">
       ${KPC.isStaff() ? `<div class="who-pill intro" style="--d:.05s">${esc(KPC.ROLE[role].label)} · ${esc((KPC.user() || {}).email || '')}</div>` : ''}
       <div class="eyebrow intro" style="--d:.1s">${hello}</div>
@@ -1009,13 +1010,11 @@ function homeUser() {
     <div><b data-count="${mine.length}">${mine.length}</b><span>คอร์สที่กำลังเรียน</span></div>
     <div><b data-count="${allPct}" data-suffix="%">${allPct}%</b><span>ความคืบหน้าเฉลี่ย</span></div>
   </div></section>` : ''}
-  ${show}
-  <div class="cine-light"><div class="wrap">
-  ${pending.length ? `<section class="sec"><div class="sec-h"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะขึ้นใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
+  ${kcSection('', mine.length ? 'คอร์สของฉัน' : teach.length ? 'คอร์สที่ฉันสอน' : 'คอร์สทั้งหมด', showList)}
+  ${pending.length ? `<section class="kc-sec cine-dark"><div class="kc-h row"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะขึ้นใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
     <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">${S.request[c.id].amount ? 'รอตรวจยอด ' + KPC.baht(S.request[c.id].amount) : 'รออนุมัติ'}</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
-  ${others.length ? `<section class="sec"><div class="sec-h"><div><h2>${mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน'}</h2>${role === 'student' ? '<p>เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”</p>' : ''}</div></div>${grid(others)}</section>` : ''}
-  ${!L.length ? `<div class="empty" style="margin:40px 0">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>` : ''}
-  </div></div>`;
+  ${kcSection('', mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน', others, role === 'student' ? 'เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”' : '')}
+  ${!L.length ? `<section class="kc-sec cine-dark"><div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div></section>` : ''}`;
 }
 
 function renderAll() {
@@ -1024,15 +1023,16 @@ function renderAll() {
   const L = S.courses || [], free = L.reduce((n, c) => n + (c.outline || []).filter(l => l.free).length, 0);
   $('app').innerHTML = `
   <header class="cine-hero short cine-dark all-hero">
-    <div class="orb a"></div><div class="orb b"></div>
+    <div class="orb a"></div><div class="orb b"></div>${waveBand()}
     <div class="cine-in">
       <div class="eyebrow intro" style="--d:.05s">KP Science · คอร์สออนไลน์</div>
       <h1 class="intro" style="--d:.2s">คอร์ส<span class="grad">ทั้งหมด</span></h1>
       <p class="deck intro" style="--d:.4s">${L.length} คอร์ส${free && !KPC.user() ? ` · ลองเรียนฟรีได้ ${free} บท ไม่ต้องสมัคร` : ''}</p>
     </div>
   </header>
-  <div class="wrap all-grid">${L.length ? grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</div>`;
-  KPC.motion($('app'), '.tiles > .tile');
+  <section class="kc-sec cine-dark">${L.length ? `<div class="kc-h row"><p>${L.length} คอร์ส</p>${viewToggle()}</div>` + grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section>`;
+  KPC.motion($('app'), '.kc');
+  waveIn();
 }
 
 /* ===================== หน้าคอร์ส ===================== */
