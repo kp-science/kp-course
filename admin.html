@@ -202,7 +202,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=7"></script>
+<script src="course-core.js?v=8"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -604,11 +604,19 @@ function drawLessons() {
     </div>${edit ? lessonForm(edit) : ''}`;
   if (edit) { $('lform').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 }
+function videoHintHtml(u) {
+  const issue = KPC.videoIssue(u);
+  if (issue) return `<span style="color:var(--warn)">⚠️ ${esc(issue)}</span>`;
+  return KPC.videoSrc(u) ? 'ลิงก์ใช้ได้ · กด “ดูตัวอย่าง” เพื่อลองเล่นคลิป' : '';
+}
+document.addEventListener('input', e => {
+  if (e.target.name === 'video' && $('videoHint')) $('videoHint').innerHTML = videoHintHtml(e.target.value);
+});
 function lessonForm(l) {
   return `<div class="card" id="lform" style="margin-top:18px;border-color:var(--accent)"><div class="card-h"><h2>${l._new ? '＋ บทใหม่' : '✏️ แก้บท: ' + esc(l.title)}</h2></div><div class="form">
     <div class="field"><label>หัวข้อ</label><input type="text" name="title" value="${esc(l.title || '')}"></div>
     <div class="field"><label>หน่วย <span class="sub">(บทที่อยู่หน่วยเดียวกันจะรวมกลุ่ม)</span></label><input type="text" name="unit" value="${esc(l.unit || '')}" placeholder="01 การเคลื่อนที่"></div>
-    <div class="field"><label>คลิป YouTube <span class="sub">(ตั้งเป็น Unlisted ได้)</span></label><input type="url" name="video" value="${esc(l.video || '')}" placeholder="https://youtu.be/…"></div>
+    <div class="field"><label>คลิป YouTube หรือ Vimeo <span class="sub">(ตั้งเป็น Unlisted ได้)</span></label><input type="text" name="video" value="${esc(l.video || '')}" placeholder="https://vimeo.com/123456789/abcdef1234"><span class="hint" id="videoHint">${videoHintHtml(l.video)}</span></div>
     <div class="field"><label>ความยาวคลิป</label><input type="text" name="dur" value="${esc(l.dur || '')}" placeholder="12:30"></div>
     <div class="field"><label>เอกสาร (ลิงก์ Drive/PDF)</label><input type="url" name="file" value="${esc(l.file || '')}"></div>
     <div class="field"><label>แบบทดสอบ (ลิงก์ Google Form ฯลฯ)</label><input type="url" name="quiz" value="${esc(l.quiz || '')}"></div>
@@ -839,7 +847,8 @@ document.addEventListener('click', async e => {
     case 'close-lesson': S.editLid = null; return drawLessons();
     case 'preview-lesson': {
       const l = readLessonForm();
-      $('lprev').innerHTML = `<div class="prev">${renderBody(l.body) || '<span class="sub">ไม่มีเนื้อหา</span>'}</div>`;
+      const vsrc = KPC.videoSrc(l.video);
+      $('lprev').innerHTML = `<div class="prev">${vsrc ? `<div class="embed v"><iframe src="${esc(vsrc)}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="ตัวอย่างคลิป"></iframe></div>` : ''}${renderBody(l.body) || (vsrc ? '' : '<span class="sub">ไม่มีเนื้อหา</span>')}</div>`;
       return typeset($('lprev'));
     }
     case 'save-lesson': {
@@ -848,7 +857,7 @@ document.addEventListener('click', async e => {
       const old = S.lessons.find(x => x.id === lid);
       l.order = old ? old.order : S.lessons.length + 1;
       el.disabled = true;
-      try { await A.saveLesson(S.cur.id, lid, l); S.editLid = null; await afterLessonChange('บันทึกบทแล้ว'); } catch (err) { fail(err); el.disabled = false; }
+      try { await A.saveLesson(S.cur.id, lid, l); S.editLid = null; await afterLessonChange(KPC.videoIssue(l.video) ? 'บันทึกบทแล้ว แต่ลิงก์คลิปยังเล่นไม่ได้' : 'บันทึกบทแล้ว'); } catch (err) { fail(err); el.disabled = false; }
       return;
     }
     case 'del-lesson': {

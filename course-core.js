@@ -42,13 +42,39 @@ const safeUrl = KPC.safeUrl = u => /^https?:[/][/]/i.test(u || '') ? u : '';
 const ytId = KPC.ytId = u => { const m = /(?:youtu\.be[/]|youtube\.com[/](?:watch\?(?:.*&)?v=|embed[/]|shorts[/]|live[/]))([\w-]{11})/.exec(u || ''); return m ? m[1] : ''; };
 const driveId = KPC.driveId = u => { const m = /drive\.google\.com[/](?:file[/]d[/]|open\?id=|uc\?(?:.*&)?id=)([\w-]{20,})/.exec(u || ''); return m ? m[1] : ''; };
 
+// Vimeo: vimeo.com/123 · /123/แฮช (Unlisted) · ?h=แฮช · manage/videos/123 · showcase/9/video/123
+// · reviews/…/videos/123 · player.vimeo.com/video/123?h=แฮช · หรือวางโค้ดฝัง <iframe> ทั้งก้อน
+const vimeoParts = KPC.vimeoParts = u => {
+  const s = String(u || '');
+  if (!/vimeo\.com/i.test(s) || /vimeo\.com[/](showcase|album)[/]\d+[/]?(?:[?#"'\s]|$)/i.test(s)) return null;
+  const m = /vimeo\.com[/](?:[^"'\s?#]*[/])?(\d{5,})(?:[/]([\da-f]{6,}))?(?=[/?#&"'\s]|$)/i.exec(s);
+  if (!m) return null;
+  const q = /[?&](?:amp;)?h=([\da-f]{6,})/i.exec(s);
+  return { id: m[1], hash: m[2] || (q ? q[1] : '') };
+};
+// ลิงก์คลิปที่เล่นในจอใหญ่ได้ (YouTube / Vimeo) → URL สำหรับ iframe · เล่นไม่ได้ = ''
+const videoSrc = KPC.videoSrc = u => {
+  const y = ytId(u); if (y) return 'https://www.youtube-nocookie.com/embed/' + y + '?rel=0';
+  const v = vimeoParts(u); if (!v) return '';
+  return 'https://player.vimeo.com/video/' + v.id + '?' + (v.hash ? 'h=' + v.hash + '&' : '') + 'title=0&byline=0&portrait=0';
+};
+// ปัญหาของลิงก์คลิป (ข้อความบอกครู) · ใช้ได้ = ''
+KPC.videoIssue = u => {
+  const s = String(u || '').trim(); if (!s) return '';
+  const review = /vimeo\.com[/](?:[^/?#]+[/])?reviews?[/]/i.test(s);
+  if (review) return videoSrc(s)
+    ? 'นี่คือลิงก์รีวิวของ Vimeo อาจเล่นบนเว็บไม่ได้ ถ้าคลิปไม่ขึ้นให้ใช้ลิงก์จากปุ่ม Share ของคลิปแทน'
+    : 'นี่คือลิงก์รีวิวของ Vimeo เล่นบนเว็บไม่ได้ ให้ใช้ลิงก์จากปุ่ม Share ของคลิปแทน เช่น vimeo.com/123456789/abcdef1234';
+  return videoSrc(s) ? '' : 'ไม่รู้จักลิงก์นี้ ใช้ลิงก์คลิปจาก YouTube หรือ Vimeo';
+};
+
 // แลปใน Virtual Physics Lab มี frame-busting (ถ้าฝังใน iframe จะพาทั้งหน้าไปที่แลป)
 // → แสดงเป็นปุ่มเปิดแท็บใหม่แทนการฝัง
 KPC.noEmbed = u => /Virtual(%20| )Physics(%20| )Lab/i.test(u || '');
 
 function embedSrc(u) {
   u = safeUrl(u); if (!u) return '';
-  const y = ytId(u); if (y) return 'https://www.youtube-nocookie.com/embed/' + y + '?rel=0';
+  const vs = videoSrc(u); if (vs) return vs;
   const d = driveId(u); if (d) return 'https://drive.google.com/file/d/' + d + '/preview';
   const g = /docs\.google\.com[/](presentation|document|spreadsheets|forms)[/]d[/](e[/])?([\w-]{20,})/.exec(u);
   if (g) return g[1] === 'presentation' ? u.replace(/[/](edit|pub|view)\b.*$/, '') + '/embed'
@@ -120,8 +146,8 @@ W.addEventListener('scroll', () => { const t = document.querySelector('.topbar')
 
 /* ===================== แปลงเนื้อหาบท =====================
    ## หัวข้อ · ### หัวข้อย่อย · - รายการ · 1. รายการ · > กล่องเน้น · **ตัวหนา** · $สมการ$ · $$สมการ$$
-   [รูป: ลิงก์ | คำบรรยาย] · [คลิป: ลิงก์ YouTube] · [PDF: ลิงก์ Drive] · [ฝัง: ลิงก์ | ชื่อ] · [ลิงก์: ข้อความ | ลิงก์]
-   บรรทัดที่มีแต่ลิงก์ YouTube จะกลายเป็นคลิปให้เอง */
+   [รูป: ลิงก์ | คำบรรยาย] · [คลิป: ลิงก์ YouTube/Vimeo] · [PDF: ลิงก์ Drive] · [ฝัง: ลิงก์ | ชื่อ] · [ลิงก์: ข้อความ | ลิงก์]
+   บรรทัดที่มีแต่ลิงก์ YouTube/Vimeo จะกลายเป็นคลิปให้เอง */
 const imgSrc = s => {
   s = String(s || '').trim();
   const d = driveId(s); if (d) return 'https://drive.google.com/thumbnail?id=' + d + '&sz=w1600';
@@ -146,8 +172,8 @@ function block(kind, arg) {
   const url = safeUrl(a); if (!url) return '';
   if (KPC.noEmbed(url)) return `<p><a class="lbtn" href="${esc(url)}" target="_blank" rel="noopener">🧪 ${esc(b || 'เปิด Virtual Lab')} ${ICON.out}</a></p>`;
   const src = embedSrc(url);
-  const cls = ytId(url) ? 'v' : (driveId(url) || /docs\.google\.com/.test(url)) ? 'doc' : 'web';
-  return `<div class="embed ${cls}"><iframe src="${esc(src)}" loading="lazy" allow="fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(b || kind)}"></iframe></div>`
+  const cls = videoSrc(url) ? 'v' : (driveId(url) || /docs\.google\.com/.test(url)) ? 'doc' : 'web';
+  return `<div class="embed ${cls}"><iframe src="${esc(src)}" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(b || kind)}"></iframe></div>`
     + (cls === 'v' ? '' : `<div class="embed-cap"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(b || 'เปิดในแท็บใหม่')} ${ICON.out}</a></div>`);
 }
 
@@ -174,7 +200,7 @@ KPC.renderBody = function (src) {
     if ((m = /^[-•*]\s+(.+)$/.exec(line))) { into('ul', m[1]); continue; }
     if ((m = /^\d+[.)]\s+(.+)$/.exec(line))) { into('ol', m[1]); continue; }
     if ((m = /^\[\s*(รูป|คลิป|PDF|ไฟล์|ฝัง|ลิงก์)\s*:\s*(.+)\]$/i.exec(line))) { flush(); html += block(m[1], m[2]); continue; }
-    if (/^https?:\S+$/.test(line) && ytId(line)) { flush(); html += block('คลิป', line); continue; }
+    if (/^https?:\S+$/.test(line) && videoSrc(line)) { flush(); html += block('คลิป', line); continue; }
     flushL(); para.push(line);
   }
   if (math) html += `<div class="math">${esc(math.join('\n'))}</div>`;
