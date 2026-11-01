@@ -674,7 +674,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=8"></script>
+<script src="course-core.js?v=9"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -720,7 +720,12 @@ let renderSeq = 0, CUR = null;
 
 async function loadCourses() {
   try { S.courses = await KPC.listCourses(); S.listErr = ''; }
-  catch (e) { S.courses = []; S.listErr = e.code === 'permission-denied' ? 'ยังเปิดอ่านคอร์สไม่ได้ (ตั้งค่า Firestore rules ยังไม่เสร็จ)' : 'โหลดรายการคอร์สไม่สำเร็จ: ' + (e.message || e); }
+  catch (e) {
+    S.courses = [];
+    S.listErr = e.code === 'permission-denied' ? 'ยังเปิดอ่านคอร์สไม่ได้ (ตั้งค่า Firestore rules ยังไม่เสร็จ)'
+      : e.code === 'unavailable' ? 'เชื่อมต่อฐานข้อมูลคอร์สไม่ได้ — ลองปิดตัวบล็อกโฆษณาหรือ VPN หรือเปลี่ยนเครือข่าย แล้วกดลองใหม่'
+      : 'โหลดรายการคอร์สไม่สำเร็จ: ' + (e.message || e);
+  }
 }
 async function loadUserCourseState(list) {
   if (!KPC.user()) return;
@@ -790,6 +795,8 @@ function card(c) {
     </div></a>`;
 }
 const grid = list => `<div class="kc-grid${VIEW === 'list' ? ' list' : ''}">${list.map(card).join('')}</div>`;
+// ไม่มีคอร์ส / โหลดไม่สำเร็จ (โหลดไม่สำเร็จมีปุ่มลองใหม่)
+const emptyList = () => `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}${S.listErr ? '<div style="margin-top:14px"><button class="btn sm" type="button" data-reload>ลองใหม่</button></div>' : ''}</div>`;
 // หัวข้อ + ปุ่มสลับรูปแบบ + กริด (ไม่มีคอร์สก็ไม่แสดง)
 const kcSection = (eyebrow, title, list, sub) => list.length ? `<section class="kc-sec cine-dark"><div class="kc-h row"><div>${eyebrow ? `<div class="eyebrow">${esc(eyebrow)}</div>` : ''}<h2>${esc(title)}</h2>${sub ? `<p>${esc(sub)}</p>` : ''}</div>${viewToggle()}</div>${grid(list)}</section>` : '';
 // การ์ดเข้าเป็นลูกคลื่น: ไล่จากซ้ายไปขวาตามคอลัมน์ (เรียกหลัง KPC.motion)
@@ -837,7 +844,7 @@ function homeGuest() {
     <div class="ticker intro" style="--d:.8s"><div class="lab"><i></i><span>คอร์สเปิดแล้ว</span></div><div class="run"><div class="track" style="--dur:${Math.max(24, L.length * 14)}s">${tick}${tick}</div></div></div>
     <div class="cine-hint">เลื่อนลง</div>
   </header>
-  ${kcSection('คอร์สที่เปิดสอน', 'เลือกเรื่องที่อยากเข้าใจ', L)}
+  ${L.length ? kcSection('คอร์สที่เปิดสอน', 'เลือกเรื่องที่อยากเข้าใจ', L) : `<section class="kc-sec cine-dark">${emptyList()}</section>`}
   <section class="cine-stmt cine-dark" id="cineStmt"><div class="pin"><p>${stmt}</p></div></section>
   <div class="cine-after"><div class="tiles bleed">
   <section class="tile full hero-tile">
@@ -1014,7 +1021,7 @@ function homeUser() {
   ${pending.length ? `<section class="kc-sec cine-dark"><div class="kc-h row"><div><h2>รอครูอนุมัติ</h2><p>ครูอนุมัติแล้วคอร์สจะขึ้นใน “คอร์สของฉัน”</p></div><button class="btn sm" type="button" data-recheck>ตรวจอีกครั้ง</button></div>
     <div class="pend">${pending.map(c => `<div class="pend-i"><span class="pill warn">${S.request[c.id].amount ? 'รอตรวจยอด ' + KPC.baht(S.request[c.id].amount) : 'รออนุมัติ'}</span><b>${esc(c.title)}</b><span class="sub">ส่งเมื่อ ${esc(fmtDate(S.request[c.id].createdAt) || 'เมื่อสักครู่')}</span><span class="sp"></span><a class="btn xs" href="${courseUrl(c)}">ดูคอร์ส</a></div>`).join('')}</div></section>` : ''}
   ${kcSection('', mine.length || teach.length ? 'คอร์สอื่นที่เปิดสอน' : 'เลือกคอร์สที่อยากเรียน', others, role === 'student' ? 'เปิดคอร์สแล้วกด “ขอสิทธิ์จากครู”' : '')}
-  ${!L.length ? `<section class="kc-sec cine-dark"><div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div></section>` : ''}`;
+  ${!L.length ? `<section class="kc-sec cine-dark">${emptyList()}</section>` : ''}`;
 }
 
 function renderAll() {
@@ -1027,10 +1034,10 @@ function renderAll() {
     <div class="cine-in">
       <div class="eyebrow intro" style="--d:.05s">KP Science · คอร์สออนไลน์</div>
       <h1 class="intro" style="--d:.2s">คอร์ส<span class="grad">ทั้งหมด</span></h1>
-      <p class="deck intro" style="--d:.4s">${L.length} คอร์ส${free && !KPC.user() ? ` · ลองเรียนฟรีได้ ${free} บท ไม่ต้องสมัคร` : ''}</p>
+      <p class="deck intro" style="--d:.4s">${L.length ? L.length + ' คอร์ส' : ''}${free && !KPC.user() ? ` · ลองเรียนฟรีได้ ${free} บท ไม่ต้องสมัคร` : ''}</p>
     </div>
   </header>
-  <section class="kc-sec cine-dark">${L.length ? `<div class="kc-h row"><p>${L.length} คอร์ส</p>${viewToggle()}</div>` + grid(L) : `<div class="empty">${esc(S.listErr || 'ยังไม่มีคอร์สที่เปิดสอน')}</div>`}</section>`;
+  <section class="kc-sec cine-dark">${L.length ? `<div class="kc-h row"><p>${L.length} คอร์ส</p>${viewToggle()}</div>` + grid(L) : emptyList()}</section>`;
   KPC.motion($('app'), '.kc');
   waveIn();
 }
@@ -1257,6 +1264,8 @@ document.addEventListener('click', async e => {
     return;
   }
   if (e.target.closest('[data-recheck]')) { recheck(); return; }
+  const rl = e.target.closest('[data-reload]');
+  if (rl) { rl.disabled = true; rl.textContent = 'กำลังโหลด…'; loadCourses().then(() => loadUserCourseState(S.courses || [])).then(route); return; }
   const dn = e.target.closest('[data-done]');
   if (dn && CUR) {
     const c = CUR.c, lid = dn.dataset.done;

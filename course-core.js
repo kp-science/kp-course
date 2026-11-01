@@ -32,6 +32,7 @@ if (KPC.configured) {
   firebase.initializeApp(cfg);
   auth = KPC.auth = firebase.auth();
   db = KPC.db = firebase.firestore();
+  db.settings({ experimentalAutoDetectLongPolling: true, merge: true });   // เครือข่าย/โปรแกรมที่บล็อกการเชื่อมต่อแบบสตรีม → สลับเป็น long polling เอง
   if (EMU) { auth.useEmulator('http://127.0.0.1:9099'); db.useEmulator('127.0.0.1', 8080); }
 }
 const FS = () => firebase.firestore.FieldValue;
@@ -326,9 +327,11 @@ const docs = snap => snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
 
 // รายการคอร์ส — นักเรียน/ผู้เยี่ยมชม: ที่เผยแพร่ · ครู: ที่เผยแพร่ + ร่างของตัวเอง · แอดมิน: ทั้งหมด
 KPC.listCourses = async function () {
-  if (KPC.role === 'admin') return docs(await col('courses').get()).sort(byOrder);
-  const qs = [col('courses').where('published', '==', true).get()];
-  if (KPC.role === 'teacher') qs.push(col('courses').where('owner', '==', KPC.email()).get());
+  // ต้องอ่านจากเซิร์ฟเวอร์: get() ปกติเมื่อเชื่อมต่อไม่ได้จะคืนรายการว่างจากแคช ไม่ error → ดูเหมือนไม่มีคอร์ส
+  const SERVER = { source: 'server' };
+  if (KPC.role === 'admin') return docs(await col('courses').get(SERVER)).sort(byOrder);
+  const qs = [col('courses').where('published', '==', true).get(SERVER)];
+  if (KPC.role === 'teacher') qs.push(col('courses').where('owner', '==', KPC.email()).get(SERVER));
   const map = {};
   (await Promise.all(qs)).forEach(s => docs(s).forEach(c => { map[c.id] = c; }));
   return Object.values(map).sort(byOrder);
