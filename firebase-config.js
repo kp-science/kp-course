@@ -9,3 +9,6 @@ window.KPC_FIREBASE_CONFIG = {
   messagingSenderId: "744510272844",
   appId: "1:744510272844:web:89bdf91d7c97fa59048be9"
 };
+
+// แจ้งเตือนทางอีเมล: URL ของ Google Apps Script (mail-script/Code.gs) · ไม่ใช่ความลับ สคริปต์ตรวจล็อกอินและสิทธิ์เอง · ลบบรรทัดนี้ = ปิดการส่งเมล
+window.KPC_MAIL_URL = 'https://script.google.com/macros/s/AKfycbxaITkqkyN9mbFjmkq-u16UvyRMQDzEH38eiK0kE5dzqOl-H1mtn0O80uTVrHOXqd4t6w/exec';
