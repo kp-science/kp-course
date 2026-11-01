@@ -393,10 +393,21 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .lesson-dark .res .btn:not(.solid){background:#2c2c2e;color:var(--on-dark)}
 .lesson-dark .lock{background:#1d1d1f}
 .lock{scroll-margin-top:64px}
+.chat{max-width:760px}
+.chat .prevlink{display:inline-block;margin-bottom:10px}
+.bubbles{display:flex;flex-direction:column;gap:10px;margin:8px 0 18px}
+.bubble{max-width:82%;padding:10px 16px;border-radius:18px;background:#1d1d1f;align-self:flex-start;color:var(--on-dark)}
+.bubble.me{align-self:flex-end;background:#0a4a8f}
+.bubble small{display:block;font-size:12.5px;color:#c7c7cc;margin-bottom:2px}
+.bubble p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.6}
+.chat-box{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-box textarea{width:100%;background:#1d1d1f;border:1px solid #3a3a3c;border-radius:14px;padding:12px 14px;font-size:16px;color:var(--on-dark);resize:vertical;font-family:inherit}
+.chat-note{margin-top:10px;font-size:13.5px}
 .nbadge{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:9px;background:#ff453a;color:#fff;font:600 11px/18px var(--body);text-align:center}
 .who-btn{position:relative}
 .topbar.dark .menu .mh b{color:#1d1d1f}
 .who-dot{position:absolute;left:28px;top:2px;width:10px;height:10px;border-radius:50%;background:#ff453a;box-shadow:0 0 0 2px #000}
+.msgs-top{display:flex;justify-content:flex-end}
 .msgs{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 .msg{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 20px;border-radius:18px;background:#111114;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
 .msg.new{box-shadow:inset 0 0 0 1px rgba(255,69,58,.55)}
@@ -643,6 +654,7 @@ footer a{color:var(--link);text-decoration:none}
       <a href="#/courses" role="menuitem">คอร์สทั้งหมด</a>
       <a href="#/my" role="menuitem">คอร์สของฉัน</a>
       <a href="#/inbox" role="menuitem">กล่องข้อความ<span class="nbadge hide" data-inbox-n></span></a>
+      <a href="#/support" id="mSupport" role="menuitem">ติดต่อแอดมิน</a>
       <a href="admin.html" class="hide" id="mStaff" role="menuitem">ห้องครู</a>
       <button type="button" class="danger" data-logout role="menuitem">ออกจากระบบ</button>
     </div>
@@ -707,7 +719,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=17"></script>
+<script src="course-core.js?v=19"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -749,21 +761,23 @@ function ring(pct, s) {
 const medal = pct => pct >= 100 ? '<span class="medal done">เรียนครบแล้ว!</span>' : pct >= 75 ? '<span class="medal">อีกนิดเดียว</span>' : pct >= 50 ? '<span class="medal">ผ่านครึ่งทางแล้ว</span>' : pct >= 25 ? '<span class="medal">เริ่มได้สวย</span>' : '';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, alerts: {}, lessonCache: {} };
+const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, alerts: {}, threads: [], support: null, lessonCache: {} };
 let renderSeq = 0, CUR = null;
 
 // แจ้งเตือนสำหรับครู/แอดมิน: คำขอที่รออนุมัติ + นักเรียนใหม่ของแต่ละคอร์ส
 async function loadAlerts() {
-  S.alerts = {};
+  S.alerts = {}; S.threads = []; S.support = null;
+  if (KPC.user()) [S.threads, S.support] = await Promise.all([KPC.myThreads().catch(() => []), KPC.mySupport()]);
   if (!KPC.isStaff()) return;
-  const slot = id => S.alerts[id] = S.alerts[id] || { req: 0, fresh: 0 };
+  const slot = id => S.alerts[id] = S.alerts[id] || { req: 0, fresh: 0, msg: 0 };
   try {
-    const [rq, en] = await Promise.all([KPC.admin.requests(), KPC.admin.enrollments()]);
+    const [rq, en, th] = await Promise.all([KPC.admin.requests(), KPC.admin.enrollments(), KPC.admin.threads()]);
+    th.forEach(t => { if (t.unreadTeacher) slot(t.courseId).msg++; });
     rq.forEach(r => { slot(r.courseId).req++; });
     en.forEach(e => { if (e.createdAt && e.createdAt.seconds > KPC.seenStudentsAt(e.courseId)) slot(e.courseId).fresh++; });
   } catch (e) { console.warn('alerts', e); }   // โหลดไม่ได้ก็แค่ไม่มีป้าย ไม่กระทบหน้าเรียน
 }
-const alertText = c => { const a = S.alerts[c.id]; return a ? [a.req ? 'คำขอ ' + a.req : '', a.fresh ? 'นักเรียนใหม่ ' + a.fresh : ''].filter(Boolean).join(' · ') : ''; };
+const alertText = c => { const a = S.alerts[c.id]; return a ? [a.req ? 'คำขอ ' + a.req : '', a.fresh ? 'นักเรียนใหม่ ' + a.fresh : '', a.msg ? 'ข้อความ ' + a.msg : ''].filter(Boolean).join(' · ') : ''; };
 async function loadCourses() {
   try { S.courses = await KPC.listCourses(); S.listErr = ''; }
   catch (e) {
@@ -1132,6 +1146,7 @@ function renderMy() {
 
 /* ===================== กล่องข้อความนักเรียน =====================
    สร้างจากสถานะจริงของแต่ละคอร์ส (ไม่ได้เก็บเป็นจดหมายแยก) · เปิดแล้วถือว่าอ่าน จำแยกเครื่อง */
+let CHAT = null;
 const inboxSeenKey = () => 'kpc-inbox:' + KPC.uid();
 const inboxSeen = () => { try { return Number(localStorage.getItem(inboxSeenKey())) || 0; } catch (e) { return 0; } };
 const secOf = ts => (ts && ts.seconds) || Date.now() / 1000;
@@ -1144,28 +1159,70 @@ function inboxItems() {
     } else if (req) out.push({ c, tone: 'warn', label: req.amount ? 'รอตรวจยอด' : 'รออนุมัติ', text: req.amount ? `แจ้งโอน ${KPC.baht(req.amount)} แล้ว ครูกำลังตรวจสอบ` : 'ส่งคำขอแล้ว รอครูอนุมัติ', at: req.createdAt, notify: false });
     else if (rj) out.push({ c, tone: 'bad', label: rj.kind === 'revoke' ? 'ถูกถอนสิทธิ์' : 'คำขอไม่ผ่าน', text: rj.reason ? 'เหตุผลจากครู: ' + rj.reason : 'ครูไม่ได้ระบุเหตุผล', at: rj.createdAt, notify: true });
   });
+  S.threads.forEach(t => {
+    const c = (S.courses || []).find(x => x.id === t.courseId);
+    out.push({ c: c || { id: t.courseId, title: t.courseId }, thread: t, tone: t.lastBy === 'student' ? 'warn' : 'ok', label: t.lastBy === 'student' ? 'รอครูตอบ' : t.lastBy === 'admin' ? 'แอดมินตอบแล้ว' : 'ครูตอบแล้ว', text: t.lastText, at: t.lastAt, notify: false, unread: t.unreadStudent, chat: '#/chat/' + encodeURIComponent(t.courseId) });
+  });
+  if (S.support) out.push({ c: { title: 'ติดต่อแอดมิน' }, thread: S.support, tone: S.support.lastBy === 'admin' ? 'ok' : 'warn', label: S.support.lastBy === 'admin' ? 'แอดมินตอบแล้ว' : 'รอแอดมินตอบ', text: S.support.lastText, at: S.support.lastAt, notify: false, unread: S.support.unreadStudent, chat: '#/support' });
   return out.sort((a, b) => secOf(b.at) - secOf(a.at));
 }
 function updateInboxBadge() {
-  const n = KPC.user() ? inboxItems().filter(x => x.notify && secOf(x.at) > inboxSeen()).length : 0;
+  const n = KPC.user() ? inboxItems().filter(x => x.unread || (x.notify && secOf(x.at) > inboxSeen())).length : 0;
   document.querySelectorAll('[data-inbox-n]').forEach(b => { b.textContent = n; b.classList.toggle('hide', !n); });
   $('whoDot').classList.toggle('hide', !n);
 }
-function renderInbox() {
+async function renderInbox() {
   document.title = 'กล่องข้อความ · KP Science';
   setNav('inbox', true);
-  const items = inboxItems(), seen = inboxSeen();
+  const seq = renderSeq;
+  [S.threads, S.support] = await Promise.all([KPC.myThreads().catch(() => S.threads), KPC.mySupport()]);   // เปิดกล่องแล้วเห็นคำตอบล่าสุด
+  if (seq !== renderSeq) return;
+  const items = inboxItems(), seen = inboxSeen(), isNew = x => x.unread || (x.notify && secOf(x.at) > seen);
   $('app').innerHTML = `
   <header class="cine-hero short cine-dark all-hero">
     <div class="orb a"></div><div class="orb b"></div>${waveBand()}
     <div class="cine-in"><h1 class="intro" style="--d:.1s">กล่อง<span class="grad">ข้อความ</span></h1><p class="deck intro" style="--d:.3s">การอนุมัติ เหตุผลจากครู และสถานะคำขอของคุณ</p></div>
   </header>
-  <section class="kc-sec cine-dark"><div class="msgs">${items.length ? items.map(x => `<article class="msg${x.notify && secOf(x.at) > seen ? ' new' : ''}">
-      <div class="bd"><div class="top"><span class="pill ${x.tone}">${esc(x.label)}</span>${x.notify && secOf(x.at) > seen ? '<span class="nbadge">ใหม่</span>' : ''}<small>${esc(fmtDate(x.at) || 'เมื่อสักครู่')}</small></div>
+  <section class="kc-sec cine-dark"><div class="msgs">${KPC.role !== 'admin' ? '<div class="msgs-top"><a class="btn sm" href="#/support">ติดต่อแอดมิน</a></div>' : ''}${items.length ? items.map(x => `<article class="msg${isNew(x) ? ' new' : ''}">
+      <div class="bd"><div class="top"><span class="pill ${x.tone}">${esc(x.label)}</span>${isNew(x) ? '<span class="nbadge">ใหม่</span>' : ''}<small>${esc(fmtDate(x.at) || 'เมื่อสักครู่')}</small></div>
         <h3>${esc(x.c.title)}</h3><p>${esc(x.text)}</p></div>
-      <a class="btn sm" href="${courseUrl(x.c)}">${x.tone === 'ok' ? 'เข้าเรียน' : 'ดูคอร์ส'}</a></article>`).join('') : '<div class="empty">ยังไม่มีข้อความ</div>'}</div></section>`;
+      ${x.chat ? `<a class="btn sm" href="${x.chat}">เปิดข้อความ</a>` : `<a class="btn sm" href="${courseUrl(x.c)}">${x.tone === 'ok' ? 'เข้าเรียน' : 'ดูคอร์ส'}</a>`}</article>`).join('') : '<div class="empty">ยังไม่มีข้อความ</div>'}</div></section>`;
   KPC.motion($('app'), '.msg');
   try { localStorage.setItem(inboxSeenKey(), String(Date.now() / 1000)); } catch (e) { /* ข้าม */ }
+  updateInboxBadge();
+}
+
+/* ---------- ถามครู: ห้องสนทนาของคอร์สนี้ ---------- */
+const chatTime = ts => { try { return ts && ts.toDate ? ts.toDate().toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'เมื่อสักครู่'; } catch (e) { return ''; } };
+const whoLabel = m => m.from === 'student' ? 'คุณ' : m.from === 'admin' ? 'แอดมิน' : 'ครูผู้สอน';
+// ไม่ระบุคอร์ส = ห้องติดต่อแอดมิน
+async function renderChat(cid, nRaw) {
+  const seq = renderSeq, support = !cid;
+  setNav('inbox', true);
+  $('app').innerHTML = '<div class="wrap view"><div class="skel" style="width:40%"></div><div class="skel"></div></div>';
+  let c = null;
+  if (!support) {
+    c = (S.courses || []).find(x => x.id === cid) || await KPC.getCourse(cid).catch(() => null);
+    if (seq !== renderSeq) return;
+    if (!c) { $('app').innerHTML = `<div class="wrap view">${crumb()}<div class="empty">ไม่พบคอร์สนี้</div></div>`; return; }
+  }
+  let list = [];
+  try { list = await (support ? KPC.supportMessages(KPC.uid()) : KPC.threadMessages(KPC.threadId(cid))); } catch (e) { toast('โหลดข้อความไม่สำเร็จ', true); }
+  if (seq !== renderSeq) return;
+  const meta = c && (c.outline || [])[Number(nRaw) - 1];
+  CHAT = { c, support, lessonTitle: meta ? meta.title : '' };
+  document.title = support ? 'ติดต่อแอดมิน · KP Science' : 'ถามครู · ' + c.title;
+  $('app').innerHTML = `<div class="wrap view chat">
+    <a class="prevlink" href="${support ? '#/inbox' : courseUrl(c, nRaw)}">← ${support ? 'กลับไปกล่องข้อความ' : 'กลับไปที่คอร์ส'}</a>
+    <div class="lhead"><h1>${support ? 'ติดต่อแอดมิน' : 'ถามครู · ' + esc(c.title)}</h1></div>
+    <div class="bubbles">${list.length ? list.map(m => `<div class="bubble ${m.from === 'student' ? 'me' : 'them'}"><small>${whoLabel(m)} · ${esc(chatTime(m.createdAt))}${m.lessonTitle ? ' · บท ' + esc(m.lessonTitle) : ''}</small><p>${esc(m.text)}</p></div>`).join('') : `<div class="empty">${support ? 'สอบถามเรื่องบัญชี การชำระเงิน หรือแจ้งปัญหาการใช้งานได้ที่นี่' : 'ยังไม่มีข้อความ เริ่มถามครูได้เลย'}</div>`}</div>
+    <div class="chat-box"><textarea id="chatText" maxlength="1000" rows="3" placeholder="${support ? 'พิมพ์ข้อความถึงแอดมิน' : 'พิมพ์คำถามถึงครูผู้สอน' + (meta ? ' (บท ' + esc(meta.title) + ')' : '')}" aria-label="ข้อความ"></textarea>
+      <button class="btn solid" type="button" data-chat-send>ส่งข้อความ</button></div>
+    <p class="sub chat-note">${support ? 'เห็นเฉพาะคุณและแอดมิน ครูผู้สอนไม่เห็นข้อความนี้' : 'เห็นเฉพาะคุณ ครูผู้สอน และแอดมิน แอดมินอาจช่วยตอบแทนครูได้'}</p></div>`;
+  if (support) { if (S.support && S.support.unreadStudent) { KPC.markSupportRead(KPC.uid(), 'unreadStudent'); S.support.unreadStudent = false; } }
+  else { const t = S.threads.find(x => x.courseId === cid); if (t && t.unreadStudent) { KPC.markThreadRead(KPC.threadId(cid), 'unreadStudent'); t.unreadStudent = false; } }
+  updateInboxBadge();
+  KPC.pageIn($('app'));
 }
 
 /* ===================== หน้าคอร์ส ===================== */
@@ -1253,10 +1310,11 @@ function head(c, i) {
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), track = ok && user && !own, o = c.outline || [];
   const ff = o.findIndex(l => l.free);
   let side = '';
-  if (own) side = `${alertText(c) ? `<a class="pill warn alert-chip" href="admin.html#/c/${encodeURIComponent(c.id)}/students">${esc(alertText(c))} ›</a>` : ''}<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a>`;
+  if (own) side = `${alertText(c) ? `<a class="pill warn alert-chip" href="${(S.alerts[c.id].req || S.alerts[c.id].fresh) ? 'admin.html#/c/' + encodeURIComponent(c.id) + '/students' : 'admin.html#/messages'}">${esc(alertText(c))} ›</a>` : ''}<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a>`;
   else if (track) side = `<span class="prog" id="hdrProg">${progTxt(c)}</span>`;
   else if (!ok && c.price > 0) side = `<span class="price">${KPC.baht(c.price)}</span>${ff >= 0 && i !== ff ? `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>` : ''}`;
   else if (!ok && ff >= 0 && i !== ff) side = `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>`;
+  if (!own) side += user ? `<a class="btn sm" href="#/chat/${encodeURIComponent(c.id)}/${i + 1}">ถามครู</a>` : '<button class="btn sm" type="button" data-login="login">ถามครู</button>';
   // ปุ่มสมัครเรียน: ผู้เยี่ยมชม = สมัครบัญชี · ล็อกอินแล้ว = เปิดฟอร์มขอสิทธิ์/แจ้งโอน
   if (!ok) side += !user ? '<button class="btn solid sm" type="button" data-login="register">สมัครเรียน</button>'
     : S.request[c.id] ? '<button class="btn sm" type="button" data-enroll>รอครูอนุมัติ</button>'
@@ -1389,6 +1447,7 @@ document.addEventListener('click', async e => {
       const image = paid ? await ($('paySlip') || {})._slip : null;   // รอให้ย่อรูปเสร็จ
       if (paid && !image) { rq.disabled = false; rq.textContent = label; toast('แนบรูปสลิปการโอนก่อน', true); $('paySlip').focus(); return; }
       await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref, image } : null, contact);
+      KPC.notify('new-request', KPC.threadId(c.id));
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
       if (S.rejected[c.id]) { if (S.rejected[c.id].kind !== 'revoke') KPC.clearRejection(c.id); S.rejected[c.id] = null; }   // ส่งใหม่แล้ว ไม่ต้องโชว์เหตุผลเก่า
       toast(paid ? 'แจ้งชำระเงินแล้ว รอครูตรวจยอด' : 'ส่งคำขอถึงครูแล้ว');
@@ -1402,6 +1461,19 @@ document.addEventListener('click', async e => {
     try { await KPC.cancelRequest(cn.dataset.cancel); delete S.request[cn.dataset.cancel]; toast('ยกเลิกคำขอแล้ว'); route(); } catch (err) { toast('ไม่สำเร็จ: ' + (err.code || err.message), true); }
     return;
   }
+  const cs = e.target.closest('[data-chat-send]');
+  if (cs) {
+    const box = $('chatText'), text = box.value.trim();
+    if (!text) { toast('พิมพ์ข้อความก่อน', true); box.focus(); return; }
+    cs.disabled = true; cs.textContent = 'กำลังส่ง…';
+    try {
+      if (CHAT.support) { await KPC.askAdmin(text); S.support = await KPC.mySupport(); KPC.notify('new-support', KPC.uid()); }
+      else { await KPC.askTeacher(CHAT.c, text, CHAT.lessonTitle); S.threads = await KPC.myThreads().catch(() => S.threads); KPC.notify('new-message', KPC.threadId(CHAT.c.id)); }
+      toast(CHAT.support ? 'ส่งข้อความถึงแอดมินแล้ว' : 'ส่งข้อความถึงครูแล้ว');
+      route();
+    } catch (err) { cs.disabled = false; cs.textContent = 'ส่งข้อความ'; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
+    return;
+  }
   const rd = e.target.closest('[data-redeem]');
   if (rd) {
     const input = $('inviteCode'), label = rd.textContent, c = CUR && CUR.c;
@@ -1409,6 +1481,7 @@ document.addEventListener('click', async e => {
     rd.disabled = true; rd.textContent = 'กำลังตรวจ…';
     try {
       await KPC.redeemInvite(c, input.value);
+      KPC.notify('enrolled', KPC.threadId(c.id));
       delete S.request[c.id]; S.rejected[c.id] = null; S.progress[c.id] = await KPC.getProgress(c.id);
       toast('ใช้โค้ดสำเร็จ เข้าเรียนได้เลย');
       route();
@@ -1465,6 +1538,8 @@ function route() {
     renderSeq++;
     if (h === '/courses') renderAll();
     else if ((h === '/my' || h === '/inbox') && KPC.user()) (h === '/my' ? renderMy : renderInbox)();
+    else if (h.startsWith('/chat/') && KPC.user()) renderChat(...h.slice(6).split('/'));
+    else if (h === '/support' && KPC.user()) renderChat();
     else renderHome();
   }
   updateInboxBadge();
@@ -1533,6 +1608,7 @@ function updateTopbar(user) {
   $('mName').textContent = name;
   $('mEmail').textContent = user.email || '';
   $('mStaff').classList.toggle('hide', !KPC.isStaff());
+  $('mSupport').classList.toggle('hide', KPC.role === 'admin');
   $('mStaff').textContent = role === 'admin' ? 'ห้องครู (แอดมิน)' : 'ห้องครู';
 }
 

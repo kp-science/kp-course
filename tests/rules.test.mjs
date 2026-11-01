@@ -294,6 +294,88 @@ test('โค้ดเชิญ: ใช้ได้ครั้งเดียว
   await assertSucceeds(deleteDoc(doc(t1(), 'course_invites', CODE)));
 });
 
+test('ข้อความ: นักเรียนถามครูเจ้าของคอร์สได้ · คนอื่นอ่าน/ปลอมไม่ได้ · ครูตอบได้เฉพาะคอร์สตัวเอง', async () => {
+  const th = { uid: 's2', email: 's2@mail.com', name: 'S2', courseId: 'c1', owner: T1, lastBy: 'student', lastText: 'สวัสดี', unreadTeacher: true, unreadStudent: false };
+  const send = (db, thread, id, msg, merge = true) => {
+    const b = writeBatch(db);
+    if (thread) b.set(doc(db, 'course_threads/s2_c1'), thread, { merge });
+    b.set(doc(db, 'course_threads/s2_c1/messages', id), msg);
+    return b.commit();
+  };
+  const m = { from: 'student', by: 's2', text: 'สวัสดี' };
+  await assertFails(send(guest(), th, 'g', m));
+  await assertFails(send(stu2(), { ...th, owner: T2 }, 'a', m));
+  await assertFails(send(stu2(), { ...th, email: 'x@mail.com' }, 'a', m));
+  await assertFails(send(stu2(), th, 'a', { ...m, from: 'teacher' }));          // ปลอมเป็นครู
+  await assertFails(send(stu2(), th, 'a', { ...m, by: 's1' }));
+  await assertFails(send(stu2(), th, 'a', { ...m, text: 'x'.repeat(1001) }));
+  await assertFails(send(stu2(), th, 'a', { ...m, text: '' }));
+  await assertFails(send(stu2(), th, 'a', { ...m, extra: 1 }));
+  await assertFails(send(stu(), { ...th, uid: 's1', email: 's1@mail.com' }, 'a', { ...m, by: 's1' }));   // ห้องของคนอื่น
+  await assertSucceeds(send(stu2(), th, 'a', m));
+  // คอร์สร่าง + ไม่มีสิทธิ์ = เริ่มถามไม่ได้
+  const d = stu2(), bd = writeBatch(d);
+  bd.set(doc(d, 'course_threads/s2_c1draft'), { ...th, courseId: 'c1draft' });
+  await assertFails(bd.commit());
+  // อ่าน
+  await assertSucceeds(getDoc(doc(stu2(), 'course_threads/s2_c1')));
+  await assertSucceeds(getDocs(collection(stu2(), 'course_threads/s2_c1/messages')));
+  await assertSucceeds(getDoc(doc(t1(), 'course_threads/s2_c1')));
+  await assertSucceeds(getDocs(collection(t1(), 'course_threads/s2_c1/messages')));
+  await assertSucceeds(getDocs(collection(admin(), 'course_threads/s2_c1/messages')));
+  await assertFails(getDoc(doc(t2(), 'course_threads/s2_c1')));
+  await assertFails(getDocs(collection(t2(), 'course_threads/s2_c1/messages')));
+  await assertFails(getDoc(doc(stu(), 'course_threads/s2_c1')));
+  await assertFails(getDocs(collection(stu(), 'course_threads/s2_c1/messages')));
+  await assertFails(getDocs(collection(stu(), 'course_threads')));
+  await assertSucceeds(getDocs(query(collection(stu2(), 'course_threads'), where('uid', '==', 's2'))));
+  await assertSucceeds(getDocs(query(collection(t1(), 'course_threads'), where('owner', '==', T1))));
+  await assertFails(getDocs(query(collection(t2(), 'course_threads'), where('owner', '==', T1))));
+  // ตอบ
+  const up = { lastBy: 'teacher', lastText: 'ตอบ', unreadStudent: true, unreadTeacher: false };
+  const rm = { from: 'teacher', by: 't1', text: 'ตอบ' };
+  await assertFails(send(t2(), up, 'r', { ...rm, by: 't2' }));
+  await assertSucceeds(send(t1(), up, 'r', rm));
+  // แก้/ลบข้อความเดิม และย้ายห้องไม่ได้
+  await assertFails(updateDoc(doc(stu2(), 'course_threads/s2_c1/messages/a'), { text: 'แก้' }));
+  await assertFails(deleteDoc(doc(stu2(), 'course_threads/s2_c1/messages/a')));
+  await assertFails(updateDoc(doc(stu2(), 'course_threads/s2_c1'), { owner: T2 }));
+  await assertFails(updateDoc(doc(stu2(), 'course_threads/s2_c1'), { uid: 's1' }));
+  await assertSucceeds(updateDoc(doc(stu2(), 'course_threads/s2_c1'), { unreadStudent: false }));
+  await assertFails(deleteDoc(doc(stu2(), 'course_threads/s2_c1')));
+  await assertSucceeds(deleteDoc(doc(t1(), 'course_threads/s2_c1/messages/a')));
+  await assertSucceeds(deleteDoc(doc(t1(), 'course_threads/s2_c1')));
+});
+
+test('ติดต่อแอดมิน: เจ้าของกับแอดมินเท่านั้น · ครูไม่เห็น · ปลอมเป็นแอดมินไม่ได้', async () => {
+  const th = { uid: 's2', email: 's2@mail.com', name: 'S2', lastBy: 'student', lastText: 'สอบถาม', unreadAdmin: true, unreadStudent: false };
+  const send = (db, thread, id, msg) => { const b = writeBatch(db); if (thread) b.set(doc(db, 'support_threads/s2'), thread, { merge: true }); b.set(doc(db, 'support_threads/s2/messages', id), msg); return b.commit(); };
+  const m = { from: 'student', by: 's2', text: 'สอบถาม' };
+  await assertFails(send(guest(), th, 'a', m));
+  await assertFails(send(stu(), { ...th, uid: 's1' }, 'a', { ...m, by: 's1' }));
+  await assertFails(send(stu2(), th, 'a', { ...m, from: 'admin' }));
+  await assertFails(send(stu2(), th, 'a', { ...m, text: 'x'.repeat(1001) }));
+  await assertSucceeds(send(stu2(), th, 'a', m));
+  await assertSucceeds(getDoc(doc(stu2(), 'support_threads/s2')));
+  await assertSucceeds(getDocs(collection(stu2(), 'support_threads/s2/messages')));
+  await assertSucceeds(getDocs(collection(admin(), 'support_threads')));
+  await assertSucceeds(getDocs(collection(admin(), 'support_threads/s2/messages')));
+  for (const db of [t1(), stu(), guest()]) {
+    await assertFails(getDoc(doc(db, 'support_threads/s2')));
+    await assertFails(getDocs(collection(db, 'support_threads/s2/messages')));
+  }
+  await assertFails(send(t1(), { lastBy: 'admin', lastText: 'x', unreadStudent: true, unreadAdmin: false }, 'r', { from: 'admin', by: 't1', text: 'x' }));
+  await assertFails(updateDoc(doc(stu2(), 'support_threads/s2'), { email: 'x@mail.com' }));
+  await assertFails(deleteDoc(doc(stu2(), 'support_threads/s2')));
+  await assertSucceeds(send(as('admin', ADMIN), { lastBy: 'admin', lastText: 'ตอบ', unreadStudent: true, unreadAdmin: false }, 'r', { from: 'admin', by: 'admin', text: 'ตอบ' }));
+});
+test('ข้อความคอร์ส: แอดมินตอบติดป้ายแอดมินได้ · ครูปลอมเป็นแอดมินไม่ได้', async () => {
+  const th = { uid: 's2', email: 's2@mail.com', name: 'S2', courseId: 'c1', owner: T1, lastBy: 'student', lastText: 'x', unreadTeacher: true, unreadStudent: false };
+  await env.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), 'course_threads/s2_c1'), th); });
+  await assertFails(setDoc(doc(t1(), 'course_threads/s2_c1/messages/a'), { from: 'admin', by: 't1', text: 'x' }));
+  await assertSucceeds(setDoc(doc(admin(), 'course_threads/s2_c1/messages/b'), { from: 'admin', by: 'admin', text: 'x' }));
+});
+
 test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {
   const IMG = 'data:image/jpeg;base64,AAAA';
   const slip = { uid: 's2', courseId: 'c1', owner: T1, image: IMG };

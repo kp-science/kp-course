@@ -20,6 +20,8 @@ rules_version = '2';
 //   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
 //   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
 //   /course_rejections/{uid}_{cid}  — เหตุผลที่ไม่อนุมัติคำขอ (ครูเขียน · นักเรียนเจ้าของอ่าน/ลบเมื่อส่งใหม่)
+//   /course_threads/{uid}_{cid}     — ข้อความนักเรียนถึงครู (+ /messages/{id}) เห็นเฉพาะนักเรียนเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน
+//   /support_threads/{uid}          — ข้อความนักเรียนถึงแอดมิน (+ /messages/{id}) เห็นเฉพาะเจ้าของและแอดมิน
 //   /course_invites/{code}          — โค้ดเชิญ (ครูสร้าง · ใช้ได้ครั้งเดียว · อ่านได้เมื่อรู้โค้ด แต่ค้นรายการไม่ได้)
 //   /course_revoked/{uid}_{cid}     — รายชื่อที่ถูกถอนสิทธิ์ + เหตุผล (ครูเขียน/ลบ · นักเรียนเจ้าของอ่านอย่างเดียว · ไม่ให้สิทธิ์เรียน)
 //   /course_slips/{uid}_{cid}       — รูปสลิปการโอน (JPEG ย่อแล้วเก็บเป็นข้อความ · เห็นเฉพาะเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน)
@@ -206,6 +208,82 @@ service cloud.firestore {
         || (isMine(resource.data) && exists(/databases/$(database)/documents/enrollments/$(rid)));
     }
 
+    // ── ข้อความนักเรียน ↔ ครู: id = <uid>_<courseId> ─────
+    function threadKeysOk() {
+      let d = request.resource.data;
+      return d.lastText is string && d.lastText.size() <= 120
+        && d.lastBy in ['student', 'teacher', 'admin']
+        && d.unreadTeacher is bool && d.unreadStudent is bool;
+    }
+    match /course_threads/{tid} {
+      allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
+      // นักเรียนเริ่มถามได้เมื่อคอร์สเผยแพร่แล้ว หรือมีสิทธิ์อยู่แล้ว
+      allow create: if signedIn()
+        && tid == request.auth.uid + '_' + request.resource.data.courseId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'lastAt', 'lastBy', 'lastText', 'unreadTeacher', 'unreadStudent'])
+        && request.resource.data.email == myEmail()
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.owner == ownerOf(request.resource.data.courseId)
+        && (courseDoc(request.resource.data.courseId).published == true || hasCourse(request.resource.data.courseId))
+        && threadKeysOk();
+      allow update: if isAdmin() || ((isMine(resource.data) || teacherOwns(resource.data))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'lastAt', 'lastBy', 'lastText', 'unreadTeacher', 'unreadStudent'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && threadKeysOk());
+      allow delete: if isAdmin() || teacherOwns(resource.data);
+
+      function threadDoc() { return get(/databases/$(database)/documents/course_threads/$(tid)).data; }
+      function threadAfter() { return getAfter(/databases/$(database)/documents/course_threads/$(tid)).data; }
+      match /messages/{mid} {
+        allow read: if isAdmin() || isMine(threadDoc()) || teacherOwns(threadDoc());
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['from', 'by', 'text', 'lessonTitle', 'createdAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+          && request.resource.data.get('lessonTitle', '') is string
+          && request.resource.data.get('lessonTitle', '').size() <= 200
+          && ((request.resource.data.from == 'student' && isMine(threadAfter()))
+            || (request.resource.data.from == 'teacher' && (isAdmin() || teacherOwns(threadAfter())))
+            || (request.resource.data.from == 'admin' && isAdmin()));
+        allow delete: if isAdmin() || teacherOwns(threadDoc());
+      }
+    }
+
+    // ── ข้อความนักเรียน ↔ แอดมิน: id = uid ─────────
+    match /support_threads/{uid} {
+      function isOwnSupport() { return signedIn() && request.auth.uid == uid; }
+      function supportOk() {
+        let d = request.resource.data;
+        return d.name is string && d.name.size() <= 200
+          && d.lastText is string && d.lastText.size() <= 120
+          && d.lastBy in ['student', 'admin']
+          && d.unreadAdmin is bool && d.unreadStudent is bool;
+      }
+      allow read: if isAdmin() || isOwnSupport();
+      allow create: if isOwnSupport()
+        && request.resource.data.uid == uid
+        && request.resource.data.email == myEmail()
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'lastAt', 'lastBy', 'lastText', 'unreadAdmin', 'unreadStudent'])
+        && supportOk();
+      allow update: if isAdmin() || (isOwnSupport()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'lastAt', 'lastBy', 'lastText', 'unreadAdmin', 'unreadStudent'])
+        && supportOk());
+      allow delete: if isAdmin();
+      match /messages/{mid} {
+        allow read: if isAdmin() || isOwnSupport();
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['from', 'by', 'text', 'createdAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+          && ((request.resource.data.from == 'student' && isOwnSupport())
+            || (request.resource.data.from == 'admin' && isAdmin()));
+        allow delete: if isAdmin();
+      }
+    }
+
     // ── โค้ดเชิญ: id = ตัวโค้ด ─────────────────────
     match /course_invites/{code} {
       allow get: if signedIn();
@@ -233,7 +311,7 @@ service cloud.firestore {
       allow read, delete: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
       allow create, update: if isAdmin() || (ownsCourse(request.resource.data.courseId)
         && rid == request.resource.data.uid + '_' + request.resource.data.courseId
-        && request.resource.data.keys().hasOnly(['uid', 'courseId', 'owner', 'reason', 'by', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'courseId', 'owner', 'reason', 'by', 'createdAt'])
         && request.resource.data.reason is string
         && request.resource.data.reason.size() <= 200
         && request.resource.data.owner == ownerOf(request.resource.data.courseId));

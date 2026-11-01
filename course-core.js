@@ -13,6 +13,8 @@
 //    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
 //    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, contact?, amount?, payRef?, createdAt }
 //    course_rejections/{uid}_{cid} { uid, courseId, owner, reason, by, createdAt }
+//    course_threads/{uid}_{cid}    { uid, email, name, courseId, owner, lastAt, lastBy, lastText, unreadTeacher, unreadStudent } + /messages/{id} { from, by, text, lessonTitle?, createdAt }
+//    support_threads/{uid}         { uid, email, name, lastAt, lastBy, lastText, unreadAdmin, unreadStudent } + /messages/{id} { from, by, text, createdAt }
 //    course_invites/{code}         { courseId, owner, email ('' = ใครก็ได้), usedBy ('' = ยังไม่ใช้), usedEmail, usedAt?, by, createdAt }
 //    course_revoked/{uid}_{cid}    { uid, email, name, contact?, courseId, owner, reason, by, createdAt }
 //    course_slips/{uid}_{cid}      { uid, courseId, owner, image (data URL JPEG ≤ 500 KB), createdAt }
@@ -391,6 +393,46 @@ KPC.getMyRejection = async function (cid) {
   const at = d => (d && d.createdAt && d.createdAt.seconds) || 0;
   return at(rv) >= at(rj) ? (rv || rj) : rj;
 };
+/* ---------- ข้อความนักเรียน ↔ ครู: ห้องละหนึ่งนักเรียนต่อหนึ่งคอร์ส ---------- */
+KPC.threadId = cid => pid(KPC.uid(), cid);
+KPC.myThreads = async () => docs(await col('course_threads').where('uid', '==', KPC.uid()).get());
+// ไม่เคยคุย = ไม่มีเอกสาร (rules ตอบ permission-denied) → ถือเป็นว่าง
+KPC.threadMessages = async tid => {
+  try { return docs(await col('course_threads').doc(tid).collection('messages').orderBy('createdAt').get()); }
+  catch (e) { if (e.code === 'permission-denied') return []; throw e; }
+};
+KPC.askTeacher = function (c, text, lessonTitle) {
+  const u = KPC.user(), tid = pid(u.uid, c.id), t = String(text).trim().slice(0, 1000), b = db.batch();
+  b.set(col('course_threads').doc(tid), { uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '', lastAt: FS().serverTimestamp(), lastBy: 'student', lastText: t.slice(0, 120), unreadTeacher: true, unreadStudent: false }, { merge: true });
+  b.set(col('course_threads').doc(tid).collection('messages').doc(), Object.assign({ from: 'student', by: u.uid, text: t, createdAt: FS().serverTimestamp() }, lessonTitle ? { lessonTitle: String(lessonTitle).slice(0, 200) } : {}));
+  return b.commit();
+};
+// แจ้งเตือนทางเมลผ่าน Google Apps Script (mail-script/Code.gs): ส่งแค่ประเภท + รหัสเอกสาร ผู้รับและเนื้อหาสคริปต์กำหนดเอง
+// ส่งไม่สำเร็จไม่กระทบงานหลัก · emulator ไม่ส่ง (ทดสอบโดยตั้ง KPC.MAIL_URL เอง)
+KPC.MAIL_URL = EMU ? '' : (W.KPC_MAIL_URL || '');
+KPC.notify = async function (type, id) {
+  if (!KPC.MAIL_URL || !auth.currentUser) return { skipped: true };
+  try {
+    const idToken = await auth.currentUser.getIdToken();
+    const r = await fetch(KPC.MAIL_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ idToken, type, id }) });
+    return await r.json();
+  } catch (e) { console.warn('notify', e); return { ok: false }; }
+};
+/* ---------- ข้อความนักเรียน ↔ แอดมิน: ห้องละหนึ่งคน ไม่ผูกกับคอร์ส ---------- */
+KPC.mySupport = async () => { try { const s = await col('support_threads').doc(KPC.uid()).get(); return s.exists ? s.data() : null; } catch (e) { return null; } };
+KPC.supportMessages = async uid => {
+  try { return docs(await col('support_threads').doc(uid).collection('messages').orderBy('createdAt').get()); }
+  catch (e) { if (e.code === 'permission-denied') return []; throw e; }
+};
+KPC.askAdmin = function (text) {
+  const u = KPC.user(), t = String(text).trim().slice(0, 1000), b = db.batch(), ref = col('support_threads').doc(u.uid);
+  b.set(ref, { uid: u.uid, email: u.email || '', name: KPC.displayName(), lastAt: FS().serverTimestamp(), lastBy: 'student', lastText: t.slice(0, 120), unreadAdmin: true, unreadStudent: false }, { merge: true });
+  b.set(ref.collection('messages').doc(), { from: 'student', by: u.uid, text: t, createdAt: FS().serverTimestamp() });
+  return b.commit();
+};
+KPC.markSupportRead = (uid, flag) => col('support_threads').doc(uid).update({ [flag]: false }).catch(() => {});
+KPC.markThreadRead = (tid, flag) => col('course_threads').doc(tid).update({ [flag]: false }).catch(() => {});
+
 // ใช้โค้ดเชิญ: ผูกโค้ดกับบัญชีนี้และสร้างสิทธิ์ในชุดคำสั่งเดียว แล้วล้างคำขอ/เหตุผลเดิมของคอร์สนี้
 KPC.normalizeInvite = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 KPC.redeemInvite = async function (c, input) {
@@ -520,6 +562,26 @@ KPC.admin = {
   },
   revoked: async cid => docs(await (cid ? mine(col('course_revoked')).where('courseId', '==', cid) : mine(col('course_revoked'))).get())
     .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0)),
+  threads: async () => docs(await mine(col('course_threads')).get())
+    .sort((a, b) => ((b.lastAt && b.lastAt.seconds) || 0) - ((a.lastAt && a.lastAt.seconds) || 0)),
+  thread: async tid => { try { const s = await col('course_threads').doc(tid).get(); return s.exists ? Object.assign({ id: s.id }, s.data()) : null; } catch (e) { return null; } },
+  reply: (tid, text, owner) => {
+    const t = String(text).trim().slice(0, 1000), b = db.batch();
+    // แอดมินตอบแทนครูของคอร์สอื่น = ติดป้ายแอดมิน · คอร์สของตัวเอง = ครูผู้สอน
+    const from = KPC.role === 'admin' && owner !== KPC.email() ? 'admin' : 'teacher';
+    b.update(col('course_threads').doc(tid), { lastAt: FS().serverTimestamp(), lastBy: from, lastText: t.slice(0, 120), unreadStudent: true, unreadTeacher: false });
+    b.set(col('course_threads').doc(tid).collection('messages').doc(), { from, by: KPC.uid(), text: t, createdAt: FS().serverTimestamp() });
+    return b.commit();
+  },
+  supportThreads: async () => docs(await col('support_threads').get())
+    .sort((a, b) => ((b.lastAt && b.lastAt.seconds) || 0) - ((a.lastAt && a.lastAt.seconds) || 0)),
+  supportThread: async uid => { try { const s = await col('support_threads').doc(uid).get(); return s.exists ? Object.assign({ id: s.id }, s.data()) : null; } catch (e) { return null; } },
+  replySupport: (uid, text) => {
+    const t = String(text).trim().slice(0, 1000), b = db.batch(), ref = col('support_threads').doc(uid);
+    b.update(ref, { lastAt: FS().serverTimestamp(), lastBy: 'admin', lastText: t.slice(0, 120), unreadStudent: true, unreadAdmin: false });
+    b.set(ref.collection('messages').doc(), { from: 'admin', by: KPC.uid(), text: t, createdAt: FS().serverTimestamp() });
+    return b.commit();
+  },
   // โค้ดเชิญ: emails = ผูกอีเมลทีละโค้ด · ถ้าไม่มี = สร้าง n โค้ดที่ใครก็ใช้ได้ (คนแรกที่ใช้ได้สิทธิ์ โค้ดนั้นหมดอายุ)
   createInvites: async (c, emails, n) => {
     const ABC = '23456789ABCDEFGHJKMNPQRSTUVWXYZ', make = () => Array.from(crypto.getRandomValues(new Uint32Array(10)), x => ABC[x % ABC.length]).join('');
@@ -549,7 +611,7 @@ KPC.admin = {
   dropSlip: rid => col('course_slips').doc(rid).delete().catch(() => {}),
   // ไม่อนุมัติ: เก็บเหตุผลให้นักเรียนเห็น แล้วค่อยลบคำขอ + สลิป
   rejectRequest: async (r, reason) => {
-    await col('course_rejections').doc(r.id).set({ uid: r.uid, courseId: r.courseId, owner: r.owner || '', reason: String(reason || '').slice(0, 200), by: KPC.email(), createdAt: FS().serverTimestamp() });
+    await col('course_rejections').doc(r.id).set({ uid: r.uid, email: r.email || '', courseId: r.courseId, owner: r.owner || '', reason: String(reason || '').slice(0, 200), by: KPC.email(), createdAt: FS().serverTimestamp() });
     await col('course_slips').doc(r.id).delete().catch(() => {});
     await col('course_requests').doc(r.id).delete();
   },
@@ -559,6 +621,10 @@ KPC.admin = {
   // สำรองข้อมูล (แอดมิน): { "path/ของเอกสาร": ข้อมูล } · สลิปเป็นรูป ไฟล์จะใหญ่ จึงเลือกได้
   backup: async withSlips => {
     const out = {}, put = s => s.docs.forEach(d => { out[d.ref.path] = d.data(); });
+    for (const name of ['course_threads', 'support_threads']) {
+      const threads = await col(name).get(); put(threads);
+      for (const d of threads.docs) put(await d.ref.collection('messages').get());
+    }
     for (const name of ['staff', 'students', 'courses', 'enrollments', 'course_progress', 'course_requests', 'course_rejections', 'course_revoked', 'course_invites'].concat(withSlips ? ['course_slips'] : [])) put(await col(name).get());
     for (const id of Object.keys(out).filter(p => /^courses[/][^/]+$/.test(p)).map(p => p.split('/')[1])) {
       put(await col('courses').doc(id).collection('lessons').get());
@@ -581,7 +647,11 @@ KPC.admin = {
   deleteMember: async uid => {
     const refs = [col('students').doc(uid)];
     for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
-    const b = db.batch(); refs.forEach(r => b.delete(r)); await b.commit();
+    for (const t of (await col('course_threads').where('uid', '==', uid).get()).docs.concat((await col('support_threads').where('uid', '==', uid).get()).docs)) {
+      (await t.ref.collection('messages').get()).docs.forEach(d => refs.push(d.ref));
+      refs.push(t.ref);
+    }
+    for (let i = 0; i < refs.length; i += 400) { const b = db.batch(); refs.slice(i, i + 400).forEach(r => b.delete(r)); await b.commit(); }
     return refs.length;
   },
   staffList: async () => docs(await col('staff').get()).sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id), 'th')),
@@ -592,7 +662,7 @@ KPC.admin = {
   reassign: async (cid, owner) => {
     owner = lower(owner);
     const refs = [col('courses').doc(cid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked', 'course_invites']) {
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked', 'course_invites', 'course_threads']) {
       (await col(name).where('courseId', '==', cid).get()).docs.forEach(d => refs.push(d.ref));
     }
     for (let i = 0; i < refs.length; i += 400) {

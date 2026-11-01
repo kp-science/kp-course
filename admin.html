@@ -134,6 +134,11 @@ td small{color:var(--muted)}
 .payqr .qh{background:#113566;color:#fff;border-radius:8px;font:600 12px var(--head);padding:4px;margin-bottom:6px}
 .paid{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13.5px;background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:5px 12px}
 .paid b{color:var(--text)}
+.tbubbles{display:flex;flex-direction:column;gap:10px}
+.tbubble{max-width:82%;align-self:flex-start;padding:10px 14px;border-radius:16px;background:var(--surface2)}
+.tbubble.me{align-self:flex-end;background:var(--accent-soft)}
+.tbubble small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:2px}
+.tbubble p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.6}
 .slip-view img{display:block;max-width:min(100%,420px);max-height:70vh;border-radius:12px;margin-top:10px}
 @media (max-width:640px){.paybox{grid-template-columns:1fr}.payqr{max-width:200px}}
 .danger-zone h3{color:var(--bad)}
@@ -203,7 +208,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=17"></script>
+<script src="course-core.js?v=19"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -222,7 +227,7 @@ const fail = e => toast('❌ ' + (e.code === 'permission-denied' ? 'ไม่ม
 const isAdmin = () => KPC.role === 'admin';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: [], requests: [], enroll: [], revoked: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
+const S = { courses: [], requests: [], enroll: [], revoked: [], threads: [], support: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
 const courseOf = cid => S.courses.find(c => c.id === cid);
 const staffName = email => email === KPC.ADMIN_EMAIL ? 'แอดมิน' : ((S.staff.find(s => s.id === email) || {}).name || email || '—');
 const pctOf = (p, c) => { const o = (c && c.outline) || []; if (!o.length) return 0; return Math.round((p.done || []).filter(x => o.some(l => l.id === x)).length / o.length * 100); };
@@ -290,8 +295,9 @@ async function refreshAll() {
     A.enrollments().then(l => { S.enroll = l; }).catch(() => { S.enroll = []; }),
     A.progress().then(l => { S.progress = l; }).catch(() => { S.progress = []; }),
     A.revoked().then(l => { S.revoked = l; }).catch(() => { S.revoked = []; }),
+    A.threads().then(l => { S.threads = l; }).catch(() => { S.threads = []; }),
   ];
-  if (isAdmin()) jobs.push(A.staffList().then(l => { S.staff = l; }).catch(() => { S.staff = []; }), A.students().then(l => { S.studentDocs = l; }).catch(() => { S.studentDocs = []; }));
+  if (isAdmin()) jobs.push(A.supportThreads().then(l => { S.support = l; }).catch(() => { S.support = []; }), A.staffList().then(l => { S.staff = l; }).catch(() => { S.staff = []; }), A.students().then(l => { S.studentDocs = l; }).catch(() => { S.studentDocs = []; }));
   await Promise.all(jobs);
   if (S.cur) S.cur = courseOf(S.cur.id) || null;
   drawSide();
@@ -302,6 +308,7 @@ const SVGI = (d) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"
 const IC = {
   home: SVGI('<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>'),
   inbox: SVGI('<path d="M4 13l2-8h12l2 8"/><path d="M4 13v6h16v-6h-5a3 3 0 0 1-6 0z"/>'),
+  chat: SVGI('<path d="M4 5h16v11H9l-5 4z"/>'),
   people: SVGI('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.4 5 2.8 5 5.8"/>'),
   import: SVGI('<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>'),
 };
@@ -312,6 +319,7 @@ function drawSide() {
     <div class="me"><span class="avatar">${esc(initial(name))}</span><div><b>${esc(name)}</b><span class="pill role">${R.icon} ${R.label}</span></div></div>
     ${nv('#/', IC.home, 'ภาพรวม', '', h === '' || h === '#/' || h === '#')}
     ${nv('#/requests', IC.inbox, 'คำขอสิทธิ์', S.requests.length ? `<span class="count">${S.requests.length}</span>` : '', h === '#/requests')}
+    ${nv('#/messages', IC.chat, 'ข้อความ', unreadMsgs() ? `<span class="count">${unreadMsgs()}</span>` : '', h.startsWith('#/messages'))}
     ${nv('#/members', IC.people, isAdmin() ? 'สมาชิก' : 'นักเรียนของฉัน', `<span class="sub">${buildMembers().length}</span>`, h.startsWith('#/members') || h === '#/teachers')}
     <h4>${isAdmin() ? 'คอร์สทั้งหมด' : 'คอร์สของฉัน'} <button type="button" data-act="new-course">＋ ใหม่</button></h4>
     <div class="clist">${S.courses.map(c => `<a class="nv${S.cur && S.cur.id === c.id && h.startsWith('#/c/') ? ' on' : ''}" href="#/c/${encodeURIComponent(c.id)}" title="${esc(c.title)}"><span class="dot${c.published ? ' pub' : ''}"></span><span class="t">${esc(c.title || c.id)}</span>${courseStats(c).req ? `<span class="count">${courseStats(c).req}</span>` : ''}</a>`).join('') || '<div class="sub" style="padding:4px 11px">ยังไม่มีคอร์ส</div>'}</div>
@@ -326,6 +334,9 @@ function route() {
   if (m && courseOf(m[1])) { openCourse(m[1], m[2]); return; }
   S.cur = null;
   if (h === '/requests') drawRequests();
+  else if (h === '/messages') drawThreads();
+  else if (h.startsWith('/messages/s/') && isAdmin()) drawThread(h.slice(12), true);
+  else if (h.startsWith('/messages/')) drawThread(h.slice(10));
   else if (h === '/teachers' && isAdmin()) { S.mFilter = 'teacher'; drawMembers(); }
   else if (h === '/members') drawMembers();
   else if (h.startsWith('/members/')) drawMember(h.slice(9));
@@ -700,6 +711,33 @@ async function drawStudents() {
 }
 
 /* ---------- ความคืบหน้า ---------- */
+/* ---------- ข้อความจากนักเรียน ---------- */
+const unreadMsgs = () => S.threads.filter(t => t.unreadTeacher).length + S.support.filter(t => t.unreadAdmin).length;
+const fromLabel = (m, t) => m.from === 'student' ? esc(t.name || 'นักเรียน') : m.from === 'admin' ? 'แอดมิน' : 'ครูผู้สอน';
+// แจ้งเมล: ส่งไม่สำเร็จแค่เตือน ไม่ย้อนงานที่ทำไปแล้ว
+const mail = (type, id) => KPC.notify(type, id).then(r => { if (r && r.ok === false) toast('บันทึกแล้ว แต่ส่งอีเมลแจ้งไม่สำเร็จ', true); });
+function drawThreads() {
+  document.title = 'ข้อความ · ห้องครู';
+  $('main').innerHTML = `<div class="ph"><div><h1>ข้อความ</h1><p>คำถามจากนักเรียนในคอร์ส${isAdmin() ? 'ทั้งหมด' : 'ของคุณ'}</p></div></div>
+    <div class="card">${S.threads.length ? S.threads.map(t => `<a class="crow" href="#/messages/${encodeURIComponent(t.id)}"><span class="bd"><b>${esc(t.name || t.email)}</b>${t.unreadTeacher ? ' <span class="count">ใหม่</span>' : ''}<small>${esc((courseOf(t.courseId) || {}).title || t.courseId)} · ${ago(t.lastAt)} · ${t.lastBy === 'teacher' ? 'ครู: ' : t.lastBy === 'admin' ? 'แอดมิน: ' : ''}${esc(t.lastText || '')}</small></span></a>`).join('') : '<div class="empty"><span class="ic">💬</span>ยังไม่มีข้อความจากนักเรียน</div>'}</div>
+    ${isAdmin() ? `<div class="card" style="margin-top:16px"><div class="card-h"><h2>ข้อความถึงแอดมิน</h2></div>${S.support.length ? S.support.map(t => `<a class="crow" href="#/messages/s/${encodeURIComponent(t.id)}"><span class="bd"><b>${esc(t.name || t.email)}</b>${t.unreadAdmin ? ' <span class="count">ใหม่</span>' : ''}<small>${ago(t.lastAt)} · ${t.lastBy === 'admin' ? 'แอดมิน: ' : ''}${esc(t.lastText || '')}</small></span></a>`).join('') : '<div class="empty">ยังไม่มีข้อความ</div>'}</div>` : ''}`;
+}
+async function drawThread(tid, support) {
+  $('main').innerHTML = '<div class="skel" style="height:160px"></div>';
+  const [t, list] = await Promise.all(support ? [A.supportThread(tid), KPC.supportMessages(tid).catch(() => [])] : [A.thread(tid), KPC.threadMessages(tid).catch(() => [])]);
+  if (decodeURIComponent(location.hash.replace(/^#/, '')) !== '/messages/' + (support ? 's/' : '') + tid) return;
+  if (!t) { $('main').innerHTML = '<div class="empty">ไม่พบบทสนทนานี้ <a class="link" href="#/messages">← กลับ</a></div>'; return; }
+  const c = courseOf(t.courseId);
+  document.title = (t.name || t.email) + ' · ข้อความ';
+  $('main').innerHTML = `<div class="crumbs"><a class="link" href="#/messages">← ข้อความทั้งหมด</a></div>
+    <div class="ph"><div><h1>${esc(t.name || t.email)}</h1><p>${esc(t.email)} · ${support ? 'ข้อความถึงแอดมิน' : esc((c || {}).title || t.courseId)}</p></div></div>
+    <div class="card"><div class="tbubbles">${list.map(m => `<div class="tbubble ${m.from !== 'student' ? 'me' : ''}"><small>${fromLabel(m, t)} · ${fmtTime(m.createdAt) || 'เมื่อสักครู่'}${m.lessonTitle ? ' · บท ' + esc(m.lessonTitle) : ''}</small><p>${esc(m.text)}</p></div>`).join('')}</div>
+      <div class="field" style="margin-top:14px"><label for="replyText">ตอบกลับ</label><textarea id="replyText" rows="3" maxlength="1000" placeholder="พิมพ์คำตอบ นักเรียนจะเห็นในกล่องข้อความ"></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn solid" type="button" data-${support ? 'sreply' : 'reply'}="${esc(tid)}">ส่งคำตอบ</button></div></div>`;
+  if (support) { if (t.unreadAdmin) { await KPC.markSupportRead(tid, 'unreadAdmin'); const x = S.support.find(y => y.id === tid); if (x) x.unreadAdmin = false; drawSide(); } }
+  else if (t.unreadTeacher && (!isAdmin() || t.owner === KPC.email())) { await KPC.markThreadRead(tid, 'unreadTeacher'); const x = S.threads.find(y => y.id === tid); if (x) x.unreadTeacher = false; drawSide(); }
+}
+
 /* ---------- โค้ดเชิญ: หนึ่งโค้ดต่อหนึ่งบัญชี ใส่แล้วเข้าเรียนได้ทันที ---------- */
 const fmtCode = code => code.slice(0, 5) + '-' + code.slice(5);
 const courseLink = c => location.href.split(/[?#]/)[0].replace(/admin\.html$/, '') + '#/c/' + encodeURIComponent(c.id);
@@ -834,8 +872,8 @@ document.addEventListener('click', async e => {
     try {
       if (d.approve) { if (!c) throw new Error('ไม่พบคอร์สของคำขอนี้'); await A.grant({ uid: r.uid, email: r.email, name: r.name, contact: r.contact }, c); }
       // อนุมัติแล้วเก็บสลิปไว้เป็นหลักฐาน
-      if (d.reject) await A.rejectRequest(r, reason.trim());
-      else { await A.dropRequest(r.id); A.dropRejection(r.id); }
+      if (d.reject) { await A.rejectRequest(r, reason.trim()); mail('rejected', r.id); }
+      else { await A.dropRequest(r.id); A.dropRejection(r.id); mail('approved', r.id); }
       toast(d.approve ? `✓ อนุมัติ ${r.name || r.email} แล้ว` : `ปฏิเสธคำขอของ ${r.name || r.email}`);
       await reloadCourseData();
     } catch (err) { fail(err); el.disabled = false; return; }
@@ -846,10 +884,21 @@ document.addEventListener('click', async e => {
     if (!u) return;
     const reason = prompt(`ถอนสิทธิ์ ${u.name || u.email} ออกจากคอร์สนี้?\nความคืบหน้าและสลิปยังเก็บไว้\n\nพิมพ์เหตุผลให้นักเรียนเห็น เช่น หมดเวลาเรียน หรือยอดโอนไม่เข้า`, '');
     if (reason === null) return;
-    try { await A.revoke(u, S.cur, reason.trim()); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); } catch (err) { fail(err); }
+    try { await A.revoke(u, S.cur, reason.trim()); mail('revoked', u.uid + '_' + S.cur.id); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); } catch (err) { fail(err); }
     return drawMain();
   }
   if (d.mfilter) { S.mFilter = d.mfilter; return drawMembers(); }
+  if (d.reply || d.sreply) {
+    const box = $('replyText'), text = box.value.trim(), id = d.reply || d.sreply;
+    if (!text) { toast('พิมพ์คำตอบก่อน', true); box.focus(); return; }
+    el.disabled = true;
+    try {
+      if (d.sreply) { await A.replySupport(id, text); mail('support-reply', id); }
+      else { const t = S.threads.find(x => x.id === id); await A.reply(id, text, t && t.owner); mail('reply', id); }
+      toast('ส่งคำตอบแล้ว'); await refreshAll(); await drawThread(id, !!d.sreply);
+    } catch (err) { fail(err); el.disabled = false; }
+    return;
+  }
   if (d.invcopy) {
     const x = (S.invites || []).find(y => y.id === d.invcopy); if (!x) return;
     try { await navigator.clipboard.writeText(inviteMessage(S.cur, x)); toast('คัดลอกข้อความพร้อมส่งแล้ว'); } catch (err) { toast('คัดลอกไม่ได้ เบราว์เซอร์ไม่อนุญาต', true); }
@@ -868,7 +917,7 @@ document.addEventListener('click', async e => {
     if (d.regrant && !c) return;
     el.disabled = true;
     try {
-      if (d.regrant) await A.grant({ uid: r.uid, email: r.email, name: r.name, contact: r.contact }, c);
+      if (d.regrant) { await A.grant({ uid: r.uid, email: r.email, name: r.name, contact: r.contact }, c); mail('approved', r.id); }
       else await A.removeFromCourse(r.id);
       toast(d.regrant ? 'ให้สิทธิ์อีกครั้งแล้ว' : 'นำชื่อออกแล้ว');
       await reloadCourseData();
@@ -881,13 +930,13 @@ document.addEventListener('click', async e => {
     const reason = prompt(`ถอนสิทธิ์คอร์ส “${c.title}”?\nความคืบหน้าและสลิปยังเก็บไว้\n\nพิมพ์เหตุผลให้นักเรียนเห็น เช่น หมดเวลาเรียน หรือยอดโอนไม่เข้า`, '');
     if (reason === null) return;
     const en = S.enroll.find(x => x.uid === uid && x.courseId === cid) || { uid };
-    try { await A.revoke(en, c, reason.trim()); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); route(); } catch (err) { fail(err); }
+    try { await A.revoke(en, c, reason.trim()); mail('revoked', uid + '_' + cid); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); route(); } catch (err) { fail(err); }
     return;
   }
   if (d.mgrant) {
     const m = buildMembers().find(x => x.key === d.mgrant), c = courseOf($('mgCourse').value); if (!m || !c) return;
     el.disabled = true;
-    try { const r = S.requests.find(x => x.uid === m.uid && x.courseId === c.id); await A.grant({ uid: m.uid, email: m.email, name: m.name || m.display, contact: r && r.contact }, c); if (r) await A.dropRequest(r.id); toast('ให้สิทธิ์ “' + c.title + '” แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
+    try { const r = S.requests.find(x => x.uid === m.uid && x.courseId === c.id); await A.grant({ uid: m.uid, email: m.email, name: m.name || m.display, contact: r && r.contact }, c); mail('approved', m.uid + '_' + c.id); if (r) await A.dropRequest(r.id); toast('ให้สิทธิ์ “' + c.title + '” แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
     return;
   }
   if (d.toggleStaff) {
@@ -977,6 +1026,7 @@ document.addEventListener('click', async e => {
         if (!u) { toast('ไม่พบนักเรียนอีเมลนี้ — ให้นักเรียนสมัคร/เข้าสู่ระบบเว็บคอร์สก่อน', true); el.disabled = false; return; }
         const r = S.requests.find(x => x.uid === u.id && x.courseId === S.cur.id);
         await A.grant(Object.assign({}, u, { contact: r && r.contact }), S.cur);
+        mail('approved', u.id + '_' + S.cur.id);
         if (r) await A.dropRequest(r.id);
         toast('ให้สิทธิ์ ' + email + ' แล้ว'); await reloadCourseData(); drawMain();
       } catch (err) { fail(err); el.disabled = false; }
