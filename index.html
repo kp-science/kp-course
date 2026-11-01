@@ -678,7 +678,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=11"></script>
+<script src="course-core.js?v=12"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -720,7 +720,7 @@ function ring(pct, s) {
 const medal = pct => pct >= 100 ? '<span class="medal done">เรียนครบแล้ว!</span>' : pct >= 75 ? '<span class="medal">อีกนิดเดียว</span>' : pct >= 50 ? '<span class="medal">ผ่านครึ่งทางแล้ว</span>' : pct >= 25 ? '<span class="medal">เริ่มได้สวย</span>' : '';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: null, listErr: '', progress: {}, request: {}, lessonCache: {} };
+const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, lessonCache: {} };
 let renderSeq = 0, CUR = null;
 
 async function loadCourses() {
@@ -736,7 +736,10 @@ async function loadUserCourseState(list) {
   if (!KPC.user()) return;
   await Promise.all(list.map(async c => {
     if (KPC.canCourse(c.id, c)) S.progress[c.id] = await KPC.getProgress(c.id);
-    else S.request[c.id] = await KPC.getMyRequest(c.id);
+    else {
+      S.request[c.id] = await KPC.getMyRequest(c.id);
+      S.rejected[c.id] = S.request[c.id] ? null : await KPC.getMyRejection(c.id);
+    }
   }));
 }
 const doneOf = c => ((S.progress[c.id] || {}).done || []).filter(x => (c.outline || []).some(l => l.id === x));
@@ -774,7 +777,8 @@ function card(c) {
   const o = c.outline || [], n = o.length, free = o.filter(l => l.free).length, ffi = o.findIndex(l => l.free);
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c), track = ok && user && !own;
   const st = c.published === false ? ['warn', 'ร่าง'] : own ? ['own', 'คอร์สที่ฉันสอน']
-    : track && pct >= 100 ? ['ok', 'เรียนครบแล้ว'] : !track && user && S.request[c.id] ? ['warn', 'รอครูอนุมัติ'] : null;
+    : track && pct >= 100 ? ['ok', 'เรียนครบแล้ว'] : !track && user && S.request[c.id] ? ['warn', 'รอครูอนุมัติ']
+    : !track && user && S.rejected[c.id] ? ['warn', 'คำขอไม่ผ่าน ดูเหตุผล'] : null;
   // ปุ่มหลักตามสถานะ (ทั้งการ์ดเป็นลิงก์เดียว)
   let href = courseUrl(c), cta;
   if (own) cta = 'เปิดคอร์ส';
@@ -1094,7 +1098,8 @@ function lockPanel(c) {
     <textarea id="reqNote" maxlength="300" placeholder="เช่น ด.ญ. ใจดี เรียนดี ม.4/2 โรงเรียน…" aria-label="ข้อความถึงครู"></textarea>
     <div class="field" style="width:min(440px,100%);text-align:left"><label for="reqContact">เบอร์โทรหรือ LINE สำหรับติดต่อกลับ (ไม่บังคับ)</label><input type="text" id="reqContact" maxlength="100" placeholder="เช่น 081-234-5678 หรือ LINE: kp-student"><small class="sub">เห็นเฉพาะครูผู้สอนและแอดมิน</small></div>
     <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
-  return `<div class="lock">${inner}</div>`;
+  const rj = !req && S.rejected[c.id];
+  return `<div class="lock">${rj ? `<div class="note" style="width:min(640px,100%);text-align:left;margin-bottom:16px"><b>คำขอครั้งก่อนไม่ผ่าน</b><br>${rj.reason ? 'เหตุผลจากครู: ' + esc(rj.reason) : 'ครูไม่ได้ระบุเหตุผล'} · แก้ไขแล้วส่งใหม่ได้ หรือติดต่อครูผู้สอน</div>` : ''}${inner}</div>`;
 }
 
 async function renderCourse(cid, n) {
@@ -1237,7 +1242,7 @@ function confetti(big) {
 
 /* ===================== เหตุการณ์ ===================== */
 async function recheck() {
-  await KPC.refreshMe(); S.progress = {}; S.request = {}; S.lessonCache = {};
+  await KPC.refreshMe(); S.progress = {}; S.request = {}; S.rejected = {}; S.lessonCache = {};
   await loadUserCourseState(S.courses || []);
   route();
   if (CUR && location.hash.startsWith('#/c/')) toast(KPC.canCourse(CUR.c.id, CUR.c) ? 'ครูอนุมัติแล้ว เข้าเรียนได้เลย' : 'ยังรอครูอนุมัติอยู่');
@@ -1274,6 +1279,7 @@ document.addEventListener('click', async e => {
       if (paid && !image) { rq.disabled = false; rq.textContent = label; toast('แนบรูปสลิปการโอนก่อน', true); $('paySlip').focus(); return; }
       await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref, image } : null, contact);
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
+      if (S.rejected[c.id]) { KPC.clearRejection(c.id); S.rejected[c.id] = null; }   // ส่งใหม่แล้ว ไม่ต้องโชว์เหตุผลเก่า
       toast(paid ? 'แจ้งชำระเงินแล้ว รอครูตรวจยอด' : 'ส่งคำขอถึงครูแล้ว');
       route();
     } catch (err) { rq.disabled = false; rq.textContent = label; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
@@ -1392,7 +1398,7 @@ if (!KPC.configured) {
   let firstAuth = true;
   KPC.onUser(async user => {
     updateTopbar(user);
-    if (!firstAuth) { S.progress = {}; S.request = {}; S.lessonCache = {}; if (user) toast('เข้าสู่ระบบแล้ว · ' + KPC.ROLE[KPC.role].label); }
+    if (!firstAuth) { S.progress = {}; S.request = {}; S.rejected = {}; S.lessonCache = {}; if (user) toast('เข้าสู่ระบบแล้ว · ' + KPC.ROLE[KPC.role].label); }
     firstAuth = false;
     await loadCourses();
     await loadUserCourseState(S.courses || []);

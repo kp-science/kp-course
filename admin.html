@@ -203,7 +203,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=11"></script>
+<script src="course-core.js?v=12"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -373,7 +373,16 @@ function drawDash() {
         ${S.requests.length ? reqList(S.requests.slice(0, 5), true) : '<div class="empty"><span class="ic">✅</span>ไม่มีคำขอค้าง</div>'}</div>
       <div class="card"><div class="card-h"><h2>${isAdmin() ? 'คอร์สทั้งหมด' : 'คอร์สของฉัน'}</h2></div>
         ${all.map(x => `<a class="crow" href="#/c/${encodeURIComponent(x.c.id)}"><span class="bd"><b>${esc(x.c.title)}</b><small>${x.c.published ? '<span style="color:var(--ok)">● เผยแพร่</span>' : '○ ร่าง'} · ${x.c.price > 0 ? KPC.baht(x.c.price) : 'ฟรี'} · ${(x.c.outline || []).length} บท · ${x.n} คน${isAdmin() ? ' · ' + esc(staffName(x.c.owner)) : ''}</small></span><span class="bar"><i style="width:${x.avg}%"></i></span><span class="pc">${x.avg}%</span></a>`).join('') || '<div class="empty">ยังไม่มีคอร์ส</div>'}</div>
-    </div>`;
+    </div>
+    ${isAdmin() ? backupCard() : ''}`;
+}
+function backupCard() {
+  let last = '';
+  try { last = localStorage.getItem('kpc-last-backup') || ''; } catch (e) { /* ข้าม */ }
+  return `<div class="card" style="margin-top:16px"><div class="card-h"><h2>สำรองข้อมูล</h2></div>
+    <p class="sub" style="margin-bottom:12px">แผนฟรีของ Firebase ไม่สำรองข้อมูลให้ ควรดาวน์โหลดเก็บไว้เป็นระยะ ไฟล์มีข้อมูลนักเรียน เก็บในที่ปลอดภัย ห้ามนำไปไว้ในที่สาธารณะหรือ GitHub</p>
+    <div class="row"><button class="btn solid" type="button" data-act="backup">ดาวน์โหลดข้อมูล</button><button class="btn" type="button" data-act="backup-slips">ดาวน์โหลดพร้อมรูปสลิป (ไฟล์ใหญ่)</button></div>
+    <p class="sub" id="lastBackup" style="margin-top:10px">${last ? 'สำรองล่าสุดจากเครื่องนี้: ' + esc(last) : 'เครื่องนี้ยังไม่เคยสำรองข้อมูล'}</p></div>`;
 }
 
 function drawRequests() {
@@ -780,11 +789,15 @@ document.addEventListener('click', async e => {
   if (d.approve || d.reject) {
     const r = S.requests.find(x => x.id === (d.approve || d.reject)); if (!r) return;
     const c = courseOf(r.courseId);
+    // ไม่อนุมัติลบคำขอ + สลิปแบบกู้คืนไม่ได้ จึงต้องยืนยันก่อน · กดยกเลิก = ไม่ทำอะไร
+    const reason = d.reject ? prompt(`ไม่อนุมัติคำขอของ ${r.name || r.email}?\nคำขอและสลิปจะถูกลบ กู้คืนไม่ได้\n\nพิมพ์เหตุผลให้นักเรียนเห็น เช่น ยอดไม่ตรง หรือสลิปไม่ชัด`, '') : '';
+    if (reason === null) return;
     el.disabled = true;
     try {
       if (d.approve) { if (!c) throw new Error('ไม่พบคอร์สของคำขอนี้'); await A.grant({ uid: r.uid, email: r.email, name: r.name, contact: r.contact }, c); }
-      if (d.reject) await A.dropSlip(r.id);   // อนุมัติแล้วเก็บสลิปไว้เป็นหลักฐาน
-      await A.dropRequest(r.id);
+      // อนุมัติแล้วเก็บสลิปไว้เป็นหลักฐาน
+      if (d.reject) await A.rejectRequest(r, reason.trim());
+      else { await A.dropRequest(r.id); A.dropRejection(r.id); }
       toast(d.approve ? `✓ อนุมัติ ${r.name || r.email} แล้ว` : `ปฏิเสธคำขอของ ${r.name || r.email}`);
       await reloadCourseData();
     } catch (err) { fail(err); el.disabled = false; return; }
@@ -907,6 +920,21 @@ document.addEventListener('click', async e => {
       if (email === KPC.ADMIN_EMAIL) return toast('อีเมลนี้เป็นแอดมินอยู่แล้ว', true);
       el.disabled = true;
       try { await A.saveStaff(email, { name: name || email.split('@')[0], active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); toast('เพิ่ม ' + (name || email) + ' เป็นครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
+      return;
+    }
+    case 'backup': case 'backup-slips': {
+      const label = el.textContent; el.disabled = true; el.textContent = 'กำลังเตรียมไฟล์…';
+      try {
+        const data = await A.backup(d.act === 'backup-slips'), day = new Date().toISOString().slice(0, 10);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify({ project: KPC.db.app.options.projectId, exportedAt: new Date().toISOString(), docs: data }, null, 1)], { type: 'application/json' }));
+        a.download = `kp-course-backup-${day}${d.act === 'backup-slips' ? '-slips' : ''}.json`; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+        try { localStorage.setItem('kpc-last-backup', day); } catch (err) { /* ข้าม */ }
+        toast(`สำรองแล้ว ${Object.keys(data).length} รายการ`);
+        el.textContent = label; el.disabled = false;
+        const m = $('lastBackup'); if (m) m.textContent = 'สำรองล่าสุดจากเครื่องนี้: ' + day;
+      } catch (err) { el.textContent = label; el.disabled = false; fail(err); }
       return;
     }
     case 'migrate': el.disabled = true; await autoMigrate(true); await refreshAll(); route(); return;

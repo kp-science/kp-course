@@ -199,6 +199,23 @@ test('ช่องทางติดต่อ: ส่งกับคำขอไ
   await assertFails(getDoc(doc(t2(), 'enrollments/s2_c1')));
 });
 
+test('เหตุผลที่ไม่อนุมัติ: ครูเจ้าของเขียนได้ · นักเรียนเจ้าของอ่าน/ลบได้ · คนอื่นไม่ได้', async () => {
+  const r = { uid: 's2', courseId: 'c1', owner: T1, reason: 'ยอดไม่ตรง', by: T1 };
+  await assertFails(setDoc(doc(stu2(), 'course_rejections/s2_c1'), r));           // นักเรียนเขียนเองไม่ได้
+  await assertFails(setDoc(doc(t2(), 'course_rejections/s2_c1'), r));             // ครูคอร์สอื่น
+  await assertFails(setDoc(doc(t1(), 'course_rejections/s2_c1'), { ...r, reason: 'x'.repeat(201) }));
+  await assertFails(setDoc(doc(t1(), 'course_rejections/s2_c1'), { ...r, owner: T2 }));
+  await assertFails(setDoc(doc(t1(), 'course_rejections/s9_c1'), r));             // id ไม่ตรง
+  await assertSucceeds(setDoc(doc(t1(), 'course_rejections/s2_c1'), r));
+  await assertSucceeds(getDoc(doc(stu2(), 'course_rejections/s2_c1')));
+  await assertSucceeds(getDoc(doc(t1(), 'course_rejections/s2_c1')));
+  await assertFails(getDoc(doc(stu(), 'course_rejections/s2_c1')));
+  await assertFails(getDoc(doc(t2(), 'course_rejections/s2_c1')));
+  await assertFails(getDoc(doc(guest(), 'course_rejections/s2_c1')));
+  await assertFails(deleteDoc(doc(stu(), 'course_rejections/s2_c1')));
+  await assertSucceeds(deleteDoc(doc(stu2(), 'course_rejections/s2_c1')));
+});
+
 test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {
   const IMG = 'data:image/jpeg;base64,AAAA';
   const slip = { uid: 's2', courseId: 'c1', owner: T1, image: IMG };

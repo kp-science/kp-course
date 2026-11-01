@@ -12,6 +12,7 @@
 //    enrollments/{uid}_{cid}       { uid, email, name, courseId, owner, by, createdAt }  สิทธิ์เข้าเรียน
 //    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
 //    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, contact?, amount?, payRef?, createdAt }
+//    course_rejections/{uid}_{cid} { uid, courseId, owner, reason, by, createdAt }
 //    course_slips/{uid}_{cid}      { uid, courseId, owner, image (data URL JPEG ≤ 500 KB), createdAt }
 //    courses/{cid}.price           ราคา (บาท · 0/ไม่มี = ฟรี) · courses/{cid}/meta/pay { promptpay, name, note } อ่านได้เมื่อล็อกอิน
 // ============================================================
@@ -376,6 +377,12 @@ KPC.saveProgress = function (c, patch) {
 };
 
 /* ---------- คำขอสิทธิ์ ---------- */
+// เหตุผลที่ครูไม่อนุมัติคำขอล่าสุด (ไม่มี = null)
+KPC.getMyRejection = async function (cid) {
+  try { const s = await col('course_rejections').doc(pid(KPC.uid(), cid)).get(); return s.exists ? s.data() : null; }
+  catch (e) { return null; }
+};
+KPC.clearRejection = cid => col('course_rejections').doc(pid(KPC.uid(), cid)).delete().catch(() => {});
 KPC.getMyRequest = async function (cid) {
   const uid = KPC.uid(); if (!uid) return null;
   try {
@@ -476,6 +483,24 @@ KPC.admin = {
   // สลิป: โหลดเมื่อกดดูเท่านั้น (ไม่มี/ไม่มีสิทธิ์ = null) · อนุมัติแล้วเก็บไว้เป็นหลักฐาน · ไม่อนุมัติ = ลบ
   slip: async rid => { try { const s = await col('course_slips').doc(rid).get(); return s.exists ? s.data() : null; } catch (e) { return null; } },
   dropSlip: rid => col('course_slips').doc(rid).delete().catch(() => {}),
+  // ไม่อนุมัติ: เก็บเหตุผลให้นักเรียนเห็น แล้วค่อยลบคำขอ + สลิป
+  rejectRequest: async (r, reason) => {
+    await col('course_rejections').doc(r.id).set({ uid: r.uid, courseId: r.courseId, owner: r.owner || '', reason: String(reason || '').slice(0, 200), by: KPC.email(), createdAt: FS().serverTimestamp() });
+    await col('course_slips').doc(r.id).delete().catch(() => {});
+    await col('course_requests').doc(r.id).delete();
+  },
+  // อ่านก่อนลบ: ส่วนใหญ่ไม่มีเอกสาร ไม่ต้องส่งคำสั่งเขียนที่ rules จะปฏิเสธ
+  dropRejection: async rid => { try { const s = await col('course_rejections').doc(rid).get(); if (s.exists) await s.ref.delete(); } catch (e) { /* ไม่มี = จบ */ } },
+  // สำรองข้อมูล (แอดมิน): { "path/ของเอกสาร": ข้อมูล } · สลิปเป็นรูป ไฟล์จะใหญ่ จึงเลือกได้
+  backup: async withSlips => {
+    const out = {}, put = s => s.docs.forEach(d => { out[d.ref.path] = d.data(); });
+    for (const name of ['staff', 'students', 'courses', 'enrollments', 'course_progress', 'course_requests', 'course_rejections'].concat(withSlips ? ['course_slips'] : [])) put(await col(name).get());
+    for (const id of Object.keys(out).filter(p => /^courses[/][^/]+$/.test(p)).map(p => p.split('/')[1])) {
+      put(await col('courses').doc(id).collection('lessons').get());
+      put(await col('courses').doc(id).collection('meta').get());
+    }
+    return out;
+  },
 
   progress: async cid => docs(await (cid ? mine(col('course_progress')).where('courseId', '==', cid) : mine(col('course_progress'))).get()),
 
@@ -490,7 +515,7 @@ KPC.admin = {
   // ลบข้อมูลของสมาชิกในเว็บคอร์ส (สิทธิ์ · ความคืบหน้า · คำขอ · บัญชีนักเรียน) — บัญชีล็อกอินยังอยู่ ถ้าเข้ามาใหม่จะเริ่มจากว่าง
   deleteMember: async uid => {
     const refs = [col('students').doc(uid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
     const b = db.batch(); refs.forEach(r => b.delete(r)); await b.commit();
     return refs.length;
   },
@@ -502,7 +527,7 @@ KPC.admin = {
   reassign: async (cid, owner) => {
     owner = lower(owner);
     const refs = [col('courses').doc(cid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips']) {
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections']) {
       (await col(name).where('courseId', '==', cid).get()).docs.forEach(d => refs.push(d.ref));
     }
     for (let i = 0; i < refs.length; i += 400) {

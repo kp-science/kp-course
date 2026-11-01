@@ -19,6 +19,7 @@ rules_version = '2';
 //   /course_progress/{uid}_{cid}    — ความคืบหน้า (นักเรียนเขียนของตัวเอง)
 //   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
 //   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
+//   /course_rejections/{uid}_{cid}  — เหตุผลที่ไม่อนุมัติคำขอ (ครูเขียน · นักเรียนเจ้าของอ่าน/ลบเมื่อส่งใหม่)
 //   /course_slips/{uid}_{cid}       — รูปสลิปการโอน (JPEG ย่อแล้วเก็บเป็นข้อความ · เห็นเฉพาะเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน)
 //   enrollments / progress / requests เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
 // ═══════════════════════════════════════════════════════════════
@@ -165,6 +166,17 @@ service cloud.firestore {
         && !enrolled(request.resource.data.courseId));
       allow delete: if isAdmin() || teacherOwns(resource.data)
         || (isMine(resource.data) && exists(/databases/$(database)/documents/course_requests/$(rid)));
+    }
+
+    // ── คำขอที่ไม่ผ่าน: id = <uid>_<courseId> ─────
+    match /course_rejections/{rid} {
+      allow read, delete: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
+      allow create, update: if isAdmin() || (ownsCourse(request.resource.data.courseId)
+        && rid == request.resource.data.uid + '_' + request.resource.data.courseId
+        && request.resource.data.keys().hasOnly(['uid', 'courseId', 'owner', 'reason', 'by', 'createdAt'])
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 200
+        && request.resource.data.owner == ownerOf(request.resource.data.courseId));
     }
 
     match /{document=**} {
