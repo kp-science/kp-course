@@ -393,6 +393,23 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .lesson-dark .res .btn:not(.solid){background:#2c2c2e;color:var(--on-dark)}
 .lesson-dark .lock{background:#1d1d1f}
 .lock{scroll-margin-top:64px}
+.nbadge{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:9px;background:#ff453a;color:#fff;font:600 11px/18px var(--body);text-align:center}
+.who-btn{position:relative}
+.topbar.dark .menu .mh b{color:#1d1d1f}
+.who-dot{position:absolute;left:28px;top:2px;width:10px;height:10px;border-radius:50%;background:#ff453a;box-shadow:0 0 0 2px #000}
+.msgs{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 20px;border-radius:18px;background:#111114;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.msg.new{box-shadow:inset 0 0 0 1px rgba(255,69,58,.55)}
+.msg .bd{flex:1;min-width:220px}
+.msg .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.msg .top .nbadge{margin:0}
+.msg .top small{color:var(--on-dark-2);font-size:13px}
+.msg h3{font:600 17px/1.45 var(--head);margin-top:6px}
+.msg p{color:var(--on-dark-2);font-size:15px;line-height:1.55;margin-top:2px;overflow-wrap:anywhere}
+.msg .pill.ok{background:rgba(48,209,88,.16);color:#5fe08a}
+.msg .pill.bad{background:rgba(255,69,58,.16);color:#ff8a82}
+.alert-chip{font-size:13.5px;padding:6px 14px;text-decoration:none}
+.alert-chip:hover{text-decoration:none;filter:brightness(1.15)}
 .invite-box{width:min(440px,100%);margin-top:14px;padding-top:16px;border-top:1px solid var(--line);text-align:left}
 .lesson-dark .invite-box{border-top-color:#3a3a3c}
 .invite-box label{display:block;margin-bottom:8px}
@@ -606,6 +623,8 @@ footer a{color:var(--link);text-decoration:none}
   <nav class="nav">
     <a href="#/" class="on" id="navHome">หน้าแรก</a>
     <a href="#/courses" id="navCourses">คอร์สทั้งหมด</a>
+    <a href="#/my" id="navMy" class="hide">คอร์สของฉัน</a>
+    <a href="#/inbox" id="navInbox" class="hide">กล่องข้อความ<span class="nbadge hide" data-inbox-n></span></a>
     <a href="https://kp-science.github.io/physics-simulations/" target="_blank" rel="noopener">Simulation ↗</a>
   </nav>
   <span class="tb-sp"></span>
@@ -615,13 +634,15 @@ footer a{color:var(--link);text-decoration:none}
   </div>
   <div class="who hide" id="who">
     <button class="who-btn" type="button" id="whoBtn" aria-haspopup="true" aria-expanded="false">
-      <span class="avatar" id="whoAv"></span>
+      <span class="avatar" id="whoAv"></span><span class="who-dot hide" id="whoDot"></span>
       <span class="who-txt"><b id="whoName"></b><small id="whoRole"></small></span>
     </button>
     <div class="menu" id="whoMenu" role="menu">
       <div class="mh"><b id="mName"></b><small id="mEmail"></small></div>
       <a href="#/" role="menuitem">หน้าแรกของฉัน</a>
       <a href="#/courses" role="menuitem">คอร์สทั้งหมด</a>
+      <a href="#/my" role="menuitem">คอร์สของฉัน</a>
+      <a href="#/inbox" role="menuitem">กล่องข้อความ<span class="nbadge hide" data-inbox-n></span></a>
       <a href="admin.html" class="hide" id="mStaff" role="menuitem">ห้องครู</a>
       <button type="button" class="danger" data-logout role="menuitem">ออกจากระบบ</button>
     </div>
@@ -686,7 +707,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=15"></script>
+<script src="course-core.js?v=17"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -728,9 +749,21 @@ function ring(pct, s) {
 const medal = pct => pct >= 100 ? '<span class="medal done">เรียนครบแล้ว!</span>' : pct >= 75 ? '<span class="medal">อีกนิดเดียว</span>' : pct >= 50 ? '<span class="medal">ผ่านครึ่งทางแล้ว</span>' : pct >= 25 ? '<span class="medal">เริ่มได้สวย</span>' : '';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, lessonCache: {} };
+const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, alerts: {}, lessonCache: {} };
 let renderSeq = 0, CUR = null;
 
+// แจ้งเตือนสำหรับครู/แอดมิน: คำขอที่รออนุมัติ + นักเรียนใหม่ของแต่ละคอร์ส
+async function loadAlerts() {
+  S.alerts = {};
+  if (!KPC.isStaff()) return;
+  const slot = id => S.alerts[id] = S.alerts[id] || { req: 0, fresh: 0 };
+  try {
+    const [rq, en] = await Promise.all([KPC.admin.requests(), KPC.admin.enrollments()]);
+    rq.forEach(r => { slot(r.courseId).req++; });
+    en.forEach(e => { if (e.createdAt && e.createdAt.seconds > KPC.seenStudentsAt(e.courseId)) slot(e.courseId).fresh++; });
+  } catch (e) { console.warn('alerts', e); }   // โหลดไม่ได้ก็แค่ไม่มีป้าย ไม่กระทบหน้าเรียน
+}
+const alertText = c => { const a = S.alerts[c.id]; return a ? [a.req ? 'คำขอ ' + a.req : '', a.fresh ? 'นักเรียนใหม่ ' + a.fresh : ''].filter(Boolean).join(' · ') : ''; };
 async function loadCourses() {
   try { S.courses = await KPC.listCourses(); S.listErr = ''; }
   catch (e) {
@@ -739,6 +772,7 @@ async function loadCourses() {
       : e.code === 'unavailable' ? 'เชื่อมต่อฐานข้อมูลคอร์สไม่ได้ — ลองปิดตัวบล็อกโฆษณาหรือ VPN หรือเปลี่ยนเครือข่าย แล้วกดลองใหม่'
       : 'โหลดรายการคอร์สไม่สำเร็จ: ' + (e.message || e);
   }
+  await loadAlerts();
 }
 async function loadUserCourseState(list) {
   if (!KPC.user()) return;
@@ -784,7 +818,7 @@ document.addEventListener('click', e => {
 function card(c) {
   const o = c.outline || [], n = o.length, free = o.filter(l => l.free).length, ffi = o.findIndex(l => l.free);
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c), track = ok && user && !own;
-  const st = c.published === false ? ['warn', 'ร่าง'] : own ? ['own', 'คอร์สที่ฉันสอน']
+  const st = own && alertText(c) ? ['warn', alertText(c)] : c.published === false ? ['warn', 'ร่าง'] : own ? ['own', 'คอร์สที่ฉันสอน']
     : track && pct >= 100 ? ['ok', 'เรียนครบแล้ว'] : !track && user && S.request[c.id] ? ['warn', 'รอครูอนุมัติ']
     : !track && user && S.rejected[c.id] ? ['warn', S.rejected[c.id].kind === 'revoke' ? 'ถูกถอนสิทธิ์ ดูเหตุผล' : 'คำขอไม่ผ่าน ดูเหตุผล'] : null;
   // ปุ่มหลักตามสถานะ (ทั้งการ์ดเป็นลิงก์เดียว)
@@ -1071,6 +1105,69 @@ function renderAll() {
   waveIn();
 }
 
+/* ===================== คอร์สของฉัน ===================== */
+function renderMy() {
+  document.title = 'คอร์สของฉัน · KP Science';
+  setNav('my', true);
+  const L = S.courses || [];
+  const mine = L.filter(c => KPC.canCourse(c.id, c) && !KPC.ownsCourse(c));
+  const teach = L.filter(c => KPC.ownsCourse(c));
+  const waiting = L.filter(c => !KPC.canCourse(c.id, c) && (S.request[c.id] || S.rejected[c.id]));
+  const body = kcSection('', 'กำลังเรียน', mine.filter(c => pctOf(c) < 100))
+    + kcSection('', 'เรียนครบแล้ว', mine.filter(c => pctOf(c) >= 100))
+    + kcSection('', 'รอครูอนุมัติหรือไม่ผ่าน', waiting, 'ดูเหตุผลและสถานะได้ในกล่องข้อความ')
+    + kcSection('', 'คอร์สที่ฉันสอน', teach);
+  $('app').innerHTML = `
+  <header class="cine-hero short cine-dark all-hero">
+    <div class="orb a"></div><div class="orb b"></div>${waveBand()}
+    <div class="cine-in">
+      <h1 class="intro" style="--d:.1s">คอร์ส<span class="grad">ของฉัน</span></h1>
+      <p class="deck intro" style="--d:.3s">${mine.length ? mine.length + ' คอร์สที่เรียนได้' : 'เลือกคอร์สที่อยากเรียน แล้วกดสมัครเรียน'}</p>
+    </div>
+  </header>
+  ${body || `<section class="kc-sec cine-dark"><div class="empty">ยังไม่มีคอร์ส<div style="margin-top:14px"><a class="btn solid sm" href="#/courses">ดูคอร์สทั้งหมด</a></div></div></section>`}`;
+  KPC.motion($('app'), '.kc-h, .kc');
+  waveIn();
+}
+
+/* ===================== กล่องข้อความนักเรียน =====================
+   สร้างจากสถานะจริงของแต่ละคอร์ส (ไม่ได้เก็บเป็นจดหมายแยก) · เปิดแล้วถือว่าอ่าน จำแยกเครื่อง */
+const inboxSeenKey = () => 'kpc-inbox:' + KPC.uid();
+const inboxSeen = () => { try { return Number(localStorage.getItem(inboxSeenKey())) || 0; } catch (e) { return 0; } };
+const secOf = ts => (ts && ts.seconds) || Date.now() / 1000;
+function inboxItems() {
+  const out = [];
+  (S.courses || []).filter(c => !KPC.ownsCourse(c)).forEach(c => {
+    const en = KPC.enrollDocs.find(d => d.courseId === c.id), req = S.request[c.id], rj = S.rejected[c.id];
+    if (KPC.canCourse(c.id, c)) {
+      if (en) out.push({ c, tone: 'ok', label: en.by === 'invite' ? 'ใช้โค้ดเชิญแล้ว' : 'อนุมัติแล้ว', text: 'คุณเข้าเรียนคอร์สนี้ได้แล้ว', at: en.createdAt, notify: true });
+    } else if (req) out.push({ c, tone: 'warn', label: req.amount ? 'รอตรวจยอด' : 'รออนุมัติ', text: req.amount ? `แจ้งโอน ${KPC.baht(req.amount)} แล้ว ครูกำลังตรวจสอบ` : 'ส่งคำขอแล้ว รอครูอนุมัติ', at: req.createdAt, notify: false });
+    else if (rj) out.push({ c, tone: 'bad', label: rj.kind === 'revoke' ? 'ถูกถอนสิทธิ์' : 'คำขอไม่ผ่าน', text: rj.reason ? 'เหตุผลจากครู: ' + rj.reason : 'ครูไม่ได้ระบุเหตุผล', at: rj.createdAt, notify: true });
+  });
+  return out.sort((a, b) => secOf(b.at) - secOf(a.at));
+}
+function updateInboxBadge() {
+  const n = KPC.user() ? inboxItems().filter(x => x.notify && secOf(x.at) > inboxSeen()).length : 0;
+  document.querySelectorAll('[data-inbox-n]').forEach(b => { b.textContent = n; b.classList.toggle('hide', !n); });
+  $('whoDot').classList.toggle('hide', !n);
+}
+function renderInbox() {
+  document.title = 'กล่องข้อความ · KP Science';
+  setNav('inbox', true);
+  const items = inboxItems(), seen = inboxSeen();
+  $('app').innerHTML = `
+  <header class="cine-hero short cine-dark all-hero">
+    <div class="orb a"></div><div class="orb b"></div>${waveBand()}
+    <div class="cine-in"><h1 class="intro" style="--d:.1s">กล่อง<span class="grad">ข้อความ</span></h1><p class="deck intro" style="--d:.3s">การอนุมัติ เหตุผลจากครู และสถานะคำขอของคุณ</p></div>
+  </header>
+  <section class="kc-sec cine-dark"><div class="msgs">${items.length ? items.map(x => `<article class="msg${x.notify && secOf(x.at) > seen ? ' new' : ''}">
+      <div class="bd"><div class="top"><span class="pill ${x.tone}">${esc(x.label)}</span>${x.notify && secOf(x.at) > seen ? '<span class="nbadge">ใหม่</span>' : ''}<small>${esc(fmtDate(x.at) || 'เมื่อสักครู่')}</small></div>
+        <h3>${esc(x.c.title)}</h3><p>${esc(x.text)}</p></div>
+      <a class="btn sm" href="${courseUrl(x.c)}">${x.tone === 'ok' ? 'เข้าเรียน' : 'ดูคอร์ส'}</a></article>`).join('') : '<div class="empty">ยังไม่มีข้อความ</div>'}</div></section>`;
+  KPC.motion($('app'), '.msg');
+  try { localStorage.setItem(inboxSeenKey(), String(Date.now() / 1000)); } catch (e) { /* ข้าม */ }
+}
+
 /* ===================== หน้าคอร์ส ===================== */
 const L_ICON = { sim: '🧪', quiz: '✅' };
 
@@ -1156,7 +1253,7 @@ function head(c, i) {
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), track = ok && user && !own, o = c.outline || [];
   const ff = o.findIndex(l => l.free);
   let side = '';
-  if (own) side = `<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a>`;
+  if (own) side = `${alertText(c) ? `<a class="pill warn alert-chip" href="admin.html#/c/${encodeURIComponent(c.id)}/students">${esc(alertText(c))} ›</a>` : ''}<a class="btn sm" href="admin.html#/c/${encodeURIComponent(c.id)}">แก้คอร์สนี้</a>`;
   else if (track) side = `<span class="prog" id="hdrProg">${progTxt(c)}</span>`;
   else if (!ok && c.price > 0) side = `<span class="price">${KPC.baht(c.price)}</span>${ff >= 0 && i !== ff ? `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>` : ''}`;
   else if (!ok && ff >= 0 && i !== ff) side = `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>`;
@@ -1356,6 +1453,7 @@ document.addEventListener('click', async e => {
 /* ---------- เส้นทาง: #/ · #/courses · #/c/รหัส · #/c/รหัส/บทที่ ---------- */
 function setNav(k, lesson) {
   $('navHome').classList.toggle('on', k === 'home'); $('navCourses').classList.toggle('on', k === 'courses');
+  $('navMy').classList.toggle('on', k === 'my'); $('navInbox').classList.toggle('on', k === 'inbox');
   document.body.classList.toggle('lesson-dark', !!lesson);
   document.querySelector('.topbar').classList.toggle('dark', !!lesson);
 }
@@ -1363,7 +1461,13 @@ function route() {
   const h = decodeURIComponent(location.hash.replace(/^#/, ''));
   const m = /^[/]c[/]([^/]+)(?:[/](\d+))?/.exec(h);
   if (m) renderCourse(m[1], m[2]);
-  else { renderSeq++; if (h === '/courses') renderAll(); else renderHome(); }
+  else {
+    renderSeq++;
+    if (h === '/courses') renderAll();
+    else if ((h === '/my' || h === '/inbox') && KPC.user()) (h === '/my' ? renderMy : renderInbox)();
+    else renderHome();
+  }
+  updateInboxBadge();
   window.scrollTo({ top: 0, behavior: 'instant' });
   cineScroll();
 }
@@ -1420,6 +1524,7 @@ function updateTopbar(user) {
   document.body.dataset.role = role;
   $('guestBtns').classList.toggle('hide', !!user);
   $('who').classList.toggle('hide', !user);
+  $('navMy').classList.toggle('hide', !user); $('navInbox').classList.toggle('hide', !user);
   if (!user) return;
   const name = KPC.displayName();
   $('whoAv').textContent = (name || '?').trim().charAt(0).toUpperCase();

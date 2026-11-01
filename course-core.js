@@ -241,6 +241,7 @@ const lower = s => String(s || '').trim().toLowerCase();
 
 KPC.me = null;         // students/{uid} ของคนที่ล็อกอิน
 KPC.staff = null;      // staff/{email} ถ้าเป็นครู
+KPC.enrollDocs = [];   // เอกสารสิทธิ์ของตัวเอง (ใช้ในกล่องข้อความนักเรียน)
 KPC.enrolled = [];     // รหัสคอร์สที่มีสิทธิ์เรียน (enrollments + ระบบเดิม students.courses)
 KPC.role = 'guest';
 KPC.user = () => (auth && auth.currentUser) || null;
@@ -256,6 +257,9 @@ KPC.ROLE = {
 KPC.isAdmin = () => { const u = KPC.user(); return !!(u && u.emailVerified && lower(u.email) === KPC.ADMIN_EMAIL); };
 KPC.isTeacher = () => KPC.role === 'teacher';
 KPC.isStaff = () => KPC.role === 'admin' || KPC.role === 'teacher';
+// เวลาที่ครูเปิดดูรายชื่อนักเรียนล่าสุด (จำแยกเครื่อง) — ใช้นับ “นักเรียนใหม่” · ยังไม่เคยดู = นับย้อน 7 วัน
+KPC.seenStudentsAt = cid => { try { const v = Number(localStorage.getItem('kpc-seen:' + cid)); if (v) return v; } catch (e) { /* ข้าม */ } return Date.now() / 1000 - 7 * 86400; };
+KPC.markStudentsSeen = cid => { try { localStorage.setItem('kpc-seen:' + cid, String(Date.now() / 1000)); } catch (e) { /* ข้าม */ } };
 // จัดการคอร์สนี้ได้ไหม (แอดมิน หรือครูเจ้าของ) — c = เอกสารคอร์ส
 KPC.ownsCourse = c => KPC.role === 'admin' || (KPC.role === 'teacher' && !!c && c.owner === KPC.email());
 KPC.canCourse = (cid, c) => KPC.ownsCourse(c) || KPC.enrolled.includes(cid) || KPC.enrolled.includes('*');
@@ -280,11 +284,12 @@ async function loadStaff(u) {
 async function loadEnrolled(u) {
   try {
     const s = await col('enrollments').where('uid', '==', u.uid).get();
-    return s.docs.map(d => d.data().courseId);
-  } catch (e) { console.warn('enrollments', e); return []; }
+    KPC.enrollDocs = s.docs.map(d => d.data());
+    return KPC.enrollDocs.map(d => d.courseId);
+  } catch (e) { console.warn('enrollments', e); KPC.enrollDocs = []; return []; }
 }
 async function loadUser(u) {
-  if (!u) { KPC.me = KPC.staff = null; KPC.enrolled = []; KPC.role = 'guest'; return; }
+  if (!u) { KPC.me = KPC.staff = null; KPC.enrolled = []; KPC.enrollDocs = []; KPC.role = 'guest'; return; }
   const [me, staff, en] = await Promise.all([ensureStudent(u), loadStaff(u), loadEnrolled(u)]);
   KPC.me = me; KPC.staff = staff;
   KPC.enrolled = Array.from(new Set(en.concat((me && me.courses) || [])));
@@ -405,6 +410,7 @@ KPC.redeemInvite = async function (c, input) {
   b.update(ref, { usedBy: u.uid, usedEmail: u.email || '', usedAt: FS().serverTimestamp() });
   await b.commit();
   KPC.enrolled = Array.from(new Set(KPC.enrolled.concat(c.id)));
+  KPC.enrollDocs = KPC.enrollDocs.concat({ courseId: c.id, by: 'invite', createdAt: { seconds: Date.now() / 1000 } });
   // ล้างของเดิม: อ่านก่อนลบ ไม่ส่งคำสั่งเขียนที่ rules จะปฏิเสธเพราะไม่มีเอกสาร
   if (await KPC.getMyRequest(c.id)) await KPC.cancelRequest(c.id).catch(() => {});
   for (const name of ['course_rejections', 'course_revoked']) {
