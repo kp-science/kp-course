@@ -678,7 +678,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=12"></script>
+<script src="course-core.js?v=13"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -778,7 +778,7 @@ function card(c) {
   const user = KPC.user(), ok = KPC.canCourse(c.id, c), own = KPC.ownsCourse(c), pct = pctOf(c), track = ok && user && !own;
   const st = c.published === false ? ['warn', 'ร่าง'] : own ? ['own', 'คอร์สที่ฉันสอน']
     : track && pct >= 100 ? ['ok', 'เรียนครบแล้ว'] : !track && user && S.request[c.id] ? ['warn', 'รอครูอนุมัติ']
-    : !track && user && S.rejected[c.id] ? ['warn', 'คำขอไม่ผ่าน ดูเหตุผล'] : null;
+    : !track && user && S.rejected[c.id] ? ['warn', S.rejected[c.id].kind === 'revoke' ? 'ถูกถอนสิทธิ์ ดูเหตุผล' : 'คำขอไม่ผ่าน ดูเหตุผล'] : null;
   // ปุ่มหลักตามสถานะ (ทั้งการ์ดเป็นลิงก์เดียว)
   let href = courseUrl(c), cta;
   if (own) cta = 'เปิดคอร์ส';
@@ -1099,7 +1099,7 @@ function lockPanel(c) {
     <div class="field" style="width:min(440px,100%);text-align:left"><label for="reqContact">เบอร์โทรหรือ LINE สำหรับติดต่อกลับ (ไม่บังคับ)</label><input type="text" id="reqContact" maxlength="100" placeholder="เช่น 081-234-5678 หรือ LINE: kp-student"><small class="sub">เห็นเฉพาะครูผู้สอนและแอดมิน</small></div>
     <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
   const rj = !req && S.rejected[c.id];
-  return `<div class="lock">${rj ? `<div class="note" style="width:min(640px,100%);text-align:left;margin-bottom:16px"><b>คำขอครั้งก่อนไม่ผ่าน</b><br>${rj.reason ? 'เหตุผลจากครู: ' + esc(rj.reason) : 'ครูไม่ได้ระบุเหตุผล'} · แก้ไขแล้วส่งใหม่ได้ หรือติดต่อครูผู้สอน</div>` : ''}${inner}</div>`;
+  return `<div class="lock">${rj ? `<div class="note" style="width:min(640px,100%);text-align:left;margin-bottom:16px"><b>${rj.kind === 'revoke' ? 'ครูถอนสิทธิ์เรียนคอร์สนี้แล้ว' : 'คำขอครั้งก่อนไม่ผ่าน'}</b><br>${rj.reason ? 'เหตุผลจากครู: ' + esc(rj.reason) : 'ครูไม่ได้ระบุเหตุผล'} · ${rj.kind === 'revoke' ? 'ถ้าคิดว่าผิดพลาด กรุณาติดต่อครูผู้สอนก่อนส่งคำขอใหม่' : 'แก้ไขแล้วส่งใหม่ได้ หรือติดต่อครูผู้สอน'}</div>` : ''}${inner}</div>`;
 }
 
 async function renderCourse(cid, n) {
@@ -1279,7 +1279,7 @@ document.addEventListener('click', async e => {
       if (paid && !image) { rq.disabled = false; rq.textContent = label; toast('แนบรูปสลิปการโอนก่อน', true); $('paySlip').focus(); return; }
       await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref, image } : null, contact);
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
-      if (S.rejected[c.id]) { KPC.clearRejection(c.id); S.rejected[c.id] = null; }   // ส่งใหม่แล้ว ไม่ต้องโชว์เหตุผลเก่า
+      if (S.rejected[c.id]) { if (S.rejected[c.id].kind !== 'revoke') KPC.clearRejection(c.id); S.rejected[c.id] = null; }   // ส่งใหม่แล้ว ไม่ต้องโชว์เหตุผลเก่า
       toast(paid ? 'แจ้งชำระเงินแล้ว รอครูตรวจยอด' : 'ส่งคำขอถึงครูแล้ว');
       route();
     } catch (err) { rq.disabled = false; rq.textContent = label; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }

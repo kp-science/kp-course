@@ -203,7 +203,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=12"></script>
+<script src="course-core.js?v=13"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -222,7 +222,7 @@ const fail = e => toast('❌ ' + (e.code === 'permission-denied' ? 'ไม่ม
 const isAdmin = () => KPC.role === 'admin';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: [], requests: [], enroll: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
+const S = { courses: [], requests: [], enroll: [], revoked: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
 const courseOf = cid => S.courses.find(c => c.id === cid);
 const staffName = email => email === KPC.ADMIN_EMAIL ? 'แอดมิน' : ((S.staff.find(s => s.id === email) || {}).name || email || '—');
 const pctOf = (p, c) => { const o = (c && c.outline) || []; if (!o.length) return 0; return Math.round((p.done || []).filter(x => o.some(l => l.id === x)).length / o.length * 100); };
@@ -289,6 +289,7 @@ async function refreshAll() {
     A.requests().then(l => { S.requests = l; }).catch(() => { S.requests = []; }),
     A.enrollments().then(l => { S.enroll = l; }).catch(() => { S.enroll = []; }),
     A.progress().then(l => { S.progress = l; }).catch(() => { S.progress = []; }),
+    A.revoked().then(l => { S.revoked = l; }).catch(() => { S.revoked = []; }),
   ];
   if (isAdmin()) jobs.push(A.staffList().then(l => { S.staff = l; }).catch(() => { S.staff = []; }), A.students().then(l => { S.studentDocs = l; }).catch(() => { S.studentDocs = []; }));
   await Promise.all(jobs);
@@ -338,6 +339,16 @@ function route() {
 addEventListener('hashchange', route);
 
 /* ===================== ภาพรวม ===================== */
+// รายชื่อที่ถอนสิทธิ์แล้ว (ค้างจนกว่าครูจะนำชื่อออก): ให้สิทธิ์อีกครั้ง · นำชื่อออก · ดูสลิป
+function revokedList(list, showCourse) {
+  return list.map(r => { const c = courseOf(r.courseId); return `<div class="req"><span class="avatar">${esc(initial(r.name || r.email))}</span><div class="bd">
+      <b>${esc(r.name || r.email)}</b> ${r.name ? `<small>${esc(r.email)}</small>` : ''} <span class="pill bad">ถอนสิทธิ์แล้ว</span><br>
+      <small>${showCourse ? esc((c || {}).title || r.courseId) + ' · ' : ''}ถอนเมื่อ ${fmtTime(r.createdAt)}</small>
+      ${r.contact ? `<div style="margin-top:4px;font-size:14px">ติดต่อกลับ: <b>${esc(r.contact)}</b></div>` : ''}
+      <div class="q">เหตุผล: ${r.reason ? esc(r.reason) : 'ไม่ได้ระบุ'}</div>
+      ${c && c.price > 0 ? `<div style="margin-top:8px"><button class="btn xs" type="button" data-slip="${esc(r.id)}">ดูสลิป</button></div>` : ''}<div class="slip-view" data-slipv="${esc(r.id)}"></div></div>
+      <div class="acts"><button class="btn ok xs" type="button" data-regrant="${esc(r.id)}">ให้สิทธิ์อีกครั้ง</button><button class="btn bad xs" type="button" data-rmname="${esc(r.id)}">นำชื่อออก</button></div></div>`; }).join('');
+}
 function reqList(list, showCourse) {
   return list.map(r => `<div class="req"><span class="avatar">${esc(initial(r.name || r.email))}</span><div class="bd">
       <b>${esc(r.name || r.email)}</b> ${r.name ? `<small>${esc(r.email)}</small>` : ''}<br>
@@ -400,12 +411,13 @@ function buildMembers() {
   const add = (uid, email, name, extra) => {
     const k = uid || 'e:' + lc(email);
     let m = map.get(k);
-    if (!m) { m = { key: k, uid: uid || '', email: email || '', name: name || '', en: [], pr: [], createdAt: null }; map.set(k, m); if (email) byEmail.set(lc(email), m); }
+    if (!m) { m = { key: k, uid: uid || '', email: email || '', name: name || '', en: [], rv: [], pr: [], createdAt: null }; map.set(k, m); if (email) byEmail.set(lc(email), m); }
     if (!m.name && name) m.name = name; if (!m.email && email) { m.email = email; byEmail.set(lc(email), m); }
     return Object.assign(m, extra || {});
   };
   if (isAdmin()) S.studentDocs.forEach(st => add(st.id, st.email, st.name, { createdAt: st.createdAt || null }));
   S.enroll.forEach(e => add(e.uid, e.email, e.name).en.push(e));
+  S.revoked.forEach(r => add(r.uid, r.email, r.name).rv.push(r));
   S.progress.forEach(p => { const m = map.get(p.uid); if (m) m.pr.push(p); });
   if (isAdmin()) S.staff.forEach(st => { const m = byEmail.get(lc(st.id)) || add('', st.id, st.name); m.staff = st; if (st.name) m.staffName = st.name; });
   const list = [...map.values()];
@@ -426,7 +438,7 @@ function memberRows(list) {
     <span class="avatar" style="background:${m.role === 'admin' ? 'var(--admin)' : m.role === 'teacher' ? 'var(--teacher)' : 'var(--student)'}">${esc(initial(m.display))}</span>
     <span class="who"><b>${esc(m.display)}</b><small>${esc(m.email || '—')}</small></span>
     <span class="rl">${ROLE_PILL[m.role]}${m.staff && !m.staff.active ? ' <span class="pill">พักสิทธิ์</span>' : ''}</span>
-    <span class="cs">${m.en.length ? m.en.length + ' คอร์ส' : '<span class="sub">—</span>'}</span>
+    <span class="cs">${m.en.length ? m.en.length + ' คอร์ส' : m.rv.length ? '<span class="pill bad">ถอนสิทธิ์แล้ว</span>' : '<span class="sub">—</span>'}</span>
     <span class="pg">${m.avg == null ? '<span class="sub">—</span>' : `<span class="bar"><i style="width:${m.avg}%"></i></span><span class="mono">${m.avg}%</span>`}</span>
     <span class="la sub">${agoS(m.lastAt)}</span></a>`).join('');
 }
@@ -480,6 +492,7 @@ function drawMember(key) {
     <div class="card"><div class="card-h"><h2>คอร์สและความคืบหน้า</h2></div>${rows || '<div class="sub">ยังไม่มีสิทธิ์ในคอร์ส' + (isAdmin() ? '' : 'ของคุณ') + '</div>'}
       ${m.uid && myCourses.length ? `<div class="row" style="margin-top:16px"><div class="field" style="flex:1;min-width:220px"><select id="mgCourse" aria-label="เลือกคอร์ส">${myCourses.map(c => `<option value="${esc(c.id)}">${esc(c.title)}</option>`).join('')}</select></div><button class="btn solid sm" type="button" data-mgrant="${esc(m.key)}">ให้สิทธิ์คอร์สนี้</button></div>` : ''}
       ${!m.uid ? '<p class="note" style="margin-top:12px">บัญชีนี้ยังไม่เคยเข้าเว็บคอร์ส — ให้สิทธิ์คอร์สได้หลังจากเข้าสู่ระบบครั้งแรก</p>' : ''}</div>
+    ${m.rv.length ? `<div class="card"><div class="card-h"><h2>ถอนสิทธิ์แล้ว</h2></div>${revokedList(m.rv, true)}</div>` : ''}
     ${isAdmin() ? `
     ${m.uid ? `<div class="card"><div class="card-h"><h2>ชื่อที่แสดง</h2></div><div class="row"><div class="field" style="flex:1;min-width:220px"><input type="text" id="mRename" value="${esc(m.name || '')}" aria-label="ชื่อ"></div><button class="btn sm" type="button" data-act="m-rename" data-key="${esc(m.key)}">บันทึกชื่อ</button></div><p class="sub" style="margin-top:8px">ครูจะเห็นชื่อนี้ในรายชื่อนักเรียนและคำขอ</p></div>` : ''}
     ${m.role !== 'admin' ? `<div class="card"><div class="card-h"><h2>บทบาท</h2></div>
@@ -681,7 +694,8 @@ async function drawStudents() {
       ${S.students.length ? `<div class="tw"><table><tr><th>นักเรียน</th><th>ได้สิทธิ์เมื่อ</th><th></th></tr>
         ${S.students.sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email), 'th')).map(u => `<tr><td><b>${esc(u.name || '—')}</b><br><small>${esc(u.email)}${u.contact ? ' · ' + esc(u.contact) : ''}</small></td><td><small>${fmtTime(u.createdAt)}</small></td>
           <td><div class="acts"><button class="btn bad xs" type="button" data-revoke="${esc(u.uid)}">ถอนสิทธิ์</button></div></td></tr>`).join('')}</table></div>` : '<div class="empty"><span class="ic">🎓</span>ยังไม่มีนักเรียน — อนุมัติคำขอ หรือให้สิทธิ์ด้วยอีเมล</div>'}
-    </div></div>`;
+    </div>
+    ${S.revoked.some(r => r.courseId === c.id) ? `<div class="card"><div class="card-h"><h2>ถอนสิทธิ์แล้ว</h2><span class="pill">${S.revoked.filter(r => r.courseId === c.id).length} คน</span></div>${revokedList(S.revoked.filter(r => r.courseId === c.id), false)}</div>` : ''}</div>`;
 }
 
 /* ---------- ความคืบหน้า ---------- */
@@ -805,15 +819,34 @@ document.addEventListener('click', async e => {
   }
   if (d.revoke) {
     const u = (S.students || []).find(x => x.uid === d.revoke);
-    if (!u || !confirm(`ถอนสิทธิ์ ${u.name || u.email} ออกจากคอร์สนี้?\n(ความคืบหน้าเดิมยังเก็บไว้)`)) return;
-    try { await A.revoke(u.uid, S.cur.id); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); } catch (err) { fail(err); }
+    if (!u) return;
+    const reason = prompt(`ถอนสิทธิ์ ${u.name || u.email} ออกจากคอร์สนี้?\nความคืบหน้าและสลิปยังเก็บไว้\n\nพิมพ์เหตุผลให้นักเรียนเห็น เช่น หมดเวลาเรียน หรือยอดโอนไม่เข้า`, '');
+    if (reason === null) return;
+    try { await A.revoke(u, S.cur, reason.trim()); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); } catch (err) { fail(err); }
     return drawMain();
   }
   if (d.mfilter) { S.mFilter = d.mfilter; return drawMembers(); }
+  if (d.regrant || d.rmname) {
+    const r = S.revoked.find(x => x.id === (d.regrant || d.rmname)); if (!r) return;
+    const c = courseOf(r.courseId);
+    if (d.rmname && !confirm(`นำชื่อ ${r.name || r.email} ออกจากคอร์ส “${(c || {}).title || r.courseId}”?\nเหตุผล สลิป และความคืบหน้าของคอร์สนี้จะถูกลบด้วย กู้คืนไม่ได้`)) return;
+    if (d.regrant && !c) return;
+    el.disabled = true;
+    try {
+      if (d.regrant) await A.grant({ uid: r.uid, email: r.email, name: r.name, contact: r.contact }, c);
+      else await A.removeFromCourse(r.id);
+      toast(d.regrant ? 'ให้สิทธิ์อีกครั้งแล้ว' : 'นำชื่อออกแล้ว');
+      await reloadCourseData();
+    } catch (err) { fail(err); el.disabled = false; return; }
+    return S.cur && location.hash.startsWith('#/c/') ? drawMain() : route();
+  }
   if (d.mrevoke) {
     const [uid, cid] = d.mrevoke.split('|'), c = courseOf(cid);
-    if (!confirm(`ถอนสิทธิ์คอร์ส “${(c || {}).title || cid}”?\n(ความคืบหน้าเดิมยังเก็บไว้)`)) return;
-    try { await A.revoke(uid, cid); toast('ถอนสิทธิ์แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); }
+    if (!c) return;
+    const reason = prompt(`ถอนสิทธิ์คอร์ส “${c.title}”?\nความคืบหน้าและสลิปยังเก็บไว้\n\nพิมพ์เหตุผลให้นักเรียนเห็น เช่น หมดเวลาเรียน หรือยอดโอนไม่เข้า`, '');
+    if (reason === null) return;
+    const en = S.enroll.find(x => x.uid === uid && x.courseId === cid) || { uid };
+    try { await A.revoke(en, c, reason.trim()); toast('ถอนสิทธิ์แล้ว'); await reloadCourseData(); route(); } catch (err) { fail(err); }
     return;
   }
   if (d.mgrant) {

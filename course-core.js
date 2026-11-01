@@ -13,6 +13,7 @@
 //    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
 //    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, contact?, amount?, payRef?, createdAt }
 //    course_rejections/{uid}_{cid} { uid, courseId, owner, reason, by, createdAt }
+//    course_revoked/{uid}_{cid}    { uid, email, name, contact?, courseId, owner, reason, by, createdAt }
 //    course_slips/{uid}_{cid}      { uid, courseId, owner, image (data URL JPEG ≤ 500 KB), createdAt }
 //    courses/{cid}.price           ราคา (บาท · 0/ไม่มี = ฟรี) · courses/{cid}/meta/pay { promptpay, name, note } อ่านได้เมื่อล็อกอิน
 // ============================================================
@@ -377,10 +378,12 @@ KPC.saveProgress = function (c, patch) {
 };
 
 /* ---------- คำขอสิทธิ์ ---------- */
-// เหตุผลที่ครูไม่อนุมัติคำขอล่าสุด (ไม่มี = null)
+// เหตุผลล่าสุดที่ครูไม่อนุมัติคำขอ หรือถอนสิทธิ์ (kind: 'revoke') · ไม่มี = null
 KPC.getMyRejection = async function (cid) {
-  try { const s = await col('course_rejections').doc(pid(KPC.uid(), cid)).get(); return s.exists ? s.data() : null; }
-  catch (e) { return null; }
+  const read = async (name, extra) => { try { const s = await col(name).doc(pid(KPC.uid(), cid)).get(); return s.exists ? Object.assign(s.data(), extra) : null; } catch (e) { return null; } };
+  const [rj, rv] = await Promise.all([read('course_rejections', {}), read('course_revoked', { kind: 'revoke' })]);
+  const at = d => (d && d.createdAt && d.createdAt.seconds) || 0;
+  return at(rv) >= at(rj) ? (rv || rj) : rj;
 };
 KPC.clearRejection = cid => col('course_rejections').doc(pid(KPC.uid(), cid)).delete().catch(() => {});
 KPC.getMyRequest = async function (cid) {
@@ -471,11 +474,26 @@ KPC.admin = {
   // st = { uid|id, email, name } · c = เอกสารคอร์ส
   grant: (st, c) => {
     const uid = st.uid || st.id;
+    KPC.admin.dropRevoked(pid(uid, c.id));   // ให้สิทธิ์แล้ว ไม่อยู่ในรายชื่อที่ถอนอีกต่อไป
     // ช่องทางติดต่อย้ายจากคำขอมาเก็บกับสิทธิ์ (คำขอถูกลบหลังอนุมัติ)
     return col('enrollments').doc(pid(uid, c.id)).set(Object.assign({ uid, email: st.email || '', name: st.name || '', courseId: c.id,
       owner: c.owner || '', by: KPC.email(), createdAt: FS().serverTimestamp() }, st.contact ? { contact: st.contact } : {}));
   },
-  revoke: (uid, cid) => col('enrollments').doc(pid(uid, cid)).delete(),
+  // ถอนสิทธิ์: ชื่อยังอยู่ใน course_revoked พร้อมเหตุผล (สลิปและความคืบหน้าเก็บไว้)
+  revoke: async (en, c, reason) => {
+    const data = { uid: en.uid, email: en.email || '', name: en.name || '', courseId: c.id, owner: c.owner || '', reason: String(reason || '').slice(0, 200), by: KPC.email(), createdAt: FS().serverTimestamp() };
+    if (en.contact) data.contact = en.contact;
+    await col('course_revoked').doc(pid(en.uid, c.id)).set(data);
+    await col('enrollments').doc(pid(en.uid, c.id)).delete();
+  },
+  revoked: async cid => docs(await (cid ? mine(col('course_revoked')).where('courseId', '==', cid) : mine(col('course_revoked'))).get())
+    .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0)),
+  // นำชื่อออกจากคอร์ส: ลบรายชื่อ + สลิป + ความคืบหน้าของคอร์สนี้ (กู้คืนไม่ได้)
+  removeFromCourse: async rid => {
+    await col('course_slips').doc(rid).delete().catch(() => {});
+    await col('course_progress').doc(rid).delete().catch(() => {});
+    await col('course_revoked').doc(rid).delete();
+  },
 
   requests: async cid => docs(await (cid ? mine(col('course_requests')).where('courseId', '==', cid) : mine(col('course_requests'))).get())
     .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0)),
@@ -489,12 +507,13 @@ KPC.admin = {
     await col('course_slips').doc(r.id).delete().catch(() => {});
     await col('course_requests').doc(r.id).delete();
   },
+  dropRevoked: async rid => { try { const s = await col('course_revoked').doc(rid).get(); if (s.exists) await s.ref.delete(); } catch (e) { /* ไม่มี = จบ */ } },
   // อ่านก่อนลบ: ส่วนใหญ่ไม่มีเอกสาร ไม่ต้องส่งคำสั่งเขียนที่ rules จะปฏิเสธ
   dropRejection: async rid => { try { const s = await col('course_rejections').doc(rid).get(); if (s.exists) await s.ref.delete(); } catch (e) { /* ไม่มี = จบ */ } },
   // สำรองข้อมูล (แอดมิน): { "path/ของเอกสาร": ข้อมูล } · สลิปเป็นรูป ไฟล์จะใหญ่ จึงเลือกได้
   backup: async withSlips => {
     const out = {}, put = s => s.docs.forEach(d => { out[d.ref.path] = d.data(); });
-    for (const name of ['staff', 'students', 'courses', 'enrollments', 'course_progress', 'course_requests', 'course_rejections'].concat(withSlips ? ['course_slips'] : [])) put(await col(name).get());
+    for (const name of ['staff', 'students', 'courses', 'enrollments', 'course_progress', 'course_requests', 'course_rejections', 'course_revoked'].concat(withSlips ? ['course_slips'] : [])) put(await col(name).get());
     for (const id of Object.keys(out).filter(p => /^courses[/][^/]+$/.test(p)).map(p => p.split('/')[1])) {
       put(await col('courses').doc(id).collection('lessons').get());
       put(await col('courses').doc(id).collection('meta').get());
@@ -515,7 +534,7 @@ KPC.admin = {
   // ลบข้อมูลของสมาชิกในเว็บคอร์ส (สิทธิ์ · ความคืบหน้า · คำขอ · บัญชีนักเรียน) — บัญชีล็อกอินยังอยู่ ถ้าเข้ามาใหม่จะเริ่มจากว่าง
   deleteMember: async uid => {
     const refs = [col('students').doc(uid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
     const b = db.batch(); refs.forEach(r => b.delete(r)); await b.commit();
     return refs.length;
   },
@@ -527,7 +546,7 @@ KPC.admin = {
   reassign: async (cid, owner) => {
     owner = lower(owner);
     const refs = [col('courses').doc(cid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections']) {
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked']) {
       (await col(name).where('courseId', '==', cid).get()).docs.forEach(d => refs.push(d.ref));
     }
     for (let i = 0; i < refs.length; i += 400) {

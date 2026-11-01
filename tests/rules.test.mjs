@@ -216,6 +216,28 @@ test('เหตุผลที่ไม่อนุมัติ: ครูเจ
   await assertSucceeds(deleteDoc(doc(stu2(), 'course_rejections/s2_c1')));
 });
 
+test('รายชื่อที่ถอนสิทธิ์: ครูเจ้าของจัดการได้ · นักเรียนอ่านของตัวเองได้แต่แก้ไม่ได้ · ไม่ให้สิทธิ์เรียน · ครูลบความคืบหน้าของคอร์สตัวเองได้', async () => {
+  const r = { uid: 's2', email: 's2@mail.com', name: 'S2', contact: '081', courseId: 'c1', owner: T1, reason: 'หมดเวลาเรียน', by: T1 };
+  await assertFails(setDoc(doc(stu2(), 'course_revoked/s2_c1'), r));
+  await assertFails(setDoc(doc(t2(), 'course_revoked/s2_c1'), r));
+  await assertFails(setDoc(doc(t1(), 'course_revoked/s2_c1'), { ...r, reason: 'x'.repeat(201) }));
+  await assertFails(setDoc(doc(t1(), 'course_revoked/s2_c1'), { ...r, owner: T2 }));
+  await assertFails(setDoc(doc(t1(), 'course_revoked/s9_c1'), r));
+  await assertSucceeds(setDoc(doc(t1(), 'course_revoked/s2_c1'), r));
+  await assertSucceeds(getDoc(doc(stu2(), 'course_revoked/s2_c1')));
+  await assertSucceeds(getDoc(doc(t1(), 'course_revoked/s2_c1')));
+  await assertFails(getDoc(doc(t2(), 'course_revoked/s2_c1')));
+  await assertFails(getDoc(doc(stu(), 'course_revoked/s2_c1')));
+  await assertFails(deleteDoc(doc(stu2(), 'course_revoked/s2_c1')));
+  await assertFails(getDoc(doc(stu2(), 'courses/c1/lessons/paid')));              // อยู่ในรายชื่อนี้ไม่ได้เปิดบทเรียน
+  await assertFails(deleteDoc(doc(t2(), 'course_revoked/s2_c1')));
+  await assertSucceeds(deleteDoc(doc(t1(), 'course_revoked/s2_c1')));
+  // ความคืบหน้า: ครูเจ้าของลบได้ · ครูอื่น/นักเรียนลบไม่ได้
+  await assertFails(deleteDoc(doc(t2(), 'course_progress/s1_c1')));
+  await assertFails(deleteDoc(doc(stu(), 'course_progress/s1_c1')));
+  await assertSucceeds(deleteDoc(doc(t1(), 'course_progress/s1_c1')));
+});
+
 test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {
   const IMG = 'data:image/jpeg;base64,AAAA';
   const slip = { uid: 's2', courseId: 'c1', owner: T1, image: IMG };

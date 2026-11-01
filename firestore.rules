@@ -20,6 +20,7 @@ rules_version = '2';
 //   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
 //   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
 //   /course_rejections/{uid}_{cid}  — เหตุผลที่ไม่อนุมัติคำขอ (ครูเขียน · นักเรียนเจ้าของอ่าน/ลบเมื่อส่งใหม่)
+//   /course_revoked/{uid}_{cid}     — รายชื่อที่ถูกถอนสิทธิ์ + เหตุผล (ครูเขียน/ลบ · นักเรียนเจ้าของอ่านอย่างเดียว · ไม่ให้สิทธิ์เรียน)
 //   /course_slips/{uid}_{cid}       — รูปสลิปการโอน (JPEG ย่อแล้วเก็บเป็นข้อความ · เห็นเฉพาะเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน)
 //   enrollments / progress / requests เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
 // ═══════════════════════════════════════════════════════════════
@@ -123,7 +124,7 @@ service cloud.firestore {
         && request.resource.data.done.size() <= 500
         && request.resource.data.owner == ownerOf(request.resource.data.courseId)
         && hasCourse(request.resource.data.courseId));
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || teacherOwns(resource.data);
     }
 
     // ── คำขอสิทธิ์: id = <uid>_<courseId> ─────────
@@ -166,6 +167,20 @@ service cloud.firestore {
         && !enrolled(request.resource.data.courseId));
       allow delete: if isAdmin() || teacherOwns(resource.data)
         || (isMine(resource.data) && exists(/databases/$(database)/documents/course_requests/$(rid)));
+    }
+
+    // ── รายชื่อที่ถูกถอนสิทธิ์: id = <uid>_<courseId> ─────
+    match /course_revoked/{rid} {
+      allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
+      allow create, update: if isAdmin() || (ownsCourse(request.resource.data.courseId)
+        && rid == request.resource.data.uid + '_' + request.resource.data.courseId
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'contact', 'courseId', 'owner', 'reason', 'by', 'createdAt'])
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 200
+        && request.resource.data.get('contact', '') is string
+        && request.resource.data.get('contact', '').size() <= 100
+        && request.resource.data.owner == ownerOf(request.resource.data.courseId));
+      allow delete: if isAdmin() || teacherOwns(resource.data);
     }
 
     // ── คำขอที่ไม่ผ่าน: id = <uid>_<courseId> ─────
