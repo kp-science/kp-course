@@ -241,6 +241,45 @@ const col = name => db.collection(name);
 const pid = (uid, cid) => uid + '_' + cid;
 const lower = s => String(s || '').trim().toLowerCase();
 
+/* ===================== สายเชื่อมต่อค้าง =====================
+   สายหลุดแบบเงียบ (เครื่องตื่นจาก sleep · เปลี่ยน Wi-Fi · โปรแกรมบล็อก) SDK ไม่รู้ตัว รอไปเรื่อย ๆ แม้เน็ตกลับมาแล้ว
+   จนกว่าจะรีเฟรช → รอนานเกินให้ต่อสายใหม่เอง */
+const within = (p, ms) => {
+  let h;
+  const late = new Promise((_, no) => { h = setTimeout(() => no(Object.assign(new Error('เชื่อมต่อฐานข้อมูลไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่'), { code: 'kpc/timeout' })), ms); });
+  return Promise.race([p, late]).finally(() => clearTimeout(h));
+};
+const isStalled = e => e.code === 'kpc/timeout' || e.code === 'unavailable';
+let waking = null, wokeAt = 0;
+KPC.reconnect = () => {
+  if (!waking && Date.now() - wokeAt < 3000) return Promise.resolve();   // เพิ่งต่อใหม่ อย่าตัดงานที่กำลังอ่านรอบใหม่
+  return waking || (waking = db.disableNetwork().then(() => db.enableNetwork()).catch(() => {}).then(() => { waking = null; wokeAt = Date.now(); }));
+};
+// อ่าน: ระหว่างต่อสายใหม่งานอ่านเดิมจะล้มเหลว จึงต้องส่ง fn ให้อ่านรอบใหม่ได้
+KPC.read = async fn => {
+  try { return await within(fn(), 5000); } catch (e) { if (!isStalled(e)) throw e; }
+  await KPC.reconnect();
+  return within(fn(), 12000);
+};
+// เขียน: งานยังอยู่ในคิวของ SDK และส่งต่อเองเมื่อต่อสายได้ จึงไม่ส่งซ้ำ แค่รอ
+KPC.write = async p => {
+  try { return await within(p, 5000); } catch (e) { if (!isStalled(e)) throw e; }
+  await KPC.reconnect();
+  return within(p, 15000);
+};
+if (db) {
+  // กลับมาใช้งานหลังเงียบไปนาน → ลองอ่านสั้น ๆ ถ้าไม่ตอบให้ต่อสายใหม่ก่อน งานที่ผู้ใช้เพิ่งกดจะไม่ค้าง
+  let activeAt = Date.now();
+  const back = () => {
+    const idle = Date.now() - activeAt > 30000; activeAt = Date.now();
+    if (idle && !document.hidden) within(col('courses').where('published', '==', true).limit(1).get({ source: 'server' }), 4000).catch(e => { if (isStalled(e)) KPC.reconnect(); });
+  };
+  addEventListener('pointerdown', back, true);
+  addEventListener('keydown', back, true);
+  document.addEventListener('visibilitychange', back);
+  addEventListener('online', () => KPC.reconnect());
+}
+
 KPC.me = null;         // students/{uid} ของคนที่ล็อกอิน
 KPC.staff = null;      // staff/{email} ถ้าเป็นครู
 KPC.enrollDocs = [];   // เอกสารสิทธิ์ของตัวเอง (ใช้ในกล่องข้อความนักเรียน)
@@ -271,7 +310,7 @@ KPC.displayName = () => { const u = KPC.user(); return u ? ((KPC.staff && KPC.st
 async function ensureStudent(u) {
   const ref = col('students').doc(u.uid);
   try {
-    const s = await ref.get();
+    const s = await KPC.read(() => ref.get());
     if (s.exists) return s.data();
     const data = { email: u.email || '', name: u.displayName || '', courses: [], createdAt: FS().serverTimestamp() };
     await ref.set(data);
@@ -280,12 +319,12 @@ async function ensureStudent(u) {
 }
 async function loadStaff(u) {
   if (!u.emailVerified || !u.email) return null;
-  try { const s = await col('staff').doc(lower(u.email)).get(); return s.exists && s.data().active ? s.data() : null; }
+  try { const s = await KPC.read(() => col('staff').doc(lower(u.email)).get()); return s.exists && s.data().active ? s.data() : null; }
   catch (e) { return null; }
 }
 async function loadEnrolled(u) {
   try {
-    const s = await col('enrollments').where('uid', '==', u.uid).get();
+    const s = await KPC.read(() => col('enrollments').where('uid', '==', u.uid).get({ source: 'server' }));
     KPC.enrollDocs = s.docs.map(d => d.data());
     return KPC.enrollDocs.map(d => d.courseId);
   } catch (e) { console.warn('enrollments', e); KPC.enrollDocs = []; return []; }
@@ -349,14 +388,14 @@ KPC.listCourses = async function () {
 };
 
 KPC.getCourse = async function (cid) {
-  const s = await col('courses').doc(cid).get();
+  const s = await KPC.read(() => col('courses').doc(cid).get());
   return s.exists ? Object.assign({ id: s.id }, s.data()) : null;
 };
 
 // เนื้อหาบทเดียว (null ถ้าไม่มีสิทธิ์ / ไม่พบ)
 KPC.getLesson = async function (cid, lid) {
   try {
-    const s = await col('courses').doc(cid).collection('lessons').doc(lid).get();
+    const s = await KPC.read(() => col('courses').doc(cid).collection('lessons').doc(lid).get());
     return s.exists ? Object.assign({ id: s.id }, s.data()) : null;
   } catch (e) {
     if (e.code === 'permission-denied') return null;
@@ -365,17 +404,19 @@ KPC.getLesson = async function (cid, lid) {
 };
 
 KPC.listLessons = async function (cid) {
-  const snap = await col('courses').doc(cid).collection('lessons').get();
+  // ต้องอ่านจากเซิร์ฟเวอร์: get() ปกติเมื่อเชื่อมต่อไม่ได้คืนรายการว่างจากแคช ไม่ error
+  const snap = await KPC.read(() => col('courses').doc(cid).collection('lessons').get({ source: 'server' }));
   return docs(snap).sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 
 /* ---------- ความคืบหน้า ---------- */
+// null = ยังไม่เคยเรียน · undefined = อ่านไม่สำเร็จ (ห้ามถือว่าว่าง ไม่งั้นบันทึกทับรายการที่เรียนแล้ว)
 KPC.getProgress = async function (cid) {
   const uid = KPC.uid(); if (!uid) return null;
   try {
-    const s = await col('course_progress').doc(pid(uid, cid)).get();
+    const s = await KPC.read(() => col('course_progress').doc(pid(uid, cid)).get());
     return s.exists ? s.data() : null;
-  } catch (e) { return null; }
+  } catch (e) { return e.code === 'permission-denied' ? null : undefined; }
 };
 
 // c = เอกสารคอร์ส (ต้องมี owner — rules ตรวจว่าตรงกับคอร์ส)
@@ -464,7 +505,7 @@ KPC.clearRejection = cid => col('course_rejections').doc(pid(KPC.uid(), cid)).de
 KPC.getMyRequest = async function (cid) {
   const uid = KPC.uid(); if (!uid) return null;
   try {
-    const s = await col('course_requests').doc(pid(uid, cid)).get();
+    const s = await KPC.read(() => col('course_requests').doc(pid(uid, cid)).get());
     return s.exists ? s.data() : null;
   } catch (e) { return null; }
 };
@@ -530,15 +571,27 @@ KPC.admin = {
   savePayInfo: (cid, data) => col('courses').doc(cid).collection('meta').doc('pay').set(Object.assign({}, data, { updatedAt: FS().serverTimestamp() })),
   newLessonId: cid => col('courses').doc(cid).collection('lessons').doc().id,
   lessonRef: (cid, lid) => col('courses').doc(cid).collection('lessons').doc(lid),
-  saveLesson: (cid, lid, data) => col('courses').doc(cid).collection('lessons').doc(lid).set(data),
-  deleteLesson: (cid, lid) => col('courses').doc(cid).collection('lessons').doc(lid).delete(),
 
   // เขียนสารบัญ (outline) ลงเอกสารคอร์ส — ให้คนที่ยังไม่มีสิทธิ์เห็นรายชื่อบท (ไม่มีเนื้อหา)
   syncOutline: async cid => {
     const lessons = await KPC.listLessons(cid);
-    const outline = lessons.map(l => ({ id: l.id, unit: l.unit || '', title: l.title || '', dur: l.dur || '', free: !!l.free, video: !!l.video }));
+    const outline = KPC.admin.outlineOf(lessons);
     await col('courses').doc(cid).set({ outline, lessonCount: outline.length, updatedAt: FS().serverTimestamp() }, { merge: true });
     return outline;
+  },
+  outlineOf: lessons => lessons.map(l => ({ id: l.id, unit: l.unit || '', title: l.title || '', dur: l.dur || '', free: !!l.free, video: !!l.video })),
+  // เขียนลำดับบท + สารบัญ (และบทที่แก้/ลบ) ใน batch เดียว ไม่ต้องอ่านกลับ
+  // lessons = รายการบทหลังเปลี่ยนแล้ว เรียงตามลำดับใหม่ · change = { set: รหัสบทที่เขียนทั้งเอกสาร } หรือ { del: รหัสบทที่ลบ }
+  saveLessons: async (cid, lessons, change) => {
+    const A = KPC.admin, batch = db.batch(), { set, del } = change || {};
+    if (del) batch.delete(A.lessonRef(cid, del));
+    lessons.forEach((l, k) => {
+      if (l.id === set) { const data = Object.assign({}, l, { order: k + 1 }); delete data.id; batch.set(A.lessonRef(cid, l.id), data); }
+      else if (l.order !== k + 1) batch.update(A.lessonRef(cid, l.id), { order: k + 1 });
+    });
+    batch.set(col('courses').doc(cid), { outline: A.outlineOf(lessons), lessonCount: lessons.length, updatedAt: FS().serverTimestamp() }, { merge: true });
+    await KPC.write(batch.commit());
+    lessons.forEach((l, k) => { l.order = k + 1; });   // ตั้งหลังสำเร็จ ส่งไม่ผ่านแล้วลองใหม่จะยังเขียนลำดับครบ
   },
 
   // ---- นักเรียน / สิทธิ์ ----
