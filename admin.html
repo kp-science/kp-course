@@ -203,7 +203,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=13"></script>
+<script src="course-core.js?v=15"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -514,8 +514,8 @@ function membersCsv() {
 async function openCourse(cid, tab) {
   const changed = !S.cur || S.cur.id !== cid;
   S.cur = courseOf(cid);
-  S.tab = ['info', 'lessons', 'students', 'progress'].includes(tab) ? tab : (changed ? 'lessons' : S.tab);
-  if (changed) { S.students = null; S.cprog = null; }
+  S.tab = ['info', 'lessons', 'students', 'invites', 'progress'].includes(tab) ? tab : (changed ? 'lessons' : S.tab);
+  if (changed) { S.students = null; S.cprog = null; S.invites = null; }
   drawSide();
   if (changed) { $('main').innerHTML = '<div class="skel" style="width:40%;height:28px"></div><div class="skel"></div>'; try { S.lessons = await KPC.listLessons(cid); } catch (e) { S.lessons = []; fail(e); } }
   drawMain();
@@ -524,7 +524,7 @@ function drawMain() {
   const c = S.cur; if (!c) return;
   document.title = c.title + ' · ห้องครู';
   const st = courseStats(c);
-  const T = [['lessons', '', `บทเรียน <span class="sub">${S.lessons.length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['progress', '', 'ความคืบหน้า'], ['info', '', 'ข้อมูลคอร์ส']];
+  const T = [['lessons', '', `บทเรียน <span class="sub">${S.lessons.length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['invites', '', 'โค้ดเชิญ'], ['progress', '', 'ความคืบหน้า'], ['info', '', 'ข้อมูลคอร์ส']];
   $('main').innerHTML = `
     <div class="ph"><div>
       <div class="row" style="gap:6px;margin-bottom:6px">${c.published ? '<span class="pill ok">● เผยแพร่แล้ว</span>' : '<span class="pill warn">○ ร่าง — นักเรียนยังไม่เห็น</span>'}${isAdmin() ? `<span class="pill">ผู้สอน: ${esc(staffName(c.owner))}</span>` : ''}</div>
@@ -533,7 +533,7 @@ function drawMain() {
     <div class="tabs" role="tablist">${T.map(t => `<button type="button" role="tab" data-tab="${t[0]}" class="${S.tab === t[0] ? 'on' : ''}">${t[2]}</button>`).join('')}</div>
     <div id="pane"></div>`;
   history.replaceState(null, '', '#/c/' + encodeURIComponent(c.id) + '/' + S.tab);
-  ({ info: drawInfo, lessons: drawLessons, students: drawStudents, progress: drawProgress })[S.tab]();
+  ({ info: drawInfo, lessons: drawLessons, students: drawStudents, invites: drawInvites, progress: drawProgress })[S.tab]();
 }
 
 /* ---------- ข้อมูลคอร์ส ---------- */
@@ -692,13 +692,36 @@ async function drawStudents() {
     </div>
     <div class="card"><div class="card-h"><h2>🎓 นักเรียนที่มีสิทธิ์</h2><span class="pill">${S.students.length} คน</span></div>
       ${S.students.length ? `<div class="tw"><table><tr><th>นักเรียน</th><th>ได้สิทธิ์เมื่อ</th><th></th></tr>
-        ${S.students.sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email), 'th')).map(u => `<tr><td><b>${esc(u.name || '—')}</b><br><small>${esc(u.email)}${u.contact ? ' · ' + esc(u.contact) : ''}</small></td><td><small>${fmtTime(u.createdAt)}</small></td>
+        ${S.students.sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email), 'th')).map(u => `<tr><td><b>${esc(u.name || '—')}</b><br><small>${esc(u.email)}${u.contact ? ' · ' + esc(u.contact) : ''}${u.code ? ' · โค้ดเชิญ ' + esc(fmtCode(u.code)) : ''}</small></td><td><small>${fmtTime(u.createdAt)}</small></td>
           <td><div class="acts"><button class="btn bad xs" type="button" data-revoke="${esc(u.uid)}">ถอนสิทธิ์</button></div></td></tr>`).join('')}</table></div>` : '<div class="empty"><span class="ic">🎓</span>ยังไม่มีนักเรียน — อนุมัติคำขอ หรือให้สิทธิ์ด้วยอีเมล</div>'}
     </div>
     ${S.revoked.some(r => r.courseId === c.id) ? `<div class="card"><div class="card-h"><h2>ถอนสิทธิ์แล้ว</h2><span class="pill">${S.revoked.filter(r => r.courseId === c.id).length} คน</span></div>${revokedList(S.revoked.filter(r => r.courseId === c.id), false)}</div>` : ''}</div>`;
 }
 
 /* ---------- ความคืบหน้า ---------- */
+/* ---------- โค้ดเชิญ: หนึ่งโค้ดต่อหนึ่งบัญชี ใส่แล้วเข้าเรียนได้ทันที ---------- */
+const fmtCode = code => code.slice(0, 5) + '-' + code.slice(5);
+const courseLink = c => location.href.split(/[?#]/)[0].replace(/admin\.html$/, '') + '#/c/' + encodeURIComponent(c.id);
+// ข้อความพร้อมส่งให้นักเรียน
+const inviteMessage = (c, x) => `คอร์ส: ${c.title}\nโค้ดเชิญ: ${fmtCode(x.id)}${x.email ? '\nใช้ได้เฉพาะอีเมล: ' + x.email : ''}\nเข้าเรียน: ${courseLink(c)}`;
+async function drawInvites() {
+  const c = S.cur;
+  $('pane').innerHTML = '<div class="skel" style="height:120px"></div>';
+  if (!S.invites) { try { S.invites = await A.invites(c.id); } catch (e) { S.invites = []; fail(e); } }
+  if (S.cur !== c || S.tab !== 'invites') return;
+  const list = S.invites, unused = list.filter(x => !x.usedBy);
+  $('pane').innerHTML = `<div class="stack">
+    <div class="card"><div class="card-h"><h2>สร้างโค้ดเชิญ</h2></div>
+      <p class="sub" style="margin-bottom:12px">โค้ดหนึ่งตัวใช้ได้กับบัญชีเดียว นักเรียนล็อกอินแล้วกรอกโค้ดในหน้าคอร์สนี้ ได้สิทธิ์เรียนทันที ไม่ต้องจ่ายเงินหรือรออนุมัติ</p>
+      <div class="field"><label for="invEmails">อีเมลนักเรียน บรรทัดละ 1 อีเมล (ถ้าใส่ โค้ดจะใช้ได้เฉพาะอีเมลนั้น)</label><textarea id="invEmails" rows="3" placeholder="student1@mail.com&#10;student2@mail.com"></textarea></div>
+      <div class="row" style="margin-top:10px;align-items:flex-end"><div class="field" style="width:200px"><label for="invCount">หรือจำนวนโค้ดแบบไม่ผูกอีเมล</label><input type="number" id="invCount" min="1" max="200" value="1"></div><button class="btn solid" type="button" data-act="invite-create">สร้างโค้ด</button></div>
+      <p class="sub" style="margin-top:10px">โค้ดแบบไม่ผูกอีเมล คนแรกที่กรอกจะได้สิทธิ์ แล้วโค้ดนั้นจะใช้ซ้ำไม่ได้</p></div>
+    <div class="card"><div class="card-h"><h2>โค้ดทั้งหมด</h2><span class="pill">เหลือ ${unused.length} จาก ${list.length}</span><span class="sp"></span>${unused.length ? '<button class="btn xs" type="button" data-act="invite-copy-all">คัดลอกโค้ดที่ยังไม่ใช้</button>' : ''}</div>
+      ${list.length ? `<div class="tw"><table><tr><th>โค้ด</th><th>สำหรับ</th><th>สถานะ</th><th></th></tr>${list.map(x => `<tr><td class="mono"><b>${esc(fmtCode(x.id))}</b></td><td><small>${esc(x.email || 'ใครก็ได้')}</small></td>
+        <td>${x.usedBy ? `<span class="pill ok">ใช้แล้ว</span><br><small>${esc(x.usedEmail || '')}${x.usedAt ? ' · ' + fmtTime(x.usedAt) : ''}</small>` : '<span class="pill">ยังไม่ใช้</span>'}</td>
+        <td><div class="acts">${x.usedBy ? '' : `<button class="btn xs" type="button" data-invcopy="${esc(x.id)}">คัดลอก</button><button class="btn bad xs" type="button" data-invdel="${esc(x.id)}">ลบ</button>`}</div></td></tr>`).join('')}</table></div>` : '<div class="empty">ยังไม่มีโค้ด</div>'}
+    </div></div>`;
+}
 async function drawProgress() {
   const c = S.cur, outline = c.outline || [];
   $('pane').innerHTML = '<div class="skel"></div><div class="skel" style="width:60%"></div>';
@@ -777,7 +800,7 @@ $('importFile').addEventListener('change', async e => {
 });
 
 /* ===================== ปุ่มต่าง ๆ ===================== */
-async function reloadCourseData() { S.students = null; S.cprog = null; await refreshAll(); }
+async function reloadCourseData() { S.students = null; S.cprog = null; S.invites = null; await refreshAll(); }
 document.addEventListener('click', async e => {
   const el = e.target.closest('button'); if (!el) return;
   const d = el.dataset;
@@ -826,6 +849,17 @@ document.addEventListener('click', async e => {
     return drawMain();
   }
   if (d.mfilter) { S.mFilter = d.mfilter; return drawMembers(); }
+  if (d.invcopy) {
+    const x = (S.invites || []).find(y => y.id === d.invcopy); if (!x) return;
+    try { await navigator.clipboard.writeText(inviteMessage(S.cur, x)); toast('คัดลอกข้อความพร้อมส่งแล้ว'); } catch (err) { toast('คัดลอกไม่ได้ เบราว์เซอร์ไม่อนุญาต', true); }
+    return;
+  }
+  if (d.invdel) {
+    if (!confirm(`ลบโค้ด ${fmtCode(d.invdel)}?\nนักเรียนที่ได้โค้ดนี้ไปจะใช้ไม่ได้`)) return;
+    el.disabled = true;
+    try { await A.dropInvite(d.invdel); S.invites = null; toast('ลบโค้ดแล้ว'); } catch (err) { fail(err); el.disabled = false; return; }
+    return drawInvites();
+  }
   if (d.regrant || d.rmname) {
     const r = S.revoked.find(x => x.id === (d.regrant || d.rmname)); if (!r) return;
     const c = courseOf(r.courseId);
@@ -953,6 +987,22 @@ document.addEventListener('click', async e => {
       if (email === KPC.ADMIN_EMAIL) return toast('อีเมลนี้เป็นแอดมินอยู่แล้ว', true);
       el.disabled = true;
       try { await A.saveStaff(email, { name: name || email.split('@')[0], active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); toast('เพิ่ม ' + (name || email) + ' เป็นครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
+      return;
+    }
+    case 'invite-create': {
+      const emails = [...new Set($('invEmails').value.split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(Boolean))];
+      const bad = emails.find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
+      if (bad) return toast('อีเมลไม่ถูกต้อง: ' + bad, true);
+      const n = Math.floor(Number($('invCount').value));
+      if (emails.length > 200) return toast('สร้างได้ครั้งละไม่เกิน 200 โค้ด', true);
+      if (!emails.length && !(n >= 1 && n <= 200)) return toast('ใส่จำนวนโค้ด 1–200', true);
+      el.disabled = true;
+      try { const m = await A.createInvites(S.cur, emails, n); S.invites = null; toast(`สร้าง ${m} โค้ดแล้ว`); } catch (err) { fail(err); el.disabled = false; return; }
+      return drawInvites();
+    }
+    case 'invite-copy-all': {
+      const t = `คอร์ส: ${S.cur.title}\nเข้าเรียน: ${courseLink(S.cur)}\nโค้ดเชิญ (คนละ 1 โค้ด):\n` + (S.invites || []).filter(x => !x.usedBy).map(x => fmtCode(x.id) + (x.email ? ' — ' + x.email : '')).join('\n');
+      try { await navigator.clipboard.writeText(t); toast('คัดลอกแล้ว'); } catch (err) { toast('คัดลอกไม่ได้ เบราว์เซอร์ไม่อนุญาต', true); }
       return;
     }
     case 'backup': case 'backup-slips': {

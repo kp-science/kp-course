@@ -20,6 +20,7 @@ rules_version = '2';
 //   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
 //   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
 //   /course_rejections/{uid}_{cid}  — เหตุผลที่ไม่อนุมัติคำขอ (ครูเขียน · นักเรียนเจ้าของอ่าน/ลบเมื่อส่งใหม่)
+//   /course_invites/{code}          — โค้ดเชิญ (ครูสร้าง · ใช้ได้ครั้งเดียว · อ่านได้เมื่อรู้โค้ด แต่ค้นรายการไม่ได้)
 //   /course_revoked/{uid}_{cid}     — รายชื่อที่ถูกถอนสิทธิ์ + เหตุผล (ครูเขียน/ลบ · นักเรียนเจ้าของอ่านอย่างเดียว · ไม่ให้สิทธิ์เรียน)
 //   /course_slips/{uid}_{cid}       — รูปสลิปการโอน (JPEG ย่อแล้วเก็บเป็นข้อความ · เห็นเฉพาะเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน)
 //   enrollments / progress / requests เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
@@ -99,15 +100,35 @@ service cloud.firestore {
       }
     }
 
+    // นักเรียนให้สิทธิ์ตัวเองด้วยโค้ดเชิญ: โค้ดต้องยังไม่ถูกใช้ก่อนเขียน และถูกผูกกับบัญชีนี้ในชุดคำสั่งเดียวกัน
+    // (ตรวจสถานะก่อนเขียนด้วย get เพื่อไม่ให้ใช้โค้ดเดิมซ้ำหลังถูกถอนสิทธิ์)
+    function invitePath(code) { return /databases/$(database)/documents/course_invites/$(code); }
+    function redeemingInvite(eid) {
+      let d = request.resource.data;
+      return signedIn()
+        && eid == request.auth.uid + '_' + d.courseId
+        && d.uid == request.auth.uid
+        && d.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'by', 'code', 'createdAt'])
+        && d.email == myEmail()
+        && d.by == 'invite'
+        && d.name is string
+        && d.name.size() <= 200
+        && d.owner == ownerOf(d.courseId)
+        && get(invitePath(d.code)).data.usedBy == ''
+        && get(invitePath(d.code)).data.courseId == d.courseId
+        && getAfter(invitePath(d.code)).data.usedBy == request.auth.uid;
+    }
+
     // ── สิทธิ์เข้าเรียน: id = <uid>_<courseId> ─────
     match /enrollments/{eid} {
       allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
-      allow create: if ownsCourse(request.resource.data.courseId)
+      allow create: if (ownsCourse(request.resource.data.courseId)
         && eid == request.resource.data.uid + '_' + request.resource.data.courseId
         && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'by', 'contact', 'createdAt'])
         && request.resource.data.get('contact', '') is string
         && request.resource.data.get('contact', '').size() <= 100
-        && request.resource.data.owner == ownerOf(request.resource.data.courseId);
+        && request.resource.data.owner == ownerOf(request.resource.data.courseId))
+        || redeemingInvite(eid);
       allow update: if isAdmin();
       allow delete: if isAdmin() || teacherOwns(resource.data);
     }
@@ -180,6 +201,30 @@ service cloud.firestore {
         && request.resource.data.get('contact', '') is string
         && request.resource.data.get('contact', '').size() <= 100
         && request.resource.data.owner == ownerOf(request.resource.data.courseId));
+      // นักเรียนลบรายการของตัวเองได้เมื่อกลับมามีสิทธิ์แล้ว (ใช้โค้ดเชิญใหม่)
+      allow delete: if isAdmin() || teacherOwns(resource.data)
+        || (isMine(resource.data) && exists(/databases/$(database)/documents/enrollments/$(rid)));
+    }
+
+    // ── โค้ดเชิญ: id = ตัวโค้ด ─────────────────────
+    match /course_invites/{code} {
+      allow get: if signedIn();
+      allow list: if isAdmin() || teacherOwns(resource.data);
+      allow create: if ownsCourse(request.resource.data.courseId)
+        && code.size() >= 10
+        && request.resource.data.keys().hasOnly(['courseId', 'owner', 'email', 'usedBy', 'usedEmail', 'by', 'createdAt'])
+        && request.resource.data.owner == ownerOf(request.resource.data.courseId)
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.usedBy == ''
+        && request.resource.data.usedEmail == '';
+      allow update: if isAdmin() || (signedIn()
+        && resource.data.usedBy == ''
+        && (resource.data.email == '' || resource.data.email == myEmail().lower())
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedEmail', 'usedAt'])
+        && request.resource.data.usedBy == request.auth.uid
+        && request.resource.data.usedEmail == myEmail()
+        && existsAfter(/databases/$(database)/documents/enrollments/$(request.auth.uid + '_' + resource.data.courseId)));
       allow delete: if isAdmin() || teacherOwns(resource.data);
     }
 

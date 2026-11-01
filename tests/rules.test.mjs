@@ -3,7 +3,7 @@ import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, limit, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, limit, arrayRemove, writeBatch } from 'firebase/firestore';
 
 const RULES = process.env.RULES_FILE;
 let env;
@@ -236,6 +236,62 @@ test('รายชื่อที่ถอนสิทธิ์: ครูเจ
   await assertFails(deleteDoc(doc(t2(), 'course_progress/s1_c1')));
   await assertFails(deleteDoc(doc(stu(), 'course_progress/s1_c1')));
   await assertSucceeds(deleteDoc(doc(t1(), 'course_progress/s1_c1')));
+});
+
+test('โค้ดเชิญ: ใช้ได้ครั้งเดียวต่อบัญชี · ผูกอีเมลได้ · ใช้ซ้ำหลังถูกถอนไม่ได้ · ค้นรายการไม่ได้', async () => {
+  const CODE = 'ABCDE23456', ZONE = 'ZZZZZ23456', MAIL = 'MAILX23456';
+  const inv = { courseId: 'c1', owner: T1, email: '', usedBy: '', usedEmail: '', by: T1 };
+  // ใครสร้างได้
+  await assertFails(setDoc(doc(stu2(), 'course_invites', CODE), inv));
+  await assertFails(setDoc(doc(t2(), 'course_invites', CODE), inv));
+  await assertFails(setDoc(doc(t1(), 'course_invites', CODE), { ...inv, usedBy: 's2' }));
+  await assertFails(setDoc(doc(t1(), 'course_invites', 'SHORT'), inv));
+  await assertSucceeds(setDoc(doc(t1(), 'course_invites', CODE), inv));
+  await assertSucceeds(setDoc(doc(t1(), 'course_invites', ZONE), { ...inv, courseId: 'c1' }));
+  await assertSucceeds(setDoc(doc(t1(), 'course_invites', MAIL), { ...inv, email: 's1@mail.com' }));
+  // อ่านได้เมื่อรู้โค้ด แต่ค้นรายการไม่ได้
+  await assertSucceeds(getDoc(doc(stu2(), 'course_invites', CODE)));
+  await assertFails(getDoc(doc(guest(), 'course_invites', CODE)));
+  await assertFails(getDocs(collection(stu2(), 'course_invites')));
+  await assertFails(getDocs(query(collection(stu2(), 'course_invites'), where('courseId', '==', 'c1'))));
+  await assertFails(getDocs(query(collection(t2(), 'course_invites'), where('owner', '==', T1))));
+  await assertSucceeds(getDocs(query(collection(t1(), 'course_invites'), where('owner', '==', T1))));
+  const en = (uid, email, code, courseId = 'c1') => ({ uid, email, name: 'N', courseId, owner: courseId === 'c1' ? T1 : T2, by: 'invite', code });
+  const redeem = (db, uid, email, code, courseId = 'c1') => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'enrollments', uid + '_' + courseId), en(uid, email, code, courseId));
+    b.update(doc(db, 'course_invites', code), { usedBy: uid, usedEmail: email });
+    return b.commit();
+  };
+  await env.withSecurityRulesDisabled(async ctx => { await deleteDoc(doc(ctx.firestore(), 'enrollments/s1_c1')); });
+  // สร้างสิทธิ์เองโดยไม่ผูกโค้ด / แก้โค้ดโดยไม่สร้างสิทธิ์ / คอร์สอื่น = ไม่ได้
+  await assertFails(setDoc(doc(stu2(), 'enrollments/s2_c1'), en('s2', 's2@mail.com', CODE)));
+  await assertFails(updateDoc(doc(stu2(), 'course_invites', CODE), { usedBy: 's2', usedEmail: 's2@mail.com' }));
+  await assertFails(setDoc(doc(stu2(), 'enrollments/s2_c1'), { uid: 's2', email: 's2@mail.com', name: 'N', courseId: 'c1', owner: T1, by: T1 }));
+  await assertFails(redeem(stu2(), 's2', 's2@mail.com', CODE, 'c2'));
+  // โค้ดผูกอีเมลอื่น = ไม่ได้
+  await assertFails(redeem(stu2(), 's2', 's2@mail.com', MAIL));
+  // ใช้สำเร็จ แล้วเปิดบทเรียนได้
+  await assertSucceeds(redeem(stu2(), 's2', 's2@mail.com', CODE));
+  await assertSucceeds(getDoc(doc(stu2(), 'courses/c1/lessons/paid')));
+  // คนอื่นใช้โค้ดเดิมไม่ได้
+  await assertFails(redeem(stu(), 's1', 's1@mail.com', CODE));
+  // โค้ดผูกอีเมลตรง = ได้
+  await assertSucceeds(redeem(stu(), 's1', 's1@mail.com', MAIL));
+  // ถูกถอนแล้วใช้โค้ดเดิมซ้ำไม่ได้
+  await assertSucceeds(deleteDoc(doc(t1(), 'enrollments/s2_c1')));
+  await assertFails(redeem(stu2(), 's2', 's2@mail.com', CODE));
+  await assertFails(setDoc(doc(stu2(), 'enrollments/s2_c1'), en('s2', 's2@mail.com', CODE)));
+  await assertFails(getDoc(doc(stu2(), 'courses/c1/lessons/paid')));
+  // โค้ดใหม่ใช้ได้ + ลบรายการถอนสิทธิ์ของตัวเองได้เมื่อมีสิทธิ์แล้ว
+  await assertSucceeds(setDoc(doc(t1(), 'course_revoked/s2_c1'), { uid: 's2', email: 's2@mail.com', name: '', courseId: 'c1', owner: T1, reason: '', by: T1 }));
+  await assertFails(deleteDoc(doc(stu2(), 'course_revoked/s2_c1')));
+  await assertSucceeds(redeem(stu2(), 's2', 's2@mail.com', ZONE));
+  await assertSucceeds(deleteDoc(doc(stu2(), 'course_revoked/s2_c1')));
+  // ลบโค้ด: เฉพาะครูเจ้าของ
+  await assertFails(deleteDoc(doc(stu2(), 'course_invites', CODE)));
+  await assertFails(deleteDoc(doc(t2(), 'course_invites', CODE)));
+  await assertSucceeds(deleteDoc(doc(t1(), 'course_invites', CODE)));
 });
 
 test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {

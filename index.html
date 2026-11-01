@@ -393,6 +393,12 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .lesson-dark .res .btn:not(.solid){background:#2c2c2e;color:var(--on-dark)}
 .lesson-dark .lock{background:#1d1d1f}
 .lock{scroll-margin-top:64px}
+.invite-box{width:min(440px,100%);margin-top:14px;padding-top:16px;border-top:1px solid var(--line);text-align:left}
+.lesson-dark .invite-box{border-top-color:#3a3a3c}
+.invite-box label{display:block;margin-bottom:8px}
+.invite-box .row{display:flex;gap:8px}
+.invite-box input{flex:1;min-width:0;font-size:16px;padding:9px 14px;border-radius:12px;border:1px solid #d2d2d7;background:var(--surface);letter-spacing:.06em}
+.lesson-dark .invite-box input{background:#2c2c2e;border-color:#3a3a3c;color:var(--on-dark)}
 .lock+.player{margin-top:14px}
 .lesson-dark .lock .ic{background:#2c2c2e}
 .lesson-dark .lock h3{color:var(--on-dark)}
@@ -680,7 +686,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=13"></script>
+<script src="course-core.js?v=15"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -1101,7 +1107,9 @@ function lockPanel(c) {
     <div class="field" style="width:min(440px,100%);text-align:left"><label for="reqContact">เบอร์โทรหรือ LINE สำหรับติดต่อกลับ (ไม่บังคับ)</label><input type="text" id="reqContact" maxlength="100" placeholder="เช่น 081-234-5678 หรือ LINE: kp-student"><small class="sub">เห็นเฉพาะครูผู้สอนและแอดมิน</small></div>
     <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
   const rj = !req && S.rejected[c.id];
-  return `<div class="lock">${rj ? `<div class="note" style="width:min(640px,100%);text-align:left;margin-bottom:16px"><b>${rj.kind === 'revoke' ? 'ครูถอนสิทธิ์เรียนคอร์สนี้แล้ว' : 'คำขอครั้งก่อนไม่ผ่าน'}</b><br>${rj.reason ? 'เหตุผลจากครู: ' + esc(rj.reason) : 'ครูไม่ได้ระบุเหตุผล'} · ${rj.kind === 'revoke' ? 'ถ้าคิดว่าผิดพลาด กรุณาติดต่อครูผู้สอนก่อนส่งคำขอใหม่' : 'แก้ไขแล้วส่งใหม่ได้ หรือติดต่อครูผู้สอน'}</div>` : ''}${inner}</div>`;
+  const invite = user ? `<div class="invite-box"><label class="sub" for="inviteCode">มีโค้ดเชิญจากครู? กรอกแล้วเข้าเรียนได้ทันที</label><div class="row"><input type="text" id="inviteCode" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX" aria-label="โค้ดเชิญ"><button class="btn sm" type="button" data-redeem>ใช้โค้ด</button></div></div>`
+    : '<p class="sub">มีโค้ดเชิญจากครู? เข้าสู่ระบบก่อน แล้วกรอกโค้ดในหน้านี้</p>';
+  return `<div class="lock">${rj ? `<div class="note" style="width:min(640px,100%);text-align:left;margin-bottom:16px"><b>${rj.kind === 'revoke' ? 'ครูถอนสิทธิ์เรียนคอร์สนี้แล้ว' : 'คำขอครั้งก่อนไม่ผ่าน'}</b><br>${rj.reason ? 'เหตุผลจากครู: ' + esc(rj.reason) : 'ครูไม่ได้ระบุเหตุผล'} · ${rj.kind === 'revoke' ? 'ถ้าคิดว่าผิดพลาด กรุณาติดต่อครูผู้สอนก่อนส่งคำขอใหม่' : 'แก้ไขแล้วส่งใหม่ได้ หรือติดต่อครูผู้สอน'}</div>` : ''}${inner}${invite}</div>`;
 }
 
 async function renderCourse(cid, n) {
@@ -1295,6 +1303,22 @@ document.addEventListener('click', async e => {
   if (cn) {
     if (!confirm('ยกเลิกคำขอสิทธิ์คอร์สนี้?')) return;
     try { await KPC.cancelRequest(cn.dataset.cancel); delete S.request[cn.dataset.cancel]; toast('ยกเลิกคำขอแล้ว'); route(); } catch (err) { toast('ไม่สำเร็จ: ' + (err.code || err.message), true); }
+    return;
+  }
+  const rd = e.target.closest('[data-redeem]');
+  if (rd) {
+    const input = $('inviteCode'), label = rd.textContent, c = CUR && CUR.c;
+    if (!c || !input.value.trim()) { toast('กรอกโค้ดเชิญก่อน', true); input.focus(); return; }
+    rd.disabled = true; rd.textContent = 'กำลังตรวจ…';
+    try {
+      await KPC.redeemInvite(c, input.value);
+      delete S.request[c.id]; S.rejected[c.id] = null; S.progress[c.id] = await KPC.getProgress(c.id);
+      toast('ใช้โค้ดสำเร็จ เข้าเรียนได้เลย');
+      route();
+    } catch (err) {
+      rd.disabled = false; rd.textContent = label;
+      const known = !err.code; toast(known ? err.message : err.code === 'permission-denied' ? 'ใช้โค้ดนี้ไม่ได้ อาจถูกใช้ไปแล้ว' : 'เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', true);
+    }
     return;
   }
   if (e.target.closest('[data-enroll]')) {
