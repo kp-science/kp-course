@@ -134,6 +134,7 @@ td small{color:var(--muted)}
 .payqr .qh{background:#113566;color:#fff;border-radius:8px;font:600 12px var(--head);padding:4px;margin-bottom:6px}
 .paid{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13.5px;background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:5px 12px}
 .paid b{color:var(--text)}
+.slip-view img{display:block;max-width:min(100%,420px);max-height:70vh;border-radius:12px;margin-top:10px}
 @media (max-width:640px){.paybox{grid-template-columns:1fr}.payqr{max-width:200px}}
 .danger-zone h3{color:var(--bad)}
 /* สมาชิก */
@@ -202,7 +203,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=9"></script>
+<script src="course-core.js?v=10"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -341,7 +342,8 @@ function reqList(list, showCourse) {
   return list.map(r => `<div class="req"><span class="avatar">${esc(initial(r.name || r.email))}</span><div class="bd">
       <b>${esc(r.name || r.email)}</b> ${r.name ? `<small>${esc(r.email)}</small>` : ''}<br>
       <small>${showCourse ? '📚 ' + esc((courseOf(r.courseId) || {}).title || r.courseId) + ' · ' : ''}${ago(r.createdAt)}</small>
-      ${r.amount ? `<div class="paid">💳 แจ้งโอน <b>${KPC.baht(r.amount)}</b>${r.payRef ? ' · ' + esc(r.payRef) : ''} — เช็กยอดในบัญชีก่อนอนุมัติ</div>` : ''}
+      ${r.amount ? `<div class="paid">💳 แจ้งโอน <b>${KPC.baht(r.amount)}</b>${r.payRef ? ' · ' + esc(r.payRef) : ''} — เช็กยอดในบัญชีก่อนอนุมัติ</div>
+        <div style="margin-top:8px"><button class="btn xs" type="button" data-slip="${esc(r.id)}">ดูสลิป</button></div><div class="slip-view" data-slipv="${esc(r.id)}"></div>` : ''}
       ${r.note ? `<div class="q">“${esc(r.note)}”</div>` : ''}</div>
       <div class="acts"><button class="btn ok xs" type="button" data-approve="${esc(r.id)}">✓ อนุมัติ</button><button class="btn bad xs" type="button" data-reject="${esc(r.id)}" aria-label="ไม่อนุมัติ">✕</button></div></div>`).join('');
 }
@@ -451,7 +453,8 @@ function drawMember(key) {
     const pct = c ? pctOf(p, c) : 0, last = c && (c.outline || []).find(l => l.id === p.last);
     return `<div class="lrow"><span class="t"><b>${esc(c ? c.title : e.courseId)}</b><small><span>ได้สิทธิ์ ${fmtTime(e.createdAt)}</span>${last ? `<span>· ล่าสุด: ${esc(last.title)}</span>` : ''}${p.lastAt ? `<span>· ${ago(p.lastAt)}</span>` : ''}</small></span>
       <span class="bar"><i style="width:${pct}%"></i></span><span class="mono" style="width:44px;text-align:right">${pct}%</span>
-      ${c ? `<button class="btn bad xs" type="button" data-mrevoke="${esc(m.uid)}|${esc(e.courseId)}">ถอนสิทธิ์</button>` : ''}</div>`;
+      ${c && c.price > 0 ? `<button class="btn xs" type="button" data-slip="${esc(m.uid + '_' + e.courseId)}">ดูสลิป</button>` : ''}
+      ${c ? `<button class="btn bad xs" type="button" data-mrevoke="${esc(m.uid)}|${esc(e.courseId)}">ถอนสิทธิ์</button>` : ''}</div><div class="slip-view" data-slipv="${esc(m.uid + '_' + e.courseId)}"></div>`;
   }).join('');
   const st = m.staff;
   $('main').innerHTML = `
@@ -762,12 +765,24 @@ document.addEventListener('click', async e => {
   if (d.edit) { S.editLid = d.edit; return drawLessons(); }
   if (d.up) return moveLesson(Number(d.up), -1);
   if (d.down) return moveLesson(Number(d.down), 1);
+  if (d.slip) {
+    const box = document.querySelector(`[data-slipv="${CSS.escape(d.slip)}"]`); if (!box) return;
+    if (box.firstChild) { box.innerHTML = ''; el.textContent = 'ดูสลิป'; return; }
+    el.disabled = true;
+    const s = await A.slip(d.slip);
+    el.disabled = false;
+    if (!s) { box.innerHTML = '<small>ไม่มีสลิปแนบมา</small>'; return; }
+    box.innerHTML = `<img src="${esc(s.image)}" alt="สลิปการโอน">`;
+    el.textContent = 'ซ่อนสลิป';
+    return;
+  }
   if (d.approve || d.reject) {
     const r = S.requests.find(x => x.id === (d.approve || d.reject)); if (!r) return;
     const c = courseOf(r.courseId);
     el.disabled = true;
     try {
       if (d.approve) { if (!c) throw new Error('ไม่พบคอร์สของคำขอนี้'); await A.grant({ uid: r.uid, email: r.email, name: r.name }, c); }
+      if (d.reject) await A.dropSlip(r.id);   // อนุมัติแล้วเก็บสลิปไว้เป็นหลักฐาน
       await A.dropRequest(r.id);
       toast(d.approve ? `✓ อนุมัติ ${r.name || r.email} แล้ว` : `ปฏิเสธคำขอของ ${r.name || r.email}`);
       await reloadCourseData();

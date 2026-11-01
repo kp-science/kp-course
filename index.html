@@ -300,7 +300,7 @@
 .topbar.dark .logo-mark{background:#f5f5f7;color:#000}.topbar.dark .logo-sub{color:var(--on-dark-2)}
 .topbar.dark .btn.ghost{color:#2997ff}
 .cine-hero{position:relative;min-height:calc(100svh - 52px);background:#000;color:var(--on-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:90px 22px 120px}
-.cine-hero .orb{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(90px);opacity:.38;pointer-events:none}
+.cine-hero .orb{position:absolute;width:70vmax;height:70vmax;border-radius:50%;opacity:.38;pointer-events:none}
 .cine-hero .orb.a{background:radial-gradient(circle,#ff5f6d,transparent 60%);top:-30vmax;left:-20vmax;animation:apDrift 18s ease-in-out infinite alternate}
 .cine-hero .orb.b{background:radial-gradient(circle,#a66cff,transparent 60%);bottom:-35vmax;right:-25vmax;animation:apDrift 22s ease-in-out infinite alternate-reverse}
 @keyframes apDrift{100%{transform:translate(8vmax,6vmax) scale(1.15)}}
@@ -461,6 +461,7 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .kc:hover .wv-g{transform:scaleY(1.2)}
 .wv{position:absolute;left:0;top:0;width:200%;height:100%;display:block;overflow:visible;animation:wvFlow var(--t,10s) linear infinite;animation-delay:var(--o,0s);will-change:transform}
 .wv.r{animation-direction:reverse}
+.kc-cover.has-img .wv{animation:none;will-change:auto}   /* มีภาพปกทับแล้ว ไม่ต้องวาดคลื่นซ้ำทุกเฟรม */
 @keyframes wvFlow{to{transform:translate3d(-50%,0,0)}}
 .wave-band{position:absolute;left:0;right:0;bottom:0;height:clamp(150px,36%,340px);pointer-events:none;opacity:.6}
 .kc-tag{position:absolute;top:12px;right:12px;z-index:1;font:500 12.5px/1.5 var(--body);padding:4px 11px;border-radius:980px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
@@ -520,6 +521,9 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .pay-s ol{padding-left:1.2em;color:var(--text2);font-size:15px;display:flex;flex-direction:column;gap:4px}
 .price{font:700 24px var(--head);color:var(--text)}
 .price small{font:400 15px var(--body);color:var(--muted);margin-left:8px;letter-spacing:0}
+
+/* รูปสลิปตัวอย่างก่อนส่ง */
+.slip-prev img{display:block;max-width:100%;max-height:220px;border-radius:12px;margin:10px 0 2px}
 
 /* หน้าต่างข้อมูลคอร์ส */
 .info-box{max-width:620px}
@@ -674,7 +678,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=9"></script>
+<script src="course-core.js?v=10"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -696,7 +700,8 @@ function wavePath(y, a, P, W, fillTo) {
 }
 function coverArt(c) {
   // ภาพปกของครู (รองรับลิงก์แชร์ Google Drive) วางทับคลื่น — โหลดไม่ได้ก็เห็นคลื่นแทน
-  const img = KPC.imgSrc(c.cover) ? `<img class="art" src="${esc(KPC.imgSrc(c.cover))}" alt="" loading="lazy" referrerpolicy="no-referrer" style="object-fit:cover" onerror="this.remove()">` : '';
+  // การ์ดกว้างไม่เกิน ~360px ใช้รูป Drive ขนาด 800 พอ
+  const img = KPC.imgSrc(c.cover) ? `<img class="art" src="${esc(KPC.imgSrc(c.cover).replace('&sz=w1600', '&sz=w800'))}" alt="" loading="lazy" referrerpolicy="no-referrer" style="object-fit:cover" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()">` : '';
   const [a, b] = palOf(c), h = seedOf(c.id), id = 'wf' + h.toString(36), W = 640, H = 200, v = n => h % n;
   const fill = (i, col, op, y, amp, P, t, rev) => `<svg class="wv${rev ? ' r' : ''}" style="--t:${t}s;--o:-${v(9) + i}s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity="${op}"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs><path d="${wavePath(y, amp, P, W, H)}" fill="url(#${id}${i})"/></svg>`;
   const line = (i, col, op, y, amp, P, t, rev) => `<svg class="wv${rev ? ' r' : ''}" style="--t:${t}s;--o:-${v(7) + i}s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${wavePath(y, amp, P, W)}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
@@ -807,6 +812,18 @@ function waveIn() {
     kids.forEach(k => { if (k.classList.contains('reveal')) k.style.setProperty('--d', Math.round((k.offsetLeft - x0) / w) * 120 + Math.min(2, Math.round((k.offsetTop - y0) / h)) * 70 + 'ms'); });
   });
 }
+
+// แนบสลิป: ย่อรูปทันที เก็บผลไว้กับช่องอัปโหลด (วาดหน้าใหม่แล้วหายไปด้วย ไม่ส่งผิดคอร์ส)
+document.addEventListener('change', e => {
+  if (e.target.id !== 'paySlip') return;
+  const input = e.target, box = $('slipPrev'), file = input.files[0];
+  box.innerHTML = '';
+  if (!file) { input._slip = null; return; }
+  input._slip = KPC.slipImage(file).then(url => {
+    if (input.isConnected) box.innerHTML = `<img src="${esc(url)}" alt="รูปสลิปที่เลือก">`;
+    return url;
+  }).catch(err => { toast(err.message, true); input.value = ''; return null; });
+});
 
 /* ===================== หน้าแรก ===================== */
 function renderHome() {
@@ -1066,9 +1083,10 @@ function lockPanel(c) {
   else if (req) inner = `<div class="ic">⏳</div><h3>${req.amount ? `แจ้งโอน ${KPC.baht(req.amount)} แล้ว รอครูตรวจยอด` : 'ส่งคำขอแล้ว รอครูอนุมัติ'}</h3><p>ส่งเมื่อ ${esc(fmtDate(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b>${req.payRef ? ` · อ้างอิง “${esc(req.payRef)}”` : ''} พอครูอนุมัติ บทเรียนจะเปิดให้ทันที</p><div class="row"><button class="btn solid sm" type="button" data-recheck>ตรวจสิทธิ์อีกครั้ง</button><button class="btn bad sm" type="button" data-cancel="${esc(c.id)}">ยกเลิกคำขอ</button></div>`;
   else if (paid) inner = `<div class="ic">💳</div><h3>ชำระ ${KPC.baht(c.price)} เพื่อเรียนคอร์สนี้</h3><p>จ่ายครั้งเดียว เปิดทุกบท · ครูตรวจยอดแล้วอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
     <div class="pay"><div class="qr" id="payQr"><div class="qr-h"><span>Thai QR · พร้อมเพย์</span></div><div class="qr-b"><div class="skel" style="width:150px;height:150px"></div></div></div>
-      <div class="pay-s"><ol><li>สแกน QR ด้วยแอปธนาคาร (ยอดเงินใส่ไว้ให้แล้ว)</li><li>โอนเสร็จ กรอกเวลาโอน หรือ 4 ตัวท้ายเลขอ้างอิง</li><li>กด “แจ้งชำระเงินแล้ว” แล้วรอครูอนุมัติ</li></ol>
+      <div class="pay-s"><ol><li>สแกน QR ด้วยแอปธนาคาร (ยอดเงินใส่ไว้ให้แล้ว)</li><li>โอนเสร็จ แคปหน้าจอสลิป แล้วแนบรูปด้านล่าง</li><li>กด “แจ้งชำระเงินแล้ว” แล้วรอครูอนุมัติ</li></ol>
         <div id="payNote"></div>
-        <div class="field"><label for="payRef">เวลาโอน / เลขอ้างอิง</label><input type="text" id="payRef" maxlength="100" placeholder="เช่น 14:05 · ref 8A21"></div>
+        <div class="field"><label for="paySlip">รูปสลิปการโอน</label><input type="file" id="paySlip" accept="image/*"><div class="slip-prev" id="slipPrev"></div><small class="sub">สลิปนี้เห็นเฉพาะคุณ ครูผู้สอน และแอดมิน</small></div>
+        <div class="field"><label for="payRef">เวลาโอน / เลขอ้างอิง (ไม่บังคับ)</label><input type="text" id="payRef" maxlength="100" placeholder="เช่น 14:05 · ref 8A21"></div>
         <div class="field"><label for="reqNote">ชื่อ · ห้อง · โรงเรียน (ไม่บังคับ)</label><input type="text" id="reqNote" maxlength="300" placeholder="ด.ญ. ใจดี เรียนดี ม.4/2"></div>
         <button class="btn solid" type="button" data-request="${esc(c.id)}" data-paid>แจ้งชำระเงินแล้ว</button></div></div>`;
   else inner = `<div class="ic">🙋</div><h3>ขอสิทธิ์เรียนคอร์สนี้</h3><p>บอกครูสั้น ๆ ว่าเป็นใคร แล้วกดขอสิทธิ์ ครูจะอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
@@ -1247,10 +1265,11 @@ document.addEventListener('click', async e => {
   if (rq) {
     const c = S.courses.find(x => x.id === rq.dataset.request) || (CUR && CUR.c);
     const paid = rq.dataset.paid !== undefined, ref = (($('payRef') || {}).value || '').trim();
-    if (paid && !ref) { toast('กรอกเวลาโอน หรือเลขอ้างอิงก่อน', true); $('payRef').focus(); return; }
     const label = rq.textContent; rq.disabled = true; rq.textContent = 'กำลังส่ง…';
     try {
-      await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref } : null);
+      const image = paid ? await ($('paySlip') || {})._slip : null;   // รอให้ย่อรูปเสร็จ
+      if (paid && !image) { rq.disabled = false; rq.textContent = label; toast('แนบรูปสลิปการโอนก่อน', true); $('paySlip').focus(); return; }
+      await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref, image } : null);
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
       toast(paid ? 'แจ้งชำระเงินแล้ว รอครูตรวจยอด' : 'ส่งคำขอถึงครูแล้ว');
       route();

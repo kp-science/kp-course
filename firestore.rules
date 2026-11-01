@@ -19,6 +19,7 @@ rules_version = '2';
 //   /course_progress/{uid}_{cid}    — ความคืบหน้า (นักเรียนเขียนของตัวเอง)
 //   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
 //   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
+//   /course_slips/{uid}_{cid}       — รูปสลิปการโอน (JPEG ย่อแล้วเก็บเป็นข้อความ · เห็นเฉพาะเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน)
 //   enrollments / progress / requests เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
 // ═══════════════════════════════════════════════════════════════
 
@@ -136,6 +137,30 @@ service cloud.firestore {
         && request.resource.data.owner == ownerOf(request.resource.data.courseId);
       allow update: if isAdmin();
       allow delete: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
+    }
+
+    // ── สลิปการโอน: id = <uid>_<courseId> ─────────
+    // นักเรียนแก้/ลบได้เฉพาะตอนคำขอยังรออยู่ — อนุมัติแล้วเป็นหลักฐาน แก้ไม่ได้
+    function validSlip(rid) {
+      let d = request.resource.data;
+      return signedIn()
+        && rid == request.auth.uid + '_' + d.courseId
+        && d.uid == request.auth.uid
+        && d.keys().hasOnly(['uid', 'courseId', 'owner', 'image', 'createdAt'])
+        && d.image is string
+        && d.image.size() <= 500000
+        && d.image[0:23] == 'data:image/jpeg;base64,'
+        && courseDoc(d.courseId).published == true
+        && d.owner == ownerOf(d.courseId);
+    }
+    match /course_slips/{rid} {
+      allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
+      allow create: if validSlip(rid);
+      allow update: if isAdmin() || (validSlip(rid)
+        && existsAfter(/databases/$(database)/documents/course_requests/$(rid))
+        && !enrolled(request.resource.data.courseId));
+      allow delete: if isAdmin() || teacherOwns(resource.data)
+        || (isMine(resource.data) && exists(/databases/$(database)/documents/course_requests/$(rid)));
     }
 
     match /{document=**} {

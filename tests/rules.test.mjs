@@ -183,6 +183,39 @@ test('แจ้งชำระเงิน: ส่ง amount + payRef ได้ 
   await assertFails(getDoc(doc(db, 'courses/c1/lessons/paid')));
 });
 
+test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {
+  const IMG = 'data:image/jpeg;base64,AAAA';
+  const slip = { uid: 's2', courseId: 'c1', owner: T1, image: IMG };
+  const s2 = stu2();
+  // รูปแบบต้องถูก
+  await assertFails(setDoc(doc(s2, 'course_slips/s2_c1'), { ...slip, image: 'data:text/html;base64,AAAA' }));
+  await assertFails(setDoc(doc(s2, 'course_slips/s2_c1'), { ...slip, image: 'data:image/jpeg;base64,' + 'A'.repeat(500000) }));
+  await assertFails(setDoc(doc(s2, 'course_slips/s2_c1'), { ...slip, owner: T2 }));
+  await assertFails(setDoc(doc(s2, 'course_slips/s2_c1'), { ...slip, extra: 1 }));
+  await assertFails(setDoc(doc(s2, 'course_slips/s1_c1'), slip));          // id คนอื่น
+  await assertFails(setDoc(doc(guest(), 'course_slips/s2_c1'), slip));
+  await assertSucceeds(setDoc(doc(s2, 'course_slips/s2_c1'), slip));
+  // อ่าน
+  await assertSucceeds(getDoc(doc(s2, 'course_slips/s2_c1')));
+  await assertSucceeds(getDoc(doc(t1(), 'course_slips/s2_c1')));
+  await assertSucceeds(getDoc(doc(admin(), 'course_slips/s2_c1')));
+  await assertFails(getDoc(doc(t2(), 'course_slips/s2_c1')));
+  await assertFails(getDoc(doc(stu(), 'course_slips/s2_c1')));
+  await assertFails(getDoc(doc(guest(), 'course_slips/s2_c1')));
+  await assertFails(getDocs(query(collection(t2(), 'course_slips'))));
+  // ระหว่างรออนุมัติ แก้/ลบได้ (มีคำขอ s2_c1 จาก beforeEach)
+  await assertSucceeds(setDoc(doc(s2, 'course_slips/s2_c1'), { ...slip, image: IMG + 'BB' }));
+  // อนุมัติแล้ว (มีสิทธิ์ + คำขอถูกลบ): นักเรียนแก้/ลบไม่ได้
+  await env.withSecurityRulesDisabled(async ctx => {
+    await deleteDoc(doc(ctx.firestore(), 'course_requests/s2_c1'));
+    await setDoc(doc(ctx.firestore(), 'enrollments/s2_c1'), { uid: 's2', courseId: 'c1', owner: T1 });
+  });
+  await assertFails(setDoc(doc(s2, 'course_slips/s2_c1'), { ...slip, image: IMG + 'CC' }));
+  await assertFails(deleteDoc(doc(s2, 'course_slips/s2_c1')));
+  await assertFails(deleteDoc(doc(t2(), 'course_slips/s2_c1')));
+  await assertSucceeds(deleteDoc(doc(t1(), 'course_slips/s2_c1')));
+});
+
 // ── แอดมิน ──
 test('admin: ทำได้ทุกอย่าง + จัดการครู', async () => {
   const db = admin();

@@ -12,6 +12,7 @@
 //    enrollments/{uid}_{cid}       { uid, email, name, courseId, owner, by, createdAt }  สิทธิ์เข้าเรียน
 //    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
 //    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, amount?, payRef?, createdAt }
+//    course_slips/{uid}_{cid}      { uid, courseId, owner, image (data URL JPEG ≤ 500 KB), createdAt }
 //    courses/{cid}.price           ราคา (บาท · 0/ไม่มี = ฟรี) · courses/{cid}/meta/pay { promptpay, name, note } อ่านได้เมื่อล็อกอิน
 // ============================================================
 (function (W) {
@@ -383,13 +384,34 @@ KPC.getMyRequest = async function (cid) {
   } catch (e) { return null; }
 };
 
-// pay = { ref } เมื่อเป็นคอร์สมีราคา (แจ้งชำระเงิน) — ครูตรวจยอดในบัญชีแล้วอนุมัติเอง
+// ย่อรูปสลิปในเครื่องให้เก็บใน Firestore ได้ (แผนฟรีไม่มี Cloud Storage) → data URL JPEG ไม่เกิน ~400 KB
+KPC.slipImage = async function (file) {
+  if (!file || !/^image[/]/.test(file.type)) throw new Error('กรุณาเลือกไฟล์รูปภาพ');
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('เปิดรูปนี้ไม่ได้ ลองใช้ไฟล์ JPG หรือ PNG')); i.src = url; });
+    for (const [side, q] of [[1400, .75], [1100, .7], [900, .6], [700, .5]]) {
+      const k = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      const out = c.toDataURL('image/jpeg', q);
+      if (out.length <= 400000) return out;
+    }
+    throw new Error('รูปใหญ่เกินไป ลองครอปเฉพาะสลิป');
+  } finally { URL.revokeObjectURL(url); }
+};
+
+// pay = { ref, image } เมื่อเป็นคอร์สมีราคา (แจ้งชำระเงิน + สลิป) — ครูตรวจยอดในบัญชีแล้วอนุมัติเอง
 KPC.requestAccess = function (c, note, pay) {
   const u = KPC.user(); if (!u) return Promise.reject(new Error('ยังไม่ได้เข้าสู่ระบบ'));
   const data = { uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '',
     note: String(note || '').slice(0, 300), createdAt: FS().serverTimestamp() };
   if (pay) { data.amount = Number(c.price) || 0; data.payRef = String(pay.ref || '').slice(0, 100); }
-  return col('course_requests').doc(pid(u.uid, c.id)).set(data);
+  if (!pay) return col('course_requests').doc(pid(u.uid, c.id)).set(data);
+  const b = db.batch();   // สลิปกับคำขอเข้าพร้อมกัน ครูจะไม่เห็นคำขอที่สลิปหาย
+  b.set(col('course_slips').doc(pid(u.uid, c.id)), { uid: u.uid, courseId: c.id, owner: c.owner || '', image: pay.image, createdAt: FS().serverTimestamp() });
+  b.set(col('course_requests').doc(pid(u.uid, c.id)), data);
+  return b.commit();
 };
 
 /* ---------- ข้อมูลรับเงิน: courses/{cid}/meta/pay (อ่านได้เฉพาะคนที่ล็อกอิน) ---------- */
@@ -397,7 +419,11 @@ KPC.getPayInfo = async function (cid) {
   try { const s = await col('courses').doc(cid).collection('meta').doc('pay').get(); return s.exists ? s.data() : null; }
   catch (e) { return null; }
 };
-KPC.cancelRequest = cid => col('course_requests').doc(pid(KPC.uid(), cid)).delete();
+// ลบสลิปก่อนคำขอ (rules ให้นักเรียนลบสลิปได้เมื่อคำขอยังอยู่) · คำขอคอร์สฟรีไม่มีสลิป จึงไม่สนใจ error
+KPC.cancelRequest = async cid => {
+  await col('course_slips').doc(pid(KPC.uid(), cid)).delete().catch(() => {});
+  return col('course_requests').doc(pid(KPC.uid(), cid)).delete();
+};
 
 /* ===================== ฝั่งครู / แอดมิน =====================
    ครู: ทุกคำค้นใส่ where('owner','==',อีเมลตัวเอง) — rules อนุญาตเฉพาะแบบนี้
@@ -445,6 +471,9 @@ KPC.admin = {
   requests: async cid => docs(await (cid ? mine(col('course_requests')).where('courseId', '==', cid) : mine(col('course_requests'))).get())
     .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0)),
   dropRequest: rid => col('course_requests').doc(rid).delete(),
+  // สลิป: โหลดเมื่อกดดูเท่านั้น (ไม่มี/ไม่มีสิทธิ์ = null) · อนุมัติแล้วเก็บไว้เป็นหลักฐาน · ไม่อนุมัติ = ลบ
+  slip: async rid => { try { const s = await col('course_slips').doc(rid).get(); return s.exists ? s.data() : null; } catch (e) { return null; } },
+  dropSlip: rid => col('course_slips').doc(rid).delete().catch(() => {}),
 
   progress: async cid => docs(await (cid ? mine(col('course_progress')).where('courseId', '==', cid) : mine(col('course_progress'))).get()),
 
@@ -459,7 +488,7 @@ KPC.admin = {
   // ลบข้อมูลของสมาชิกในเว็บคอร์ส (สิทธิ์ · ความคืบหน้า · คำขอ · บัญชีนักเรียน) — บัญชีล็อกอินยังอยู่ ถ้าเข้ามาใหม่จะเริ่มจากว่าง
   deleteMember: async uid => {
     const refs = [col('students').doc(uid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
     const b = db.batch(); refs.forEach(r => b.delete(r)); await b.commit();
     return refs.length;
   },
@@ -471,7 +500,7 @@ KPC.admin = {
   reassign: async (cid, owner) => {
     owner = lower(owner);
     const refs = [col('courses').doc(cid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests']) {
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips']) {
       (await col(name).where('courseId', '==', cid).get()).docs.forEach(d => refs.push(d.ref));
     }
     for (let i = 0; i < refs.length; i += 400) {
