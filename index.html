@@ -392,6 +392,8 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .lesson-dark .res b{color:var(--on-dark)}.lesson-dark .res small{color:var(--on-dark-2)}
 .lesson-dark .res .btn:not(.solid){background:#2c2c2e;color:var(--on-dark)}
 .lesson-dark .lock{background:#1d1d1f}
+.lock{scroll-margin-top:64px}
+.lock+.player{margin-top:14px}
 .lesson-dark .lock .ic{background:#2c2c2e}
 .lesson-dark .lock h3{color:var(--on-dark)}
 .lesson-dark .lock p,.lesson-dark .lock .hand{color:var(--on-dark-2)}
@@ -1150,6 +1152,10 @@ function head(c, i) {
   else if (track) side = `<span class="prog" id="hdrProg">${progTxt(c)}</span>`;
   else if (!ok && c.price > 0) side = `<span class="price">${KPC.baht(c.price)}</span>${ff >= 0 && i !== ff ? `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>` : ''}`;
   else if (!ok && ff >= 0 && i !== ff) side = `<a class="btn sm" href="${courseUrl(c, ff + 1)}">ลองบทฟรี</a>`;
+  // ปุ่มสมัครเรียน: ผู้เยี่ยมชม = สมัครบัญชี · ล็อกอินแล้ว = เปิดฟอร์มขอสิทธิ์/แจ้งโอน
+  if (!ok) side += !user ? '<button class="btn solid sm" type="button" data-login="register">สมัครเรียน</button>'
+    : S.request[c.id] ? '<button class="btn sm" type="button" data-enroll>รอครูอนุมัติ</button>'
+    : '<button class="btn solid sm" type="button" data-enroll>สมัครเรียน</button>';
   return `${crumb()}
     <div class="lhead"><h1>${esc(c.title)}${c.published === false ? ' <span class="pill warn">ร่าง</span>' : ''}</h1>${side}<button class="btn sm ghost" type="button" data-info>ข้อมูลคอร์ส</button></div>`;
 }
@@ -1289,6 +1295,16 @@ document.addEventListener('click', async e => {
   if (cn) {
     if (!confirm('ยกเลิกคำขอสิทธิ์คอร์สนี้?')) return;
     try { await KPC.cancelRequest(cn.dataset.cancel); delete S.request[cn.dataset.cancel]; toast('ยกเลิกคำขอแล้ว'); route(); } catch (err) { toast('ไม่สำเร็จ: ' + (err.code || err.message), true); }
+    return;
+  }
+  if (e.target.closest('[data-enroll]')) {
+    // บทล็อกมีฟอร์มอยู่แล้ว · บทฟรีวางฟอร์มไว้บนสุดของบทเรียน (คลิปไม่โหลดใหม่)
+    if (!document.querySelector('.lock')) {
+      const col = document.querySelector('.course > div'); if (!col || !CUR) return;
+      col.insertAdjacentHTML('afterbegin', lockPanel(CUR.c));
+      if ($('payQr')) fillPay(CUR.c);
+    }
+    document.querySelector('.lock').scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
     return;
   }
   if (e.target.closest('[data-recheck]')) { recheck(); return; }
