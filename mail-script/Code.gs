@@ -9,7 +9,7 @@
 var PROJECT = 'kp-course';
 var API_KEY = 'AIzaSyA1j8oFaZR33GIxaGccBzd1j65GrhnbrcY';
 var ADMIN = 'komanepapato@gmail.com';
-var SITE = 'https://kp-science.github.io/kp-course/';
+var SITE = 'https://course.kpscience.com/';
 
 // actor: owner = ครูเจ้าของคอร์สหรือแอดมิน · admin = แอดมิน · self = เจ้าของเอกสาร (นักเรียน)
 var TYPES = {

@@ -1,6 +1,6 @@
 # คำสั่งประจำโปรเจกต์ — KP Course (เว็บคอร์สออนไลน์)
 
-เว็บ: https://kp-science.github.io/kp-course/ · repo: https://github.com/kp-science/kp-course (public · GitHub Pages จาก `main`)
+เว็บ: https://course.kpscience.com/ (โดเมน `kpscience.com` จดที่ Cloudflare · CNAME ชี้ `kp-science.github.io` แบบ DNS only · ลิงก์เดิม kp-science.github.io/kp-course/ redirect มาที่นี่) · repo: https://github.com/kp-science/kp-course (public · GitHub Pages จาก `main`)
 **แยกจากเว็บ simulation** (`~/Documents/GitHub/physics-simulations`) ทั้งตัวเว็บและฐานข้อมูล — ไม่ใช้ `kp-auth.js` และไม่ใช้ Firebase `kp-science-f11ff`
 
 ## ⚡ เริ่ม session ใหม่
