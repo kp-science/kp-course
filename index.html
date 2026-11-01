@@ -416,7 +416,8 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .msg .top .nbadge{margin:0}
 .msg .top small{color:var(--on-dark-2);font-size:13px}
 .msg h3{font:600 17px/1.45 var(--head);margin-top:6px}
-.msg p{color:var(--on-dark-2);font-size:15px;line-height:1.55;margin-top:2px;overflow-wrap:anywhere}
+.msg p{color:var(--on-dark-2);font-size:15px;line-height:1.55;margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg .pill.info{background:rgba(10,132,255,.2);color:#7cc4ff}
 .msg .pill.ok{background:rgba(48,209,88,.16);color:#5fe08a}
 .msg .pill.bad{background:rgba(255,69,58,.16);color:#ff8a82}
 .alert-chip{font-size:13.5px;padding:6px 14px;text-decoration:none}
@@ -719,7 +720,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=3"></script>
-<script src="course-core.js?v=19"></script>
+<script src="course-core.js?v=20"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -761,13 +762,19 @@ function ring(pct, s) {
 const medal = pct => pct >= 100 ? '<span class="medal done">เรียนครบแล้ว!</span>' : pct >= 75 ? '<span class="medal">อีกนิดเดียว</span>' : pct >= 50 ? '<span class="medal">ผ่านครึ่งทางแล้ว</span>' : pct >= 25 ? '<span class="medal">เริ่มได้สวย</span>' : '';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, alerts: {}, threads: [], support: null, lessonCache: {} };
+const S = { courses: null, listErr: '', progress: {}, request: {}, rejected: {}, alerts: {}, threads: [], support: null, news: [], lessonCache: {} };
 let renderSeq = 0, CUR = null;
 
+// ประกาศล่าสุดของคอร์สที่เรียนอยู่ (ไม่รวมคอร์สที่ตัวเองสอน)
+async function loadNews() {
+  const mine = (S.courses || []).filter(c => KPC.canCourse(c.id, c) && !KPC.ownsCourse(c));
+  const sets = await Promise.all(mine.map(c => KPC.courseNews(c.id).then(l => l.map(n => ({ c, n }))).catch(() => [])));
+  S.news = sets.flat();
+}
 // แจ้งเตือนสำหรับครู/แอดมิน: คำขอที่รออนุมัติ + นักเรียนใหม่ของแต่ละคอร์ส
 async function loadAlerts() {
-  S.alerts = {}; S.threads = []; S.support = null;
-  if (KPC.user()) [S.threads, S.support] = await Promise.all([KPC.myThreads().catch(() => []), KPC.mySupport()]);
+  S.alerts = {}; S.threads = []; S.support = null; S.news = [];
+  if (KPC.user()) [S.threads, S.support] = await Promise.all([KPC.myThreads().catch(() => []), KPC.mySupport(), loadNews()]);
   if (!KPC.isStaff()) return;
   const slot = id => S.alerts[id] = S.alerts[id] || { req: 0, fresh: 0, msg: 0 };
   try {
@@ -1161,8 +1168,9 @@ function inboxItems() {
   });
   S.threads.forEach(t => {
     const c = (S.courses || []).find(x => x.id === t.courseId);
-    out.push({ c: c || { id: t.courseId, title: t.courseId }, thread: t, tone: t.lastBy === 'student' ? 'warn' : 'ok', label: t.lastBy === 'student' ? 'รอครูตอบ' : t.lastBy === 'admin' ? 'แอดมินตอบแล้ว' : 'ครูตอบแล้ว', text: t.lastText, at: t.lastAt, notify: false, unread: t.unreadStudent, chat: '#/chat/' + encodeURIComponent(t.courseId) });
+    out.push({ c: c || { id: t.courseId, title: t.courseId }, thread: t, tone: t.lastBy === 'student' ? 'warn' : 'ok', label: t.lastBy === 'student' ? 'รอครูตอบ' : t.lastBy === 'admin' ? 'ข้อความจากแอดมิน' : 'ข้อความจากครู', text: t.lastText, at: t.lastAt, notify: false, unread: t.unreadStudent, chat: '#/chat/' + encodeURIComponent(t.courseId) });
   });
+  S.news.forEach(({ c, n }) => out.push({ c, tone: 'info', label: 'ประกาศ', text: n.text, at: n.createdAt, notify: true }));
   if (S.support) out.push({ c: { title: 'ติดต่อแอดมิน' }, thread: S.support, tone: S.support.lastBy === 'admin' ? 'ok' : 'warn', label: S.support.lastBy === 'admin' ? 'แอดมินตอบแล้ว' : 'รอแอดมินตอบ', text: S.support.lastText, at: S.support.lastAt, notify: false, unread: S.support.unreadStudent, chat: '#/support' });
   return out.sort((a, b) => secOf(b.at) - secOf(a.at));
 }
@@ -1175,7 +1183,7 @@ async function renderInbox() {
   document.title = 'กล่องข้อความ · KP Science';
   setNav('inbox', true);
   const seq = renderSeq;
-  [S.threads, S.support] = await Promise.all([KPC.myThreads().catch(() => S.threads), KPC.mySupport()]);   // เปิดกล่องแล้วเห็นคำตอบล่าสุด
+  [S.threads, S.support] = await Promise.all([KPC.myThreads().catch(() => S.threads), KPC.mySupport(), loadNews()]);   // เปิดกล่องแล้วเห็นข้อความล่าสุด
   if (seq !== renderSeq) return;
   const items = inboxItems(), seen = inboxSeen(), isNew = x => x.unread || (x.notify && secOf(x.at) > seen);
   $('app').innerHTML = `

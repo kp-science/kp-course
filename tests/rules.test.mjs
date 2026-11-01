@@ -376,6 +376,32 @@ test('ข้อความคอร์ส: แอดมินตอบติด
   await assertSucceeds(setDoc(doc(admin(), 'course_threads/s2_c1/messages/b'), { from: 'admin', by: 'admin', text: 'x' }));
 });
 
+test('ครูเริ่มห้องข้อความได้เฉพาะคอร์สตัวเอง · นักเรียนสร้างห้องของคนอื่นไม่ได้', async () => {
+  const th = { uid: 's2', email: 's2@mail.com', name: 'S2', courseId: 'c1', owner: T1, lastBy: 'teacher', lastText: 'สวัสดี', unreadTeacher: false, unreadStudent: true };
+  const send = (db, by, thread = th) => { const b = writeBatch(db); b.set(doc(db, 'course_threads/s2_c1'), thread); b.set(doc(db, 'course_threads/s2_c1/messages/m1'), { from: 'teacher', by, text: 'สวัสดี' }); return b.commit(); };
+  await assertFails(send(t2(), 't2'));
+  await assertFails(send(stu(), 's1'));
+  await assertFails(send(t1(), 't1', { ...th, owner: T2 }));
+  await assertSucceeds(send(t1(), 't1'));
+  await assertSucceeds(getDocs(collection(stu2(), 'course_threads/s2_c1/messages')));
+});
+test('ประกาศ: ครูเจ้าของโพสต์/ลบ · คนมีสิทธิ์อ่าน · คนอื่นไม่ได้', async () => {
+  const n = { text: 'เพิ่มบทใหม่', by: 't1' };
+  await assertFails(setDoc(doc(stu(), 'courses/c1/announcements/a'), { ...n, by: 's1' }));
+  await assertFails(setDoc(doc(t2(), 'courses/c1/announcements/a'), { ...n, by: 't2' }));
+  await assertFails(setDoc(doc(t1(), 'courses/c1/announcements/a'), { ...n, text: 'x'.repeat(2001) }));
+  await assertFails(setDoc(doc(t1(), 'courses/c1/announcements/a'), { ...n, by: 'other' }));
+  await assertSucceeds(setDoc(doc(t1(), 'courses/c1/announcements/a'), n));
+  await assertSucceeds(getDocs(collection(stu(), 'courses/c1/announcements')));     // s1 มีสิทธิ์ c1
+  await assertSucceeds(getDocs(collection(t1(), 'courses/c1/announcements')));
+  await assertFails(getDocs(collection(stu2(), 'courses/c1/announcements')));       // s2 ยังไม่มีสิทธิ์
+  await assertFails(getDocs(collection(t2(), 'courses/c1/announcements')));
+  await assertFails(getDocs(collection(guest(), 'courses/c1/announcements')));
+  await assertFails(deleteDoc(doc(stu(), 'courses/c1/announcements/a')));
+  await assertFails(updateDoc(doc(t1(), 'courses/c1/announcements/a'), { text: 'แก้' }));
+  await assertSucceeds(deleteDoc(doc(t1(), 'courses/c1/announcements/a')));
+});
+
 test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {
   const IMG = 'data:image/jpeg;base64,AAAA';
   const slip = { uid: 's2', courseId: 'c1', owner: T1, image: IMG };

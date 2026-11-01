@@ -18,6 +18,7 @@ rules_version = '2';
 //   /enrollments/{uid}_{cid}        — สิทธิ์เข้าเรียน (ครูเจ้าของคอร์ส/แอดมินสร้าง)
 //   /course_progress/{uid}_{cid}    — ความคืบหน้า (นักเรียนเขียนของตัวเอง)
 //   /course_requests/{uid}_{cid}    — คำขอสิทธิ์ / แจ้งชำระเงิน (นักเรียนสร้าง · ครูตรวจยอดแล้วอนุมัติ)
+//   /courses/{cid}/announcements/{id} — ประกาศของคอร์ส (ครูเจ้าของเขียน · คนมีสิทธิ์เรียนอ่าน)
 //   /courses/{cid}/meta/pay         — ข้อมูลรับเงิน (อ่านได้เมื่อล็อกอิน)
 //   /course_rejections/{uid}_{cid}  — เหตุผลที่ไม่อนุมัติคำขอ (ครูเขียน · นักเรียนเจ้าของอ่าน/ลบเมื่อส่งใหม่)
 //   /course_threads/{uid}_{cid}     — ข้อความนักเรียนถึงครู (+ /messages/{id}) เห็นเฉพาะนักเรียนเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน
@@ -93,6 +94,16 @@ service cloud.firestore {
         allow read: if hasCourse(cid)
           || (resource.data.free == true && courseDoc(cid).published == true);
         allow write: if ownsCourse(cid);
+      }
+
+      match /announcements/{aid} {
+        allow read: if hasCourse(cid);
+        allow create: if ownsCourse(cid)
+          && request.resource.data.keys().hasOnly(['text', 'by', 'createdAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 2000;
+        allow delete: if ownsCourse(cid);
       }
 
       // ข้อมูลรับเงิน (พร้อมเพย์) — ให้เห็นเฉพาะคนที่ล็อกอิน ไม่ให้ผู้เยี่ยมชม/บอตเห็นเบอร์ครู
@@ -218,15 +229,18 @@ service cloud.firestore {
     match /course_threads/{tid} {
       allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
       // นักเรียนเริ่มถามได้เมื่อคอร์สเผยแพร่แล้ว หรือมีสิทธิ์อยู่แล้ว
+      // ครูเจ้าของคอร์ส/แอดมินเริ่มห้องให้นักเรียนได้เช่นกัน
       allow create: if signedIn()
-        && tid == request.auth.uid + '_' + request.resource.data.courseId
-        && request.resource.data.uid == request.auth.uid
+        && tid == request.resource.data.uid + '_' + request.resource.data.courseId
         && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'lastAt', 'lastBy', 'lastText', 'unreadTeacher', 'unreadStudent'])
-        && request.resource.data.email == myEmail()
+        && request.resource.data.email is string
         && request.resource.data.name is string && request.resource.data.name.size() <= 200
         && request.resource.data.owner == ownerOf(request.resource.data.courseId)
-        && (courseDoc(request.resource.data.courseId).published == true || hasCourse(request.resource.data.courseId))
-        && threadKeysOk();
+        && threadKeysOk()
+        && (ownsCourse(request.resource.data.courseId)
+          || (request.resource.data.uid == request.auth.uid
+            && request.resource.data.email == myEmail()
+            && (courseDoc(request.resource.data.courseId).published == true || hasCourse(request.resource.data.courseId))));
       allow update: if isAdmin() || ((isMine(resource.data) || teacherOwns(resource.data))
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'lastAt', 'lastBy', 'lastText', 'unreadTeacher', 'unreadStudent'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 200

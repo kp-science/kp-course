@@ -138,6 +138,7 @@ td small{color:var(--muted)}
 .tbubble{max-width:82%;align-self:flex-start;padding:10px 14px;border-radius:16px;background:var(--surface2)}
 .tbubble.me{align-self:flex-end;background:var(--accent-soft)}
 .tbubble small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:2px}
+.tbubble-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.6;margin-top:2px}
 .tbubble p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.6}
 .slip-view img{display:block;max-width:min(100%,420px);max-height:70vh;border-radius:12px;margin-top:10px}
 @media (max-width:640px){.paybox{grid-template-columns:1fr}.payqr{max-width:200px}}
@@ -208,7 +209,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=3"></script>
-<script src="course-core.js?v=19"></script>
+<script src="course-core.js?v=20"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -486,6 +487,7 @@ function drawMember(key) {
     const pct = c ? pctOf(p, c) : 0, last = c && (c.outline || []).find(l => l.id === p.last);
     return `<div class="lrow"><span class="t"><b>${esc(c ? c.title : e.courseId)}</b><small><span>ได้สิทธิ์ ${fmtTime(e.createdAt)}</span>${e.contact ? `<span>· ติดต่อ: ${esc(e.contact)}</span>` : ''}${last ? `<span>· ล่าสุด: ${esc(last.title)}</span>` : ''}${p.lastAt ? `<span>· ${ago(p.lastAt)}</span>` : ''}</small></span>
       <span class="bar"><i style="width:${pct}%"></i></span><span class="mono" style="width:44px;text-align:right">${pct}%</span>
+      ${c ? `<button class="btn xs" type="button" data-msg="${esc(m.uid)}|${esc(e.courseId)}">ส่งข้อความ</button>` : ''}
       ${c && c.price > 0 ? `<button class="btn xs" type="button" data-slip="${esc(m.uid + '_' + e.courseId)}">ดูสลิป</button>` : ''}
       ${c ? `<button class="btn bad xs" type="button" data-mrevoke="${esc(m.uid)}|${esc(e.courseId)}">ถอนสิทธิ์</button>` : ''}</div><div class="slip-view" data-slipv="${esc(m.uid + '_' + e.courseId)}"></div>`;
   }).join('');
@@ -525,8 +527,8 @@ function membersCsv() {
 async function openCourse(cid, tab) {
   const changed = !S.cur || S.cur.id !== cid;
   S.cur = courseOf(cid);
-  S.tab = ['info', 'lessons', 'students', 'invites', 'progress'].includes(tab) ? tab : (changed ? 'lessons' : S.tab);
-  if (changed) { S.students = null; S.cprog = null; S.invites = null; }
+  S.tab = ['info', 'lessons', 'students', 'news', 'invites', 'progress'].includes(tab) ? tab : (changed ? 'lessons' : S.tab);
+  if (changed) { S.students = null; S.cprog = null; S.invites = null; S.news = null; }
   drawSide();
   if (changed) { $('main').innerHTML = '<div class="skel" style="width:40%;height:28px"></div><div class="skel"></div>'; try { S.lessons = await KPC.listLessons(cid); } catch (e) { S.lessons = []; fail(e); } }
   drawMain();
@@ -535,7 +537,7 @@ function drawMain() {
   const c = S.cur; if (!c) return;
   document.title = c.title + ' · ห้องครู';
   const st = courseStats(c);
-  const T = [['lessons', '', `บทเรียน <span class="sub">${S.lessons.length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['invites', '', 'โค้ดเชิญ'], ['progress', '', 'ความคืบหน้า'], ['info', '', 'ข้อมูลคอร์ส']];
+  const T = [['lessons', '', `บทเรียน <span class="sub">${S.lessons.length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['news', '', 'ประกาศ'], ['invites', '', 'โค้ดเชิญ'], ['progress', '', 'ความคืบหน้า'], ['info', '', 'ข้อมูลคอร์ส']];
   $('main').innerHTML = `
     <div class="ph"><div>
       <div class="row" style="gap:6px;margin-bottom:6px">${c.published ? '<span class="pill ok">● เผยแพร่แล้ว</span>' : '<span class="pill warn">○ ร่าง — นักเรียนยังไม่เห็น</span>'}${isAdmin() ? `<span class="pill">ผู้สอน: ${esc(staffName(c.owner))}</span>` : ''}</div>
@@ -544,7 +546,7 @@ function drawMain() {
     <div class="tabs" role="tablist">${T.map(t => `<button type="button" role="tab" data-tab="${t[0]}" class="${S.tab === t[0] ? 'on' : ''}">${t[2]}</button>`).join('')}</div>
     <div id="pane"></div>`;
   history.replaceState(null, '', '#/c/' + encodeURIComponent(c.id) + '/' + S.tab);
-  ({ info: drawInfo, lessons: drawLessons, students: drawStudents, invites: drawInvites, progress: drawProgress })[S.tab]();
+  ({ info: drawInfo, lessons: drawLessons, students: drawStudents, news: drawNews, invites: drawInvites, progress: drawProgress })[S.tab]();
 }
 
 /* ---------- ข้อมูลคอร์ส ---------- */
@@ -705,7 +707,7 @@ async function drawStudents() {
     <div class="card"><div class="card-h"><h2>🎓 นักเรียนที่มีสิทธิ์</h2><span class="pill">${S.students.length} คน</span></div>
       ${S.students.length ? `<div class="tw"><table><tr><th>นักเรียน</th><th>ได้สิทธิ์เมื่อ</th><th></th></tr>
         ${S.students.sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email), 'th')).map(u => `<tr><td><b>${esc(u.name || '—')}</b><br><small>${esc(u.email)}${u.contact ? ' · ' + esc(u.contact) : ''}${u.code ? ' · โค้ดเชิญ ' + esc(fmtCode(u.code)) : ''}</small></td><td><small>${fmtTime(u.createdAt)}</small></td>
-          <td><div class="acts"><button class="btn bad xs" type="button" data-revoke="${esc(u.uid)}">ถอนสิทธิ์</button></div></td></tr>`).join('')}</table></div>` : '<div class="empty"><span class="ic">🎓</span>ยังไม่มีนักเรียน — อนุมัติคำขอ หรือให้สิทธิ์ด้วยอีเมล</div>'}
+          <td><div class="acts"><button class="btn xs" type="button" data-msg="${esc(u.uid)}|${esc(c.id)}">ส่งข้อความ</button><button class="btn bad xs" type="button" data-revoke="${esc(u.uid)}">ถอนสิทธิ์</button></div></td></tr>`).join('')}</table></div>` : '<div class="empty"><span class="ic">🎓</span>ยังไม่มีนักเรียน — อนุมัติคำขอ หรือให้สิทธิ์ด้วยอีเมล</div>'}
     </div>
     ${S.revoked.some(r => r.courseId === c.id) ? `<div class="card"><div class="card-h"><h2>ถอนสิทธิ์แล้ว</h2><span class="pill">${S.revoked.filter(r => r.courseId === c.id).length} คน</span></div>${revokedList(S.revoked.filter(r => r.courseId === c.id), false)}</div>` : ''}</div>`;
 }
@@ -724,7 +726,8 @@ function drawThreads() {
 }
 async function drawThread(tid, support) {
   $('main').innerHTML = '<div class="skel" style="height:160px"></div>';
-  const [t, list] = await Promise.all(support ? [A.supportThread(tid), KPC.supportMessages(tid).catch(() => [])] : [A.thread(tid), KPC.threadMessages(tid).catch(() => [])]);
+  const [got, list] = await Promise.all(support ? [A.supportThread(tid), KPC.supportMessages(tid).catch(() => [])] : [A.thread(tid), KPC.threadMessages(tid).catch(() => [])]);
+  const t = got || (!support && S.newThread && S.newThread.id === tid ? S.newThread : null);
   if (decodeURIComponent(location.hash.replace(/^#/, '')) !== '/messages/' + (support ? 's/' : '') + tid) return;
   if (!t) { $('main').innerHTML = '<div class="empty">ไม่พบบทสนทนานี้ <a class="link" href="#/messages">← กลับ</a></div>'; return; }
   const c = courseOf(t.courseId);
@@ -732,10 +735,25 @@ async function drawThread(tid, support) {
   $('main').innerHTML = `<div class="crumbs"><a class="link" href="#/messages">← ข้อความทั้งหมด</a></div>
     <div class="ph"><div><h1>${esc(t.name || t.email)}</h1><p>${esc(t.email)} · ${support ? 'ข้อความถึงแอดมิน' : esc((c || {}).title || t.courseId)}</p></div></div>
     <div class="card"><div class="tbubbles">${list.map(m => `<div class="tbubble ${m.from !== 'student' ? 'me' : ''}"><small>${fromLabel(m, t)} · ${fmtTime(m.createdAt) || 'เมื่อสักครู่'}${m.lessonTitle ? ' · บท ' + esc(m.lessonTitle) : ''}</small><p>${esc(m.text)}</p></div>`).join('')}</div>
-      <div class="field" style="margin-top:14px"><label for="replyText">ตอบกลับ</label><textarea id="replyText" rows="3" maxlength="1000" placeholder="พิมพ์คำตอบ นักเรียนจะเห็นในกล่องข้อความ"></textarea></div>
-      <div class="row" style="margin-top:10px"><button class="btn solid" type="button" data-${support ? 'sreply' : 'reply'}="${esc(tid)}">ส่งคำตอบ</button></div></div>`;
+      ${t.isNew ? '<div class="empty">ยังไม่มีข้อความ เริ่มส่งข้อความถึงนักเรียนได้เลย</div>' : ''}<div class="field" style="margin-top:14px"><label for="replyText">${t.isNew ? 'ข้อความ' : 'ตอบกลับ'}</label><textarea id="replyText" rows="3" maxlength="1000" placeholder="พิมพ์ข้อความ นักเรียนจะเห็นในกล่องข้อความ"></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn solid" type="button" data-${support ? 'sreply' : 'reply'}="${esc(tid)}">${t.isNew ? 'ส่งข้อความ' : 'ส่งคำตอบ'}</button></div></div>`;
   if (support) { if (t.unreadAdmin) { await KPC.markSupportRead(tid, 'unreadAdmin'); const x = S.support.find(y => y.id === tid); if (x) x.unreadAdmin = false; drawSide(); } }
   else if (t.unreadTeacher && (!isAdmin() || t.owner === KPC.email())) { await KPC.markThreadRead(tid, 'unreadTeacher'); const x = S.threads.find(y => y.id === tid); if (x) x.unreadTeacher = false; drawSide(); }
+}
+
+/* ---------- ประกาศถึงทุกคนในคอร์ส ---------- */
+async function drawNews() {
+  const c = S.cur;
+  $('pane').innerHTML = '<div class="skel" style="height:120px"></div>';
+  if (!S.news) { try { S.news = await KPC.courseNews(c.id, 30); } catch (e) { S.news = []; fail(e); } }
+  if (S.cur !== c || S.tab !== 'news') return;
+  $('pane').innerHTML = `<div class="stack">
+    <div class="card"><div class="card-h"><h2>ประกาศถึงทุกคนในคอร์ส</h2></div>
+      <p class="sub" style="margin-bottom:12px">นักเรียนที่มีสิทธิ์เรียนคอร์สนี้จะเห็นในกล่องข้อความ พร้อมตัวเลขแจ้งเตือน ประกาศไม่ส่งอีเมล</p>
+      <div class="field"><label for="newsText">ข้อความ</label><textarea id="newsText" rows="4" maxlength="2000" placeholder="เช่น เพิ่มคลิปบทใหม่แล้ว"></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn solid" type="button" data-act="news-post">ส่งประกาศ</button></div></div>
+    <div class="card"><div class="card-h"><h2>ประกาศที่ส่งแล้ว</h2></div>
+      ${S.news.length ? S.news.map(n => `<div class="req"><div class="bd"><small>${fmtTime(n.createdAt) || 'เมื่อสักครู่'}</small><div class="tbubble-text">${esc(n.text)}</div></div><div class="acts"><button class="btn bad xs" type="button" data-newsdel="${esc(n.id)}">ลบ</button></div></div>`).join('') : '<div class="empty">ยังไม่มีประกาศ</div>'}</div></div>`;
 }
 
 /* ---------- โค้ดเชิญ: หนึ่งโค้ดต่อหนึ่งบัญชี ใส่แล้วเข้าเรียนได้ทันที ---------- */
@@ -839,7 +857,7 @@ $('importFile').addEventListener('change', async e => {
 });
 
 /* ===================== ปุ่มต่าง ๆ ===================== */
-async function reloadCourseData() { S.students = null; S.cprog = null; S.invites = null; await refreshAll(); }
+async function reloadCourseData() { S.students = null; S.cprog = null; S.invites = null; S.news = null; await refreshAll(); }
 document.addEventListener('click', async e => {
   const el = e.target.closest('button'); if (!el) return;
   const d = el.dataset;
@@ -894,9 +912,27 @@ document.addEventListener('click', async e => {
     el.disabled = true;
     try {
       if (d.sreply) { await A.replySupport(id, text); mail('support-reply', id); }
-      else { const t = S.threads.find(x => x.id === id); await A.reply(id, text, t && t.owner); mail('reply', id); }
-      toast('ส่งคำตอบแล้ว'); await refreshAll(); await drawThread(id, !!d.sreply);
+      else {
+        const fresh = S.newThread && S.newThread.id === id ? S.newThread : null, t = S.threads.find(x => x.id === id) || fresh;
+        await A.reply(id, text, t && t.owner, fresh); S.newThread = null; mail('reply', id);
+      }
+      toast('ส่งข้อความแล้ว'); await refreshAll(); await drawThread(id, !!d.sreply);
     } catch (err) { fail(err); el.disabled = false; }
+    return;
+  }
+  if (d.newsdel) {
+    if (!confirm('ลบประกาศนี้? นักเรียนจะไม่เห็นอีก')) return;
+    el.disabled = true;
+    try { await A.dropNews(S.cur.id, d.newsdel); S.news = null; toast('ลบประกาศแล้ว'); } catch (err) { fail(err); el.disabled = false; return; }
+    return drawNews();
+  }
+  if (d.msg) {
+    // ยังไม่เคยคุย: เปิดห้องเปล่า สร้างจริงเมื่อกดส่งข้อความแรก
+    const [uid, cid] = d.msg.split('|'), tid = uid + '_' + cid, c = courseOf(cid);
+    const en = S.enroll.find(x => x.uid === uid && x.courseId === cid) || (S.students || []).find(x => x.uid === uid);
+    if (!c || !en) return;
+    S.newThread = S.threads.some(t => t.id === tid) ? null : { id: tid, uid, email: en.email || '', name: en.name || '', courseId: cid, owner: c.owner || '', isNew: true };
+    location.hash = '#/messages/' + tid;
     return;
   }
   if (d.invcopy) {
@@ -1039,6 +1075,14 @@ document.addEventListener('click', async e => {
       el.disabled = true;
       try { await A.saveStaff(email, { name: name || email.split('@')[0], active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); toast('เพิ่ม ' + (name || email) + ' เป็นครูแล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
       return;
+    }
+    case 'news-post': {
+      const text = $('newsText').value.trim();
+      if (!text) { toast('พิมพ์ประกาศก่อน', true); $('newsText').focus(); return; }
+      if (!confirm(`ส่งประกาศถึงนักเรียนทุกคนในคอร์ส “${S.cur.title}”?`)) return;
+      el.disabled = true;
+      try { await A.postNews(S.cur.id, text); S.news = null; toast('ส่งประกาศแล้ว'); } catch (err) { fail(err); el.disabled = false; return; }
+      return drawNews();
     }
     case 'invite-create': {
       const emails = [...new Set($('invEmails').value.split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(Boolean))];

@@ -431,6 +431,7 @@ KPC.askAdmin = function (text) {
   return b.commit();
 };
 KPC.markSupportRead = (uid, flag) => col('support_threads').doc(uid).update({ [flag]: false }).catch(() => {});
+KPC.courseNews = async (cid, n) => docs(await col('courses').doc(cid).collection('announcements').orderBy('createdAt', 'desc').limit(n || 5).get());
 KPC.markThreadRead = (tid, flag) => col('course_threads').doc(tid).update({ [flag]: false }).catch(() => {});
 
 // ใช้โค้ดเชิญ: ผูกโค้ดกับบัญชีนี้และสร้างสิทธิ์ในชุดคำสั่งเดียว แล้วล้างคำขอ/เหตุผลเดิมของคอร์สนี้
@@ -521,6 +522,7 @@ KPC.admin = {
     const ls = await col('courses').doc(cid).collection('lessons').get();
     const batch = db.batch();
     ls.docs.forEach(d => batch.delete(d.ref));
+    (await col('courses').doc(cid).collection('announcements').get()).docs.forEach(d => batch.delete(d.ref));
     batch.delete(col('courses').doc(cid).collection('meta').doc('pay'));
     batch.delete(col('courses').doc(cid));
     return batch.commit();
@@ -565,11 +567,17 @@ KPC.admin = {
   threads: async () => docs(await mine(col('course_threads')).get())
     .sort((a, b) => ((b.lastAt && b.lastAt.seconds) || 0) - ((a.lastAt && a.lastAt.seconds) || 0)),
   thread: async tid => { try { const s = await col('course_threads').doc(tid).get(); return s.exists ? Object.assign({ id: s.id }, s.data()) : null; } catch (e) { return null; } },
-  reply: (tid, text, owner) => {
+  // ประกาศ: แสดงในเว็บ ไม่ส่งเมล (กันโควตา Gmail รายวันหมด)
+  postNews: (cid, text) => col('courses').doc(cid).collection('announcements').add({ text: String(text).trim().slice(0, 2000), by: KPC.uid(), createdAt: FS().serverTimestamp() }),
+  dropNews: (cid, id) => col('courses').doc(cid).collection('announcements').doc(id).delete(),
+  // fresh = ครูเริ่มห้องใหม่ { uid, email, name, courseId, owner }
+  reply: (tid, text, owner, fresh) => {
     const t = String(text).trim().slice(0, 1000), b = db.batch();
     // แอดมินตอบแทนครูของคอร์สอื่น = ติดป้ายแอดมิน · คอร์สของตัวเอง = ครูผู้สอน
     const from = KPC.role === 'admin' && owner !== KPC.email() ? 'admin' : 'teacher';
-    b.update(col('course_threads').doc(tid), { lastAt: FS().serverTimestamp(), lastBy: from, lastText: t.slice(0, 120), unreadStudent: true, unreadTeacher: false });
+    const head = { lastAt: FS().serverTimestamp(), lastBy: from, lastText: t.slice(0, 120), unreadStudent: true, unreadTeacher: false };
+    if (fresh) b.set(col('course_threads').doc(tid), Object.assign({ uid: fresh.uid, email: fresh.email || '', name: fresh.name || '', courseId: fresh.courseId, owner: fresh.owner || '' }, head));
+    else b.update(col('course_threads').doc(tid), head);
     b.set(col('course_threads').doc(tid).collection('messages').doc(), { from, by: KPC.uid(), text: t, createdAt: FS().serverTimestamp() });
     return b.commit();
   },
@@ -629,6 +637,7 @@ KPC.admin = {
     for (const id of Object.keys(out).filter(p => /^courses[/][^/]+$/.test(p)).map(p => p.split('/')[1])) {
       put(await col('courses').doc(id).collection('lessons').get());
       put(await col('courses').doc(id).collection('meta').get());
+      put(await col('courses').doc(id).collection('announcements').get());
     }
     return out;
   },
