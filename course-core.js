@@ -11,7 +11,7 @@
 //    courses/{cid}/lessons/{lid}   เนื้อหาบท · อ่านได้เมื่อมีสิทธิ์ หรือบท free
 //    enrollments/{uid}_{cid}       { uid, email, name, courseId, owner, by, createdAt }  สิทธิ์เข้าเรียน
 //    course_progress/{uid}_{cid}   { uid, email, courseId, owner, done:[lid], total, last, lastAt, updatedAt }
-//    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, amount?, payRef?, createdAt }
+//    course_requests/{uid}_{cid}   { uid, email, name, courseId, owner, note, contact?, amount?, payRef?, createdAt }
 //    course_slips/{uid}_{cid}      { uid, courseId, owner, image (data URL JPEG ≤ 500 KB), createdAt }
 //    courses/{cid}.price           ราคา (บาท · 0/ไม่มี = ฟรี) · courses/{cid}/meta/pay { promptpay, name, note } อ่านได้เมื่อล็อกอิน
 // ============================================================
@@ -402,10 +402,11 @@ KPC.slipImage = async function (file) {
 };
 
 // pay = { ref, image } เมื่อเป็นคอร์สมีราคา (แจ้งชำระเงิน + สลิป) — ครูตรวจยอดในบัญชีแล้วอนุมัติเอง
-KPC.requestAccess = function (c, note, pay) {
+KPC.requestAccess = function (c, note, pay, contact) {
   const u = KPC.user(); if (!u) return Promise.reject(new Error('ยังไม่ได้เข้าสู่ระบบ'));
   const data = { uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '',
     note: String(note || '').slice(0, 300), createdAt: FS().serverTimestamp() };
+  if (contact) data.contact = String(contact).slice(0, 100);
   if (pay) { data.amount = Number(c.price) || 0; data.payRef = String(pay.ref || '').slice(0, 100); }
   if (!pay) return col('course_requests').doc(pid(u.uid, c.id)).set(data);
   const b = db.batch();   // สลิปกับคำขอเข้าพร้อมกัน ครูจะไม่เห็นคำขอที่สลิปหาย
@@ -463,8 +464,9 @@ KPC.admin = {
   // st = { uid|id, email, name } · c = เอกสารคอร์ส
   grant: (st, c) => {
     const uid = st.uid || st.id;
-    return col('enrollments').doc(pid(uid, c.id)).set({ uid, email: st.email || '', name: st.name || '', courseId: c.id,
-      owner: c.owner || '', by: KPC.email(), createdAt: FS().serverTimestamp() });
+    // ช่องทางติดต่อย้ายจากคำขอมาเก็บกับสิทธิ์ (คำขอถูกลบหลังอนุมัติ)
+    return col('enrollments').doc(pid(uid, c.id)).set(Object.assign({ uid, email: st.email || '', name: st.name || '', courseId: c.id,
+      owner: c.owner || '', by: KPC.email(), createdAt: FS().serverTimestamp() }, st.contact ? { contact: st.contact } : {}));
   },
   revoke: (uid, cid) => col('enrollments').doc(pid(uid, cid)).delete(),
 

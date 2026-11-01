@@ -183,6 +183,22 @@ test('แจ้งชำระเงิน: ส่ง amount + payRef ได้ 
   await assertFails(getDoc(doc(db, 'courses/c1/lessons/paid')));
 });
 
+test('ช่องทางติดต่อ: ส่งกับคำขอได้ · ยาว/ผิดชนิดไม่ได้ · คนอื่นอ่านไม่ได้ · ครูคัดลอกลงสิทธิ์ได้', async () => {
+  const s2 = stu2();
+  const r = { uid: 's2', email: 's2@mail.com', name: '', courseId: 'c1', owner: T1, note: '' };
+  await env.withSecurityRulesDisabled(async ctx => { await deleteDoc(doc(ctx.firestore(), 'course_requests/s2_c1')); });
+  await assertFails(setDoc(doc(s2, 'course_requests/s2_c1'), { ...r, contact: 'x'.repeat(101) }));
+  await assertFails(setDoc(doc(s2, 'course_requests/s2_c1'), { ...r, contact: 812345678 }));
+  await assertSucceeds(setDoc(doc(s2, 'course_requests/s2_c1'), { ...r, contact: '081-234-5678' }));
+  await assertSucceeds(getDoc(doc(t1(), 'course_requests/s2_c1')));
+  await assertFails(getDoc(doc(t2(), 'course_requests/s2_c1')));
+  await assertFails(getDoc(doc(stu(), 'course_requests/s2_c1')));
+  const e = { uid: 's2', email: 's2@mail.com', name: '', courseId: 'c1', owner: T1, by: T1 };
+  await assertFails(setDoc(doc(t1(), 'enrollments/s2_c1'), { ...e, contact: 'x'.repeat(101) }));
+  await assertSucceeds(setDoc(doc(t1(), 'enrollments/s2_c1'), { ...e, contact: '081-234-5678' }));
+  await assertFails(getDoc(doc(t2(), 'enrollments/s2_c1')));
+});
+
 test('สลิป: เจ้าของ/ครูเจ้าของคอร์ส/แอดมินอ่านได้ · คนอื่นไม่ได้ · แก้หลังอนุมัติไม่ได้', async () => {
   const IMG = 'data:image/jpeg;base64,AAAA';
   const slip = { uid: 's2', courseId: 'c1', owner: T1, image: IMG };

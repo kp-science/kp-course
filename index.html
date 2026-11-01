@@ -678,7 +678,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=10"></script>
+<script src="course-core.js?v=11"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -1086,11 +1086,13 @@ function lockPanel(c) {
       <div class="pay-s"><ol><li>สแกน QR ด้วยแอปธนาคาร (ยอดเงินใส่ไว้ให้แล้ว)</li><li>โอนเสร็จ แคปหน้าจอสลิป แล้วแนบรูปด้านล่าง</li><li>กด “แจ้งชำระเงินแล้ว” แล้วรอครูอนุมัติ</li></ol>
         <div id="payNote"></div>
         <div class="field"><label for="paySlip">รูปสลิปการโอน</label><input type="file" id="paySlip" accept="image/*"><div class="slip-prev" id="slipPrev"></div><small class="sub">สลิปนี้เห็นเฉพาะคุณ ครูผู้สอน และแอดมิน</small></div>
+        <div class="field"><label for="reqContact">เบอร์โทรหรือ LINE สำหรับติดต่อกลับ</label><input type="text" id="reqContact" maxlength="100" placeholder="เช่น 081-234-5678 หรือ LINE: kp-student"><small class="sub">เห็นเฉพาะครูผู้สอนและแอดมิน</small></div>
         <div class="field"><label for="payRef">เวลาโอน / เลขอ้างอิง (ไม่บังคับ)</label><input type="text" id="payRef" maxlength="100" placeholder="เช่น 14:05 · ref 8A21"></div>
         <div class="field"><label for="reqNote">ชื่อ · ห้อง · โรงเรียน (ไม่บังคับ)</label><input type="text" id="reqNote" maxlength="300" placeholder="ด.ญ. ใจดี เรียนดี ม.4/2"></div>
         <button class="btn solid" type="button" data-request="${esc(c.id)}" data-paid>แจ้งชำระเงินแล้ว</button></div></div>`;
   else inner = `<div class="ic">🙋</div><h3>ขอสิทธิ์เรียนคอร์สนี้</h3><p>บอกครูสั้น ๆ ว่าเป็นใคร แล้วกดขอสิทธิ์ ครูจะอนุมัติให้บัญชี <b>${esc(user.email)}</b></p>
     <textarea id="reqNote" maxlength="300" placeholder="เช่น ด.ญ. ใจดี เรียนดี ม.4/2 โรงเรียน…" aria-label="ข้อความถึงครู"></textarea>
+    <div class="field" style="width:min(440px,100%);text-align:left"><label for="reqContact">เบอร์โทรหรือ LINE สำหรับติดต่อกลับ (ไม่บังคับ)</label><input type="text" id="reqContact" maxlength="100" placeholder="เช่น 081-234-5678 หรือ LINE: kp-student"><small class="sub">เห็นเฉพาะครูผู้สอนและแอดมิน</small></div>
     <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
   return `<div class="lock">${inner}</div>`;
 }
@@ -1264,12 +1266,13 @@ document.addEventListener('click', async e => {
   const rq = e.target.closest('[data-request]');
   if (rq) {
     const c = S.courses.find(x => x.id === rq.dataset.request) || (CUR && CUR.c);
-    const paid = rq.dataset.paid !== undefined, ref = (($('payRef') || {}).value || '').trim();
+    const paid = rq.dataset.paid !== undefined, ref = (($('payRef') || {}).value || '').trim(), contact = (($('reqContact') || {}).value || '').trim();
+    if (paid && !contact) { toast('กรอกเบอร์โทรหรือ LINE สำหรับติดต่อกลับก่อน', true); $('reqContact').focus(); return; }
     const label = rq.textContent; rq.disabled = true; rq.textContent = 'กำลังส่ง…';
     try {
       const image = paid ? await ($('paySlip') || {})._slip : null;   // รอให้ย่อรูปเสร็จ
       if (paid && !image) { rq.disabled = false; rq.textContent = label; toast('แนบรูปสลิปการโอนก่อน', true); $('paySlip').focus(); return; }
-      await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref, image } : null);
+      await KPC.requestAccess(c, ($('reqNote') || {}).value || '', paid ? { ref, image } : null, contact);
       S.request[c.id] = await KPC.getMyRequest(c.id) || { createdAt: null };
       toast(paid ? 'แจ้งชำระเงินแล้ว รอครูตรวจยอด' : 'ส่งคำขอถึงครูแล้ว');
       route();

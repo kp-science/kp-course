@@ -102,7 +102,9 @@ service cloud.firestore {
       allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
       allow create: if ownsCourse(request.resource.data.courseId)
         && eid == request.resource.data.uid + '_' + request.resource.data.courseId
-        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'by', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'by', 'contact', 'createdAt'])
+        && request.resource.data.get('contact', '') is string
+        && request.resource.data.get('contact', '').size() <= 100
         && request.resource.data.owner == ownerOf(request.resource.data.courseId);
       allow update: if isAdmin();
       allow delete: if isAdmin() || teacherOwns(resource.data);
@@ -129,7 +131,9 @@ service cloud.firestore {
       allow create: if signedIn()
         && rid == request.auth.uid + '_' + request.resource.data.courseId
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'note', 'amount', 'payRef', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'note', 'contact', 'amount', 'payRef', 'createdAt'])
+        && request.resource.data.get('contact', '') is string
+        && request.resource.data.get('contact', '').size() <= 100
         && request.resource.data.get('note', '').size() <= 300
         && request.resource.data.get('payRef', '').size() <= 100
         && request.resource.data.get('amount', 0) is number

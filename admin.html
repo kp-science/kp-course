@@ -203,7 +203,7 @@ td small{color:var(--muted)}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=2"></script>
-<script src="course-core.js?v=10"></script>
+<script src="course-core.js?v=11"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -342,6 +342,7 @@ function reqList(list, showCourse) {
   return list.map(r => `<div class="req"><span class="avatar">${esc(initial(r.name || r.email))}</span><div class="bd">
       <b>${esc(r.name || r.email)}</b> ${r.name ? `<small>${esc(r.email)}</small>` : ''}<br>
       <small>${showCourse ? '📚 ' + esc((courseOf(r.courseId) || {}).title || r.courseId) + ' · ' : ''}${ago(r.createdAt)}</small>
+      ${r.contact ? `<div style="margin-top:4px;font-size:14px">ติดต่อกลับ: <b>${esc(r.contact)}</b></div>` : ''}
       ${r.amount ? `<div class="paid">💳 แจ้งโอน <b>${KPC.baht(r.amount)}</b>${r.payRef ? ' · ' + esc(r.payRef) : ''} — เช็กยอดในบัญชีก่อนอนุมัติ</div>
         <div style="margin-top:8px"><button class="btn xs" type="button" data-slip="${esc(r.id)}">ดูสลิป</button></div><div class="slip-view" data-slipv="${esc(r.id)}"></div>` : ''}
       ${r.note ? `<div class="q">“${esc(r.note)}”</div>` : ''}</div>
@@ -451,7 +452,7 @@ function drawMember(key) {
   const rows = m.en.map(e => {
     const c = courseOf(e.courseId), p = m.pr.find(x => x.courseId === e.courseId) || {};
     const pct = c ? pctOf(p, c) : 0, last = c && (c.outline || []).find(l => l.id === p.last);
-    return `<div class="lrow"><span class="t"><b>${esc(c ? c.title : e.courseId)}</b><small><span>ได้สิทธิ์ ${fmtTime(e.createdAt)}</span>${last ? `<span>· ล่าสุด: ${esc(last.title)}</span>` : ''}${p.lastAt ? `<span>· ${ago(p.lastAt)}</span>` : ''}</small></span>
+    return `<div class="lrow"><span class="t"><b>${esc(c ? c.title : e.courseId)}</b><small><span>ได้สิทธิ์ ${fmtTime(e.createdAt)}</span>${e.contact ? `<span>· ติดต่อ: ${esc(e.contact)}</span>` : ''}${last ? `<span>· ล่าสุด: ${esc(last.title)}</span>` : ''}${p.lastAt ? `<span>· ${ago(p.lastAt)}</span>` : ''}</small></span>
       <span class="bar"><i style="width:${pct}%"></i></span><span class="mono" style="width:44px;text-align:right">${pct}%</span>
       ${c && c.price > 0 ? `<button class="btn xs" type="button" data-slip="${esc(m.uid + '_' + e.courseId)}">ดูสลิป</button>` : ''}
       ${c ? `<button class="btn bad xs" type="button" data-mrevoke="${esc(m.uid)}|${esc(e.courseId)}">ถอนสิทธิ์</button>` : ''}</div><div class="slip-view" data-slipv="${esc(m.uid + '_' + e.courseId)}"></div>`;
@@ -669,7 +670,7 @@ async function drawStudents() {
     </div>
     <div class="card"><div class="card-h"><h2>🎓 นักเรียนที่มีสิทธิ์</h2><span class="pill">${S.students.length} คน</span></div>
       ${S.students.length ? `<div class="tw"><table><tr><th>นักเรียน</th><th>ได้สิทธิ์เมื่อ</th><th></th></tr>
-        ${S.students.sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email), 'th')).map(u => `<tr><td><b>${esc(u.name || '—')}</b><br><small>${esc(u.email)}</small></td><td><small>${fmtTime(u.createdAt)}</small></td>
+        ${S.students.sort((a, b) => String(a.name || a.email).localeCompare(String(b.name || b.email), 'th')).map(u => `<tr><td><b>${esc(u.name || '—')}</b><br><small>${esc(u.email)}${u.contact ? ' · ' + esc(u.contact) : ''}</small></td><td><small>${fmtTime(u.createdAt)}</small></td>
           <td><div class="acts"><button class="btn bad xs" type="button" data-revoke="${esc(u.uid)}">ถอนสิทธิ์</button></div></td></tr>`).join('')}</table></div>` : '<div class="empty"><span class="ic">🎓</span>ยังไม่มีนักเรียน — อนุมัติคำขอ หรือให้สิทธิ์ด้วยอีเมล</div>'}
     </div></div>`;
 }
@@ -781,7 +782,7 @@ document.addEventListener('click', async e => {
     const c = courseOf(r.courseId);
     el.disabled = true;
     try {
-      if (d.approve) { if (!c) throw new Error('ไม่พบคอร์สของคำขอนี้'); await A.grant({ uid: r.uid, email: r.email, name: r.name }, c); }
+      if (d.approve) { if (!c) throw new Error('ไม่พบคอร์สของคำขอนี้'); await A.grant({ uid: r.uid, email: r.email, name: r.name, contact: r.contact }, c); }
       if (d.reject) await A.dropSlip(r.id);   // อนุมัติแล้วเก็บสลิปไว้เป็นหลักฐาน
       await A.dropRequest(r.id);
       toast(d.approve ? `✓ อนุมัติ ${r.name || r.email} แล้ว` : `ปฏิเสธคำขอของ ${r.name || r.email}`);
@@ -805,7 +806,7 @@ document.addEventListener('click', async e => {
   if (d.mgrant) {
     const m = buildMembers().find(x => x.key === d.mgrant), c = courseOf($('mgCourse').value); if (!m || !c) return;
     el.disabled = true;
-    try { await A.grant({ uid: m.uid, email: m.email, name: m.name || m.display }, c); const r = S.requests.find(x => x.uid === m.uid && x.courseId === c.id); if (r) await A.dropRequest(r.id); toast('ให้สิทธิ์ “' + c.title + '” แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
+    try { const r = S.requests.find(x => x.uid === m.uid && x.courseId === c.id); await A.grant({ uid: m.uid, email: m.email, name: m.name || m.display, contact: r && r.contact }, c); if (r) await A.dropRequest(r.id); toast('ให้สิทธิ์ “' + c.title + '” แล้ว'); await refreshAll(); route(); } catch (err) { fail(err); el.disabled = false; }
     return;
   }
   if (d.toggleStaff) {
@@ -893,8 +894,8 @@ document.addEventListener('click', async e => {
       try {
         const u = await A.findStudentByEmail(email);
         if (!u) { toast('ไม่พบนักเรียนอีเมลนี้ — ให้นักเรียนสมัคร/เข้าสู่ระบบเว็บคอร์สก่อน', true); el.disabled = false; return; }
-        await A.grant(u, S.cur);
         const r = S.requests.find(x => x.uid === u.id && x.courseId === S.cur.id);
+        await A.grant(Object.assign({}, u, { contact: r && r.contact }), S.cur);
         if (r) await A.dropRequest(r.id);
         toast('ให้สิทธิ์ ' + email + ' แล้ว'); await reloadCourseData(); drawMain();
       } catch (err) { fail(err); el.disabled = false; }
