@@ -725,7 +725,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=3"></script>
-<script src="course-core.js?v=21"></script>
+<script src="course-core.js?v=22"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -1167,7 +1167,7 @@ function inboxItems() {
   (S.courses || []).filter(c => !KPC.ownsCourse(c)).forEach(c => {
     const en = KPC.enrollDocs.find(d => d.courseId === c.id), req = S.request[c.id], rj = S.rejected[c.id];
     if (KPC.canCourse(c.id, c)) {
-      if (en) out.push({ c, tone: 'ok', label: en.by === 'invite' ? 'ใช้โค้ดเชิญแล้ว' : 'อนุมัติแล้ว', text: 'คุณเข้าเรียนคอร์สนี้ได้แล้ว', at: en.createdAt, notify: true });
+      if (en) out.push({ c, tone: 'ok', label: en.by === 'invite' ? 'ใช้โค้ดเชิญแล้ว' : en.by === 'open' ? 'สมัครเรียนแล้ว' : 'อนุมัติแล้ว', text: 'คุณเข้าเรียนคอร์สนี้ได้แล้ว', at: en.createdAt, notify: true });
     } else if (req) out.push({ c, tone: 'warn', label: req.amount ? 'รอตรวจยอด' : 'รออนุมัติ', text: req.amount ? `แจ้งโอน ${KPC.baht(req.amount)} แล้ว ครูกำลังตรวจสอบ` : 'ส่งคำขอแล้ว รอครูอนุมัติ', at: req.createdAt, notify: false });
     else if (rj) out.push({ c, tone: 'bad', label: rj.kind === 'revoke' ? 'ถูกถอนสิทธิ์' : 'คำขอไม่ผ่าน', text: rj.reason ? 'เหตุผลจากครู: ' + rj.reason : 'ครูไม่ได้ระบุเหตุผล', at: rj.createdAt, notify: true });
   });
@@ -1253,10 +1253,13 @@ function tocHtml(c, i) {
     ${units.map((u, ui) => u.name ? `<details class="unit"${u.items.some(([, j]) => j === i) || units.length < 4 ? ' open' : ''}><summary><span class="un">${ui + 1}.</span><span class="ut">${esc(u.name.replace(/^\d+\s*[.·:-]?\s*/, ''))}</span><small>${u.items.length} บท</small></summary>${u.items.map(row).join('')}</details>` : u.items.map(row).join('')).join('')}`;
 }
 
+const isOpenCourse = c => !!c.openEnroll && !(c.price > 0);
 function lockPanel(c) {
-  const user = KPC.user(), req = S.request[c.id], paid = c.price > 0;
+  const user = KPC.user(), req = S.request[c.id], paid = c.price > 0, open = isOpenCourse(c), revoked = (S.rejected[c.id] || {}).kind === 'revoke';
   let inner;
-  if (!user) inner = paid
+  if (open && !user) inner = `<div class="ic">🔑</div><h3>คอร์สนี้เรียนฟรีทุกบท</h3><p>สมัครบัญชีฟรีก่อน แล้วกดสมัครเรียน เข้าเรียนได้ทันที ไม่ต้องรออนุมัติ</p><div class="row"><button class="btn solid" type="button" data-login="register">สมัครบัญชีฟรี</button><button class="btn" type="button" data-login="login">เข้าสู่ระบบ</button></div>`;
+  else if (open && !revoked) inner = `<div class="ic">🎓</div><h3>คอร์สนี้เรียนฟรีทุกบท</h3><p>กดสมัครด้วยบัญชี <b>${esc(user.email)}</b> แล้วเข้าเรียนได้ทันที ไม่ต้องรออนุมัติ</p><div class="row"><button class="btn solid" type="button" data-join="${esc(c.id)}">สมัครเรียนฟรี</button></div>`;
+  else if (!user) inner = paid
     ? `<div class="ic">🔑</div><h3>คอร์สนี้ราคา ${KPC.baht(c.price)}</h3><p>สมัครบัญชีฟรีก่อน แล้วชำระผ่านพร้อมเพย์ ครูตรวจยอดแล้วจะเปิดทุกบทให้</p>${(c.outline || []).some(l => l.free) ? '<span class="hand">ระหว่างนี้ลองบทที่เขียนว่า “ฟรี” ในสารบัญได้เลย</span>' : ''}<div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว</button></div>`
     : `<div class="ic">🔑</div><h3>สมัครฟรีเพื่อเรียนบทนี้</h3><p>บทนี้สำหรับนักเรียนในคอร์ส สมัครบัญชีฟรี แล้วกด “ขอสิทธิ์จากครู”</p>${(c.outline || []).some(l => l.free) ? '<span class="hand">ระหว่างนี้ลองบทที่เขียนว่า “ฟรี” ในสารบัญได้เลย</span>' : ''}<div class="row"><button class="btn solid" type="button" data-login="register">สมัครฟรี</button><button class="btn" type="button" data-login="login">มีบัญชีแล้ว</button></div>`;
   else if (req) inner = `<div class="ic">⏳</div><h3>${req.amount ? `แจ้งโอน ${KPC.baht(req.amount)} แล้ว รอครูตรวจยอด` : 'ส่งคำขอแล้ว รอครูอนุมัติ'}</h3><p>ส่งเมื่อ ${esc(fmtDate(req.createdAt) || 'เมื่อสักครู่')} ในชื่อ <b>${esc(user.email)}</b>${req.payRef ? ` · อ้างอิง “${esc(req.payRef)}”` : ''} พอครูอนุมัติ บทเรียนจะเปิดให้ทันที</p><div class="row"><button class="btn solid sm" type="button" data-recheck>ตรวจสิทธิ์อีกครั้ง</button><button class="btn bad sm" type="button" data-cancel="${esc(c.id)}">ยกเลิกคำขอ</button></div>`;
@@ -1274,7 +1277,7 @@ function lockPanel(c) {
     <div class="field" style="width:min(440px,100%);text-align:left"><label for="reqContact">เบอร์โทรหรือ LINE สำหรับติดต่อกลับ (ไม่บังคับ)</label><input type="text" id="reqContact" maxlength="100" placeholder="เช่น 081-234-5678 หรือ LINE: kp-student"><small class="sub">เห็นเฉพาะครูผู้สอนและแอดมิน</small></div>
     <div class="row"><button class="btn solid" type="button" data-request="${esc(c.id)}">ขอสิทธิ์จากครู</button></div>`;
   const rj = !req && S.rejected[c.id];
-  const invite = user ? `<div class="invite-box"><label class="sub" for="inviteCode">มีโค้ดเชิญจากครู? กรอกแล้วเข้าเรียนได้ทันที</label><div class="row"><input type="text" id="inviteCode" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX" aria-label="โค้ดเชิญ"><button class="btn sm" type="button" data-redeem>ใช้โค้ด</button></div></div>`
+  const invite = open && !revoked ? '' : user ? `<div class="invite-box"><label class="sub" for="inviteCode">มีโค้ดเชิญจากครู? กรอกแล้วเข้าเรียนได้ทันที</label><div class="row"><input type="text" id="inviteCode" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX" aria-label="โค้ดเชิญ"><button class="btn sm" type="button" data-redeem>ใช้โค้ด</button></div></div>`
     : '<p class="sub">มีโค้ดเชิญจากครู? เข้าสู่ระบบก่อน แล้วกรอกโค้ดในหน้านี้</p>';
   return `<div class="lock">${rj ? `<div class="note" style="width:min(640px,100%);text-align:left;margin-bottom:16px"><b>${rj.kind === 'revoke' ? 'ครูถอนสิทธิ์เรียนคอร์สนี้แล้ว' : 'คำขอครั้งก่อนไม่ผ่าน'}</b><br>${rj.reason ? 'เหตุผลจากครู: ' + esc(rj.reason) : 'ครูไม่ได้ระบุเหตุผล'} · ${rj.kind === 'revoke' ? 'ถ้าคิดว่าผิดพลาด กรุณาติดต่อครูผู้สอนก่อนส่งคำขอใหม่' : 'แก้ไขแล้วส่งใหม่ได้ หรือติดต่อครูผู้สอน'}</div>` : ''}${inner}${invite}</div>`;
 }
@@ -1340,6 +1343,7 @@ function head(c, i) {
   if (!own) side += user ? `<a class="btn sm" href="#/chat/${encodeURIComponent(c.id)}/${i + 1}">ถามครู</a>` : '<button class="btn sm" type="button" data-login="login">ถามครู</button>';
   // ปุ่มสมัครเรียน: ผู้เยี่ยมชม = สมัครบัญชี · ล็อกอินแล้ว = เปิดฟอร์มขอสิทธิ์/แจ้งโอน
   if (!ok) side += !user ? '<button class="btn solid sm" type="button" data-login="register">สมัครเรียน</button>'
+    : isOpenCourse(c) && (S.rejected[c.id] || {}).kind !== 'revoke' ? `<button class="btn solid sm" type="button" data-join="${esc(c.id)}">สมัครเรียนฟรี</button>`
     : S.request[c.id] ? '<button class="btn sm" type="button" data-enroll>รอครูอนุมัติ</button>'
     : '<button class="btn solid sm" type="button" data-enroll>สมัครเรียน</button>';
   return `${crumb()}
@@ -1495,6 +1499,22 @@ document.addEventListener('click', async e => {
       toast(CHAT.support ? 'ส่งข้อความถึงแอดมินแล้ว' : 'ส่งข้อความถึงครูแล้ว');
       route();
     } catch (err) { cs.disabled = false; cs.textContent = 'ส่งข้อความ'; toast('ส่งไม่สำเร็จ: ' + (err.code || err.message), true); }
+    return;
+  }
+  const jn = e.target.closest('[data-join]');
+  if (jn) {
+    const c = S.courses.find(x => x.id === jn.dataset.join) || (CUR && CUR.c), label = jn.textContent;
+    jn.disabled = true; jn.textContent = 'กำลังสมัคร…';
+    try {
+      await KPC.joinOpenCourse(c);
+      KPC.notify('enrolled', KPC.threadId(c.id));
+      delete S.request[c.id]; S.rejected[c.id] = null; await loadUserCourseState([c]);
+      toast('สมัครสำเร็จ เข้าเรียนได้เลย');
+      route();
+    } catch (err) {
+      jn.disabled = false; jn.textContent = label;
+      toast(err.code === 'permission-denied' ? 'สมัครไม่สำเร็จ คอร์สนี้อาจปิดการสมัครแล้ว ลองโหลดหน้าใหม่' : 'เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', true);
+    }
     return;
   }
   const rd = e.target.closest('[data-redeem]');

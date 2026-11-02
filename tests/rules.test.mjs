@@ -456,3 +456,29 @@ test('admin ปลอม (อีเมลเดียวกันแต่ไม
   await assertFails(setDoc(doc(db, 'staff', 'x@x.com'), { email: 'x@x.com', active: true }));
   await assertFails(updateDoc(doc(db, 'courses/c1'), { title: 'x' }));
 });
+
+test('สมัครเองในคอร์สเปิด: ต้องฟรี เผยแพร่ เปิดตัวเลือก และไม่เคยถูกถอนสิทธิ์', async () => {
+  await env.withSecurityRulesDisabled(async ctx => {
+    const db = ctx.firestore();
+    await setDoc(doc(db, 'courses', 'open'), { title: 'เปิด', owner: T1, published: true, price: 0, openEnroll: true });
+    await setDoc(doc(db, 'courses', 'openPaid'), { title: 'เปิดแต่มีราคา', owner: T1, published: true, price: 199, openEnroll: true });
+    await setDoc(doc(db, 'courses', 'openDraft'), { title: 'เปิดแต่ร่าง', owner: T1, published: false, price: 0, openEnroll: true });
+    await setDoc(doc(db, 'courses', 'closed'), { title: 'ต้องอนุมัติ', owner: T1, published: true, price: 0 });
+    await setDoc(doc(db, 'course_revoked', 's2_open'), { uid: 's2', courseId: 'open', owner: T1, reason: 'x' });
+  });
+  const mine = (cid, extra = {}) => ({ uid: 's1', email: 's1@mail.com', name: 'นักเรียน', courseId: cid, owner: T1, by: 'open', createdAt: new Date(), ...extra });
+  const en = (db, id) => doc(db, 'enrollments', id);
+  await assertFails(setDoc(en(guest(), 's1_open'), mine('open')));
+  await assertFails(setDoc(en(stu(), 's1_openPaid'), mine('openPaid')));
+  await assertFails(setDoc(en(stu(), 's1_openDraft'), mine('openDraft')));
+  await assertFails(setDoc(en(stu(), 's1_closed'), mine('closed')));
+  await assertFails(setDoc(en(stu(), 's2_open'), mine('open', { uid: 's2' })));       // สมัครให้คนอื่น
+  await assertFails(setDoc(en(stu(), 's1_open'), mine('open', { email: 'x@mail.com' })));
+  await assertFails(setDoc(en(stu(), 's1_open'), mine('open', { owner: T2 })));
+  await assertFails(setDoc(en(stu(), 's1_open'), mine('open', { by: 'teacher' })));
+  await assertFails(setDoc(en(stu(), 's1_open'), mine('open', { extra: 1 })));
+  await assertFails(setDoc(en(stu2(), 's2_open'), mine('open', { uid: 's2', email: 's2@mail.com' })));   // ถูกถอนสิทธิ์แล้ว
+  await assertSucceeds(setDoc(en(stu(), 's1_open'), mine('open')));
+  await assertSucceeds(getDoc(doc(stu(), 'courses/open/lessons/any')));
+});
+

@@ -501,6 +501,16 @@ KPC.redeemInvite = async function (c, input) {
     try { const s = await col(name).doc(pid(u.uid, c.id)).get(); if (s.exists) await s.ref.delete(); } catch (e) { /* ไม่มี = จบ */ }
   }
 };
+// คอร์สที่ครูเปิด “สมัครแล้วเรียนได้ทันที” · rules ตรวจว่าฟรี เผยแพร่แล้ว และไม่เคยถูกถอนสิทธิ์
+KPC.joinOpenCourse = async function (c) {
+  const u = KPC.user(); if (!u) throw new Error('ยังไม่ได้เข้าสู่ระบบ');
+  await col('enrollments').doc(pid(u.uid, c.id)).set({ uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, owner: c.owner || '', by: 'open', createdAt: FS().serverTimestamp() });
+  KPC.enrolled = Array.from(new Set(KPC.enrolled.concat(c.id)));
+  KPC.enrollDocs = KPC.enrollDocs.concat({ courseId: c.id, by: 'open', createdAt: { seconds: Date.now() / 1000 } });
+  // คำขอหรือเหตุผลเก่าจากตอนยังต้องอนุมัติ ไม่ใช้แล้ว
+  if (await KPC.getMyRequest(c.id)) await KPC.cancelRequest(c.id).catch(() => {});
+  await KPC.clearRejection(c.id);
+};
 KPC.clearRejection = cid => col('course_rejections').doc(pid(KPC.uid(), cid)).delete().catch(() => {});
 KPC.getMyRequest = async function (cid) {
   const uid = KPC.uid(); if (!uid) return null;

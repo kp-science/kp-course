@@ -87,6 +87,14 @@ test('เข้าด้วยโค้ดเชิญ: เจ้าของส
   assert.equal(call('tok_s1', 'enrolled', 's1_c1').skipped, 'cooldown');
   assert.equal(sent.length, 1);
 });
+test('สมัครเองในคอร์สเปิด: เจ้าของสิทธิ์ได้เมลของตัวเอง · เนื้อหาไม่พูดถึงโค้ดเชิญ', () => {
+  docs['enrollments/s1_c1'].by = 'open';
+  assert.equal(call('tok_s2', 'enrolled', 's1_c1').error, 'forbidden');
+  assert.equal(call('tok_s1', 'enrolled', 's1_c1').ok, true);
+  assert.equal(sent[0].to, 's1@mail.com');
+  assert.match(sent[0].body, /สมัครเรียนคอร์ส คอร์สหนึ่ง/);
+  assert.doesNotMatch(sent[0].body, /โค้ดเชิญ/);
+});
 test('ติดต่อแอดมิน: เจ้าของแจ้งแอดมินได้ · แอดมินตอบได้ · ครูตอบไม่ได้', () => {
   assert.equal(call('tok_s1', 'new-support', 's1').ok, true);
   assert.equal(sent[0].to, ADMIN);

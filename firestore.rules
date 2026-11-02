@@ -132,6 +132,25 @@ service cloud.firestore {
         && getAfter(invitePath(d.code)).data.usedBy == request.auth.uid;
     }
 
+    // สมัครเองในคอร์สที่ครูเปิด “สมัครแล้วเรียนได้ทันที”: ต้องฟรีและเผยแพร่แล้ว · คนที่ถูกถอนสิทธิ์สมัครเองซ้ำไม่ได้
+    function joiningOpenCourse(eid) {
+      let d = request.resource.data;
+      let c = courseDoc(d.courseId);
+      return signedIn()
+        && eid == request.auth.uid + '_' + d.courseId
+        && d.uid == request.auth.uid
+        && d.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'owner', 'by', 'createdAt'])
+        && d.email == myEmail()
+        && d.by == 'open'
+        && d.name is string
+        && d.name.size() <= 200
+        && d.owner == c.get('owner', '')
+        && c.get('published', false) == true
+        && c.get('openEnroll', false) == true
+        && c.get('price', 0) == 0
+        && !exists(/databases/$(database)/documents/course_revoked/$(eid));
+    }
+
     // ── สิทธิ์เข้าเรียน: id = <uid>_<courseId> ─────
     match /enrollments/{eid} {
       allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
@@ -141,7 +160,8 @@ service cloud.firestore {
         && request.resource.data.get('contact', '') is string
         && request.resource.data.get('contact', '').size() <= 100
         && request.resource.data.owner == ownerOf(request.resource.data.courseId))
-        || redeemingInvite(eid);
+        || redeemingInvite(eid)
+        || joiningOpenCourse(eid);
       allow update: if isAdmin();
       allow delete: if isAdmin() || teacherOwns(resource.data);
     }

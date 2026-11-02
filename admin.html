@@ -214,7 +214,7 @@ body.lesson-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=3"></script>
-<script src="course-core.js?v=21"></script>
+<script src="course-core.js?v=22"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -575,7 +575,8 @@ function courseForm(c, isNew) {
     <div class="field"><label>ลำดับการแสดง (น้อยขึ้นก่อน)</label><input type="number" name="order" value="${esc(c.order || 0)}"></div>
     <div class="field full"><label>คำแนะนำคอร์ส (แสดงเหนือบทที่ 1 · ทุกคนอ่านได้)</label><textarea name="body">${esc(c.body || '')}</textarea></div>
     ${isAdmin() && !isNew ? `<div class="field full"><label>ครูเจ้าของคอร์ส</label><select name="owner">${owners.map(o => `<option value="${esc(o.id)}"${o.id === c.owner ? ' selected' : ''}>${esc(o.name || o.id)}${o.id !== KPC.ADMIN_EMAIL ? ' · ' + esc(o.id) : ''}</option>`).join('')}</select><span class="hint">ครูเจ้าของแก้คอร์ส อนุมัตินักเรียน และดูความคืบหน้าได้ · เปลี่ยนแล้ว สิทธิ์/คำขอ/ความคืบหน้าจะย้ายตาม</span></div>` : ''}
-    <div class="field full"><label>ราคา (บาท) <span class="sub">— 0 = ฟรี (กดขอสิทธิ์แล้วครูอนุมัติแบบเดิม)</span></label><input type="number" name="price" min="0" step="1" value="${esc(c.price || 0)}" style="max-width:200px"></div>
+    <div class="field full"><label>ราคา (บาท) <span class="sub">— 0 = ฟรี</span></label><input type="number" name="price" min="0" step="1" value="${esc(c.price || 0)}" style="max-width:200px"></div>
+    <label class="switchrow full" id="openRow"${c.price > 0 ? ' hidden' : ''}><input type="checkbox" name="openEnroll" class="chk"${c.openEnroll ? ' checked' : ''} style="width:20px;height:20px;accent-color:var(--accent)"><span class="bd"><b>สมัครแล้วเรียนได้ทันที</b><small>นักเรียนกดสมัครแล้วเรียนได้ทุกบท ไม่ต้องรอครูอนุมัติ · ปิดไว้ = กดขอสิทธิ์แล้วครูอนุมัติ</small></span></label>
     <div class="full paybox" id="payFields"${c.price > 0 ? '' : ' hidden'}>
       <div class="form" style="grid-template-columns:1fr">
         <div class="field"><label>พร้อมเพย์ (เบอร์มือถือ 10 หลัก หรือเลขบัตรประชาชน 13 หลัก)</label><input type="text" name="promptpay" inputmode="numeric" placeholder="08x-xxx-xxxx"><span class="hint">นักเรียนที่ล็อกอินแล้วเท่านั้นที่เห็น QR · ผู้เยี่ยมชมไม่เห็นเลขนี้</span></div>
@@ -592,6 +593,7 @@ function readCourseForm() {
   const o = { id: slug(v('id').value), title: v('title').value.trim(), subject: v('subject').value, level: v('level').value, author: v('author').value.trim(),
     order: Number(v('order').value) || 0, summary: v('summary').value.trim(), cover: v('cover').value.trim(), body: v('body').value, published: v('published').checked,
     price: Math.max(0, Math.round(Number(v('price').value) || 0)) };
+  o.openEnroll = !o.price && v('openEnroll').checked;
   if (v('owner')) o.owner = v('owner').value;
   return o;
 }
@@ -603,6 +605,7 @@ function payPreview() {
   const f = $('cform'); if (!f) return;
   const price = Number(f.querySelector('[name=price]').value) || 0, p = readPay(), box = $('payPreview');
   $('payFields').hidden = !(price > 0);
+  $('openRow').hidden = price > 0;
   const payload = KPC.promptpay(p.promptpay, price);
   if (!payload || !window.qrcode) { box.innerHTML = `<div class="qh">ตัวอย่าง QR</div><span>${p.promptpay ? 'เลขพร้อมเพย์ไม่ถูกรูปแบบ' : 'ใส่เลขพร้อมเพย์'}</span>`; return; }
   const qr = qrcode(0, 'M'); qr.addData(payload); qr.make();
