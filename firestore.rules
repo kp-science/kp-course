@@ -26,7 +26,9 @@ rules_version = '2';
 //   /course_invites/{code}          — โค้ดเชิญ (ครูสร้าง · ใช้ได้ครั้งเดียว · อ่านได้เมื่อรู้โค้ด แต่ค้นรายการไม่ได้)
 //   /course_revoked/{uid}_{cid}     — รายชื่อที่ถูกถอนสิทธิ์ + เหตุผล (ครูเขียน/ลบ · นักเรียนเจ้าของอ่านอย่างเดียว · ไม่ให้สิทธิ์เรียน)
 //   /course_slips/{uid}_{cid}       — รูปสลิปการโอน (JPEG ย่อแล้วเก็บเป็นข้อความ · เห็นเฉพาะเจ้าของ/ครูเจ้าของคอร์ส/แอดมิน)
-//   enrollments / progress / requests เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
+//   /courses/{cid}/games/{lid}      — ข้อมูลเกมของบท (คำถามในเกม · JSON เป็นข้อความ) อ่านได้เหมือนเนื้อหาบท
+//   /game_scores/{uid}_{cid}_{lid}  — คะแนนเกมของนักเรียน (นักเรียนเขียนของตัวเอง · ครูเจ้าของคอร์สอ่าน/ลบ)
+//   enrollments / progress / requests / game_scores เก็บ owner ของคอร์สไว้ด้วย → ครูค้นด้วย where('owner','==',อีเมลตัวเอง)
 // ═══════════════════════════════════════════════════════════════
 
 service cloud.firestore {
@@ -55,6 +57,11 @@ service cloud.firestore {
     function hasCourse(cid) { return ownsCourse(cid) || enrolled(cid) || legacyCourse(cid); }
     // ครูที่เป็นเจ้าของ (ใช้กับ enrollments / progress / requests ที่เก็บ owner)
     function teacherOwns(data) { return isTeacher() && data.get('owner', '') == myEmail(); }
+    // บทฟรีของคอร์สที่เผยแพร่แล้ว (ไม่มีบท = ไม่ฟรี)
+    function lessonFree(cid, lid) {
+      let L = /databases/$(database)/documents/courses/$(cid)/lessons/$(lid);
+      return exists(L) && get(L).data.get('free', false) == true && courseDoc(cid).published == true;
+    }
     function isMine(data) { return signedIn() && data.get('uid', '') == request.auth.uid; }
 
     // ── ครู ─────────────────────────────────────
@@ -93,6 +100,12 @@ service cloud.firestore {
       match /lessons/{lid} {
         allow read: if hasCourse(cid)
           || (resource.data.free == true && courseDoc(cid).published == true);
+        allow write: if ownsCourse(cid);
+      }
+
+      // ข้อมูลเกมของบท id = รหัสบท — มีคำถามในเกม จึงอ่านได้เท่ากับเนื้อหาบทนั้น
+      match /games/{lid} {
+        allow read: if hasCourse(cid) || lessonFree(cid, lid);
         allow write: if ownsCourse(cid);
       }
 
@@ -337,6 +350,26 @@ service cloud.firestore {
         && request.resource.data.usedBy == request.auth.uid
         && request.resource.data.usedEmail == myEmail()
         && existsAfter(/databases/$(database)/documents/enrollments/$(request.auth.uid + '_' + resource.data.courseId)));
+      allow delete: if isAdmin() || teacherOwns(resource.data);
+    }
+
+    // ── คะแนนเกม: id = <uid>_<courseId>_<lessonId> ─────
+    // คะแนนมาจากเครื่องนักเรียน (ไม่มี Cloud Functions ตรวจ) → ใช้ติดตามการฝึก ไม่ใช่คะแนนสอบ
+    match /game_scores/{sid} {
+      allow read: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
+      allow create, update: if signedIn()
+        && sid == request.auth.uid + '_' + request.resource.data.courseId + '_' + request.resource.data.lessonId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'courseId', 'lessonId', 'owner', 'engine',
+                                                 'stars', 'tries', 'xp', 'topics', 'updatedAt'])
+        && request.resource.data.email == myEmail()
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.stars is map && request.resource.data.stars.size() <= 40
+        && request.resource.data.tries is map && request.resource.data.tries.size() <= 40
+        && request.resource.data.topics is map && request.resource.data.topics.size() <= 40
+        && request.resource.data.xp is int && request.resource.data.xp >= 0 && request.resource.data.xp <= 100000
+        && request.resource.data.owner == ownerOf(request.resource.data.courseId)
+        && (hasCourse(request.resource.data.courseId) || lessonFree(request.resource.data.courseId, request.resource.data.lessonId));
       allow delete: if isAdmin() || teacherOwns(resource.data);
     }
 

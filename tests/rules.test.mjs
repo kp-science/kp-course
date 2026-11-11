@@ -482,3 +482,53 @@ test('สมัครเองในคอร์สเปิด: ต้องฟ
   await assertSucceeds(getDoc(doc(stu(), 'courses/open/lessons/any')));
 });
 
+
+test('ข้อมูลเกม: อ่านได้เท่าเนื้อหาบท · เฉพาะเจ้าของคอร์สเขียน', async () => {
+  await env.withSecurityRulesDisabled(async ctx => {
+    const db = ctx.firestore();
+    await setDoc(doc(db, 'courses/c1/games/free'), { engine: 'motion-lab', data: '{}' });
+    await setDoc(doc(db, 'courses/c1/games/paid'), { engine: 'motion-lab', data: '{}' });
+    await setDoc(doc(db, 'courses/c1draft/games/free'), { engine: 'motion-lab', data: '{}' });
+  });
+  await assertSucceeds(getDoc(doc(guest(), 'courses/c1/games/free')));
+  await assertFails(getDoc(doc(guest(), 'courses/c1/games/paid')));
+  await assertFails(getDoc(doc(guest(), 'courses/c1draft/games/free')));   // คอร์สร่าง
+  await assertFails(getDoc(doc(stu2(), 'courses/c1/games/paid')));
+  await assertFails(getDoc(doc(guest(), 'courses/c1/games/nolesson')));
+  await assertSucceeds(getDoc(doc(stu(), 'courses/c1/games/paid')));
+  await assertSucceeds(setDoc(doc(t1(), 'courses/c1/games/paid'), { engine: 'motion-lab', data: '{"a":1}' }));
+  await assertFails(setDoc(doc(t2(), 'courses/c1/games/paid'), { engine: 'motion-lab', data: '{}' }));
+  await assertFails(setDoc(doc(stu(), 'courses/c1/games/paid'), { engine: 'motion-lab', data: '{}' }));
+  await assertSucceeds(deleteDoc(doc(t1(), 'courses/c1/games/paid')));
+});
+
+test('คะแนนเกม: นักเรียนเขียนของตัวเอง · ครูเจ้าของคอร์สอ่าน/ลบ · คนอื่นไม่ได้', async () => {
+  const sc = (extra = {}) => ({ uid: 's1', email: 's1@mail.com', name: 'S1', courseId: 'c1', lessonId: 'paid', owner: T1, engine: 'motion-lab',
+    stars: { shoot: [3, 2] }, tries: { shoot: [1, 4] }, xp: 50, topics: { 6: 28 }, updatedAt: new Date(), ...extra });
+  const ref = (db, id = 's1_c1_paid') => doc(db, 'game_scores', id);
+  await assertFails(setDoc(ref(guest()), sc()));
+  await assertFails(setDoc(ref(stu2(), 's1_c1_paid'), sc()));                       // เขียนแทนคนอื่น
+  await assertFails(setDoc(ref(stu(), 's1_c1_other'), sc()));                       // id ไม่ตรงบท
+  await assertFails(setDoc(ref(stu()), sc({ owner: T2 })));
+  await assertFails(setDoc(ref(stu()), sc({ email: 'x@mail.com' })));
+  await assertFails(setDoc(ref(stu()), sc({ xp: 1e6 })));
+  await assertFails(setDoc(ref(stu()), sc({ xp: 1.5 })));
+  await assertFails(setDoc(ref(stu()), sc({ stars: [3] })));
+  await assertFails(setDoc(ref(stu()), sc({ extra: 1 })));
+  await assertSucceeds(setDoc(ref(stu()), sc()));
+  await assertSucceeds(setDoc(ref(stu()), sc({ xp: 60 }), { merge: true }));
+  // บทเสียเงินของคอร์สที่ไม่มีสิทธิ์ไม่ได้ · บทฟรีของคอร์สเผยแพร่ได้
+  await assertFails(setDoc(ref(stu(), 's1_c2_paid'), sc({ courseId: 'c2', owner: T2 })));
+  await assertSucceeds(setDoc(ref(stu2(), 's2_c1_free'), sc({ uid: 's2', email: 's2@mail.com', lessonId: 'free' })));
+  await assertFails(setDoc(ref(stu2(), 's2_c1draft_free'), sc({ uid: 's2', email: 's2@mail.com', courseId: 'c1draft', lessonId: 'free' })));
+  // อ่าน
+  await assertSucceeds(getDoc(ref(stu())));
+  await assertFails(getDoc(ref(stu2())));
+  await assertSucceeds(getDocs(query(collection(t1(), 'game_scores'), where('owner', '==', T1), where('courseId', '==', 'c1'))));
+  await assertFails(getDocs(query(collection(t2(), 'game_scores'), where('owner', '==', T1))));
+  await assertFails(getDocs(query(collection(t1(), 'game_scores'), where('courseId', '==', 'c1'))));   // ไม่กรอง owner
+  await assertSucceeds(getDocs(query(collection(admin(), 'game_scores'), where('courseId', '==', 'c1'))));
+  await assertFails(deleteDoc(ref(t2())));
+  await assertFails(deleteDoc(ref(stu())));
+  await assertSucceeds(deleteDoc(ref(t1())));
+});

@@ -214,7 +214,7 @@ body.lesson-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=3"></script>
-<script src="course-core.js?v=22"></script>
+<script src="course-core.js?v=23"></script>
 <script>
 (function () {
 const { esc, renderBody, typeset } = KPC;
@@ -233,7 +233,7 @@ const fail = e => toast('❌ ' + (e.code === 'permission-denied' ? 'ไม่ม
 const isAdmin = () => KPC.role === 'admin';
 
 /* ===================== สถานะ ===================== */
-const S = { courses: [], requests: [], enroll: [], revoked: [], threads: [], support: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null };
+const S = { courses: [], requests: [], enroll: [], revoked: [], threads: [], support: [], progress: [], staff: [], studentDocs: [], mFilter: 'all', mQuery: '', cur: null, tab: 'info', lessons: [], editLid: null, students: null, cprog: null, gscores: null, packs: {}, gameLid: null };
 const courseOf = cid => S.courses.find(c => c.id === cid);
 const staffName = email => email === KPC.ADMIN_EMAIL ? 'แอดมิน' : ((S.staff.find(s => s.id === email) || {}).name || email || '—');
 const pctOf = (p, c) => { const o = (c && c.outline) || []; if (!o.length) return 0; return Math.round((p.done || []).filter(x => o.some(l => l.id === x)).length / o.length * 100); };
@@ -532,8 +532,8 @@ function membersCsv() {
 async function openCourse(cid, tab) {
   const changed = !S.cur || S.cur.id !== cid;
   S.cur = courseOf(cid);
-  S.tab = ['info', 'lessons', 'students', 'news', 'invites', 'progress'].includes(tab) ? tab : (changed ? 'lessons' : S.tab);
-  if (changed) { S.students = null; S.cprog = null; S.invites = null; S.news = null; }
+  S.tab = ['info', 'lessons', 'students', 'news', 'invites', 'progress', 'games'].includes(tab) ? tab : (changed ? 'lessons' : S.tab);
+  if (changed) { S.students = null; S.cprog = null; S.invites = null; S.news = null; S.gscores = null; S.packs = {}; }
   drawSide();
   if (changed || !S.lessons) {
     $('main').innerHTML = '<div class="skel" style="width:40%;height:28px"></div><div class="skel"></div>';
@@ -548,7 +548,7 @@ function drawMain() {
   const c = S.cur; if (!c) return;
   document.title = c.title + ' · ห้องครู';
   const st = courseStats(c);
-  const T = [['lessons', '', `บทเรียน <span class="sub">${(S.lessons || []).length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['news', '', 'ประกาศ'], ['invites', '', 'โค้ดเชิญ'], ['progress', '', 'ความคืบหน้า'], ['info', '', 'ข้อมูลคอร์ส']];
+  const T = [['lessons', '', `บทเรียน <span class="sub">${(S.lessons || []).length}</span>`], ['students', '', `นักเรียน${st.req ? ` <span class="count">${st.req}</span>` : ` <span class="sub">${st.n}</span>`}`], ['news', '', 'ประกาศ'], ['invites', '', 'โค้ดเชิญ'], ['progress', '', 'ความคืบหน้า']].concat((S.lessons || []).some(l => l.game) ? [['games', '', 'คะแนนเกม']] : []).concat([['info', '', 'ข้อมูลคอร์ส']]);
   $('main').innerHTML = `
     <div class="ph"><div>
       <div class="row" style="gap:6px;margin-bottom:6px">${c.published ? '<span class="pill ok">● เผยแพร่แล้ว</span>' : '<span class="pill warn">○ ร่าง — นักเรียนยังไม่เห็น</span>'}${isAdmin() ? `<span class="pill">ผู้สอน: ${esc(staffName(c.owner))}</span>` : ''}</div>
@@ -557,7 +557,7 @@ function drawMain() {
     <div class="tabs" role="tablist">${T.map(t => `<button type="button" role="tab" data-tab="${t[0]}" class="${S.tab === t[0] ? 'on' : ''}">${t[2]}</button>`).join('')}</div>
     <div id="pane"></div>`;
   history.replaceState(null, '', '#/c/' + encodeURIComponent(c.id) + '/' + S.tab);
-  ({ info: drawInfo, lessons: drawLessons, students: drawStudents, news: drawNews, invites: drawInvites, progress: drawProgress })[S.tab]();
+  ({ info: drawInfo, lessons: drawLessons, students: drawStudents, news: drawNews, invites: drawInvites, progress: drawProgress, games: drawGames })[S.tab]();
 }
 
 /* ---------- ข้อมูลคอร์ส ---------- */
@@ -653,10 +653,10 @@ function drawLessons() {
   if (!L) { $('pane').innerHTML = '<div class="card"><div class="empty">โหลดรายชื่อบทไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วลองใหม่<div style="margin-top:14px"><button class="btn sm" type="button" data-act="reload-lessons">ลองใหม่</button></div></div></div>'; return; }
   const edit = S.editLid ? (L.find(l => l.id === S.editLid) || { id: S.editLid, _new: true, order: L.length + 1, unit: (L[L.length - 1] || {}).unit || '' }) : null;
   $('pane').innerHTML = `<div class="card"><div class="card-h"><h2>บทเรียน</h2><small class="sub" id="orderSt" aria-live="polite">${S.orderSt || (L.length > 1 ? 'ลากที่ขีดด้านหน้าเพื่อจัดลำดับ' : '')}</small><span class="sp"></span><button class="btn solid sm" type="button" data-act="new-lesson">＋ เพิ่มบท</button></div>
-    <div id="lessonRows">${L.map((l, i) => `<div class="lrow${S.editLid === l.id ? ' on' : ''}" data-lid="${esc(l.id)}">${L.length > 1 ? `<button class="grip" type="button" data-grip aria-label="ลากเพื่อจัดลำดับ หรือกดลูกศรขึ้นลงบนแป้นพิมพ์">${GRIP}</button>` : ''}<span class="n">${i + 1}</span><span class="t"><b>${esc(l.title || '(ไม่มีชื่อ)')}</b><small>${l.unit ? `<span>${esc(l.unit)}</span>` : ''}${l.video ? '<span class="pill info">🎬 คลิป</span>' : '<span class="pill">ไม่มีคลิป</span>'}${l.dur ? `<span>⏱ ${esc(l.dur)}</span>` : ''}${l.free ? '<span class="pill ok">ฟรี</span>' : ''}</small></span>
+    <div id="lessonRows">${L.map((l, i) => `<div class="lrow${S.editLid === l.id ? ' on' : ''}" data-lid="${esc(l.id)}">${L.length > 1 ? `<button class="grip" type="button" data-grip aria-label="ลากเพื่อจัดลำดับ หรือกดลูกศรขึ้นลงบนแป้นพิมพ์">${GRIP}</button>` : ''}<span class="n">${i + 1}</span><span class="t"><b>${esc(l.title || '(ไม่มีชื่อ)')}</b><small>${l.unit ? `<span>${esc(l.unit)}</span>` : ''}${l.video ? '<span class="pill info">🎬 คลิป</span>' : '<span class="pill">ไม่มีคลิป</span>'}${l.dur ? `<span>⏱ ${esc(l.dur)}</span>` : ''}${l.game ? '<span class="pill info">เกม</span>' : ''}${l.free ? '<span class="pill ok">ฟรี</span>' : ''}</small></span>
       <button class="btn xs" type="button" data-edit="${esc(l.id)}">แก้</button></div>`).join('') || '<div class="empty"><span class="ic">📝</span>ยังไม่มีบทเรียน — กด “＋ เพิ่มบท”</div>'}</div>
     </div>${edit ? lessonForm(edit) : ''}`;
-  if (edit) { $('lform').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  if (edit) { $('lform').scrollIntoView({ behavior: 'smooth', block: 'start' }); packHint(edit); }
 }
 function videoHintHtml(u) {
   const issue = KPC.videoIssue(u);
@@ -674,6 +674,8 @@ function lessonForm(l) {
     <div class="field"><label>ความยาวคลิป</label><input type="text" name="dur" value="${esc(l.dur || '')}" placeholder="12:30"></div>
     <div class="field"><label>เอกสาร (ลิงก์ Drive/PDF)</label><input type="url" name="file" value="${esc(l.file || '')}"></div>
     <div class="field"><label>แบบทดสอบ (ลิงก์ Google Form ฯลฯ)</label><input type="url" name="quiz" value="${esc(l.quiz || '')}"></div>
+    <div class="field"><label>เกมของบท <span class="sub">(ไม่มีคลิป = เกมอยู่ในจอใหญ่)</span></label><select name="game"><option value="">ไม่มีเกม</option>${Object.entries(KPC.GAMES).map(([k, n]) => `<option value="${esc(k)}"${l.game === k ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
+    <div class="field"><label>ข้อมูลเกม <span class="sub">(ไฟล์ .json คำถามของเกม)</span></label><input type="file" name="gamefile" accept=".json,application/json"><span class="hint" id="packHint"></span></div>
     <div class="field full"><label>เนื้อหา</label><textarea class="tall" name="body">${esc(l.body || '')}</textarea>
       <span class="hint">## หัวข้อ · - รายการ · &gt; กล่องเน้น · **หนา** · $สมการ$ · [ฝัง: ลิงก์ซิมูเลชัน | ชื่อ] · [รูป: ลิงก์ | คำบรรยาย] · [ลิงก์: ข้อความ | ลิงก์] — ซิม Demo ฝังในหน้าได้ · Virtual Lab จะเป็นปุ่มเปิดแท็บใหม่</span></div>
     <label class="switchrow full"><input type="checkbox" name="free" style="width:20px;height:20px;accent-color:var(--accent)"${l.free ? ' checked' : ''}><span class="bd"><b>ทดลองเรียนฟรี</b><small>คนที่ยังไม่มีสิทธิ์ (รวมถึงคนที่ยังไม่สมัคร) เปิดบทนี้ได้</small></span></label>
@@ -684,7 +686,31 @@ function lessonForm(l) {
 function readLessonForm() {
   const f = $('lform'), v = n => f.querySelector(`[name="${n}"]`);
   return { unit: v('unit').value.trim(), title: v('title').value.trim(), video: v('video').value.trim(), dur: v('dur').value.trim(),
-    file: v('file').value.trim(), quiz: v('quiz').value.trim(), body: v('body').value, free: v('free').checked };
+    file: v('file').value.trim(), quiz: v('quiz').value.trim(), body: v('body').value, free: v('free').checked, game: v('game').value };
+}
+// สถานะข้อมูลเกมของบทที่กำลังแก้ (อยู่ใน courses/{cid}/games/{lid} แยกจากเนื้อหาบท)
+async function packHint(l) {
+  const h = $('packHint'); if (!h) return;
+  if (l._new) { h.textContent = 'เลือกไฟล์ข้อมูลเกม (เช่น motion-lab-pack.json) แล้วกดบันทึกบท'; return; }
+  h.textContent = 'กำลังตรวจข้อมูลเกม…';
+  let p = null;
+  try { p = await A.gamePack(S.cur.id, l.id); } catch (e) { if ($('packHint') === h) h.textContent = 'ตรวจข้อมูลเกมไม่สำเร็จ'; return; }
+  if ($('packHint') !== h) return;
+  S.packs[l.id] = p;
+  let n = '';
+  try { const d = JSON.parse(p.data); n = ` · ${(d.TOPICS || []).length} หัวข้อ · ข้อสอบ ${Object.values(d.MCQ || {}).reduce((t, x) => t + (x.items || []).length, 0)} ข้อ`; } catch (e) { /* ข้อมูลเสีย */ }
+  h.innerHTML = p ? `มีข้อมูลเกมแล้ว (${esc(KPC.GAMES[p.engine] || p.engine)}${n} · อัปเดต ${fmtTime(p.updatedAt)}) เลือกไฟล์ใหม่เพื่อแทนที่` : l.game ? '<span style="color:var(--warn)">ยังไม่มีข้อมูลเกม นักเรียนจะเล่นไม่ได้ เลือกไฟล์แล้วบันทึกบท</span>' : 'ยังไม่มีข้อมูลเกม';
+}
+// อ่านไฟล์ข้อมูลเกม → { engine, data: JSON ข้อความ } · ไม่ได้เลือกไฟล์ = null · ผิดรูปแบบ = throw ข้อความบอกครู
+async function readPackFile(engine) {
+  const f = $('lform').querySelector('[name="gamefile"]').files[0]; if (!f) return null;
+  let j; try { j = JSON.parse((await f.text()).replace(/^\uFEFF/, '')); } catch (e) { throw 'ไฟล์ข้อมูลเกมไม่ใช่ JSON'; }
+  if (!j || !j.engine || !j.data || !Array.isArray(j.data.TOPICS)) throw 'ไฟล์นี้ไม่ใช่ข้อมูลเกม (ต้องมี engine และ data.TOPICS)';
+  if (!KPC.GAMES[j.engine]) throw 'ไม่รู้จักเกม ' + j.engine;
+  if (engine && engine !== j.engine) throw `ไฟล์นี้เป็นข้อมูลของ ${KPC.GAMES[j.engine]} ไม่ตรงกับเกมที่เลือก`;
+  const data = JSON.stringify(j.data);
+  if (data.length > 900000) throw 'ไฟล์ข้อมูลเกมใหญ่เกิน 900 KB';
+  return { engine: j.engine, data };
 }
 function noteOutline(cid, lessons) {
   const c = courseOf(cid); if (!c) return;
@@ -910,6 +936,68 @@ function downloadCsv() {
   a.download = 'progress-' + S.cur.id + '.csv'; a.click();
 }
 
+/* ---------- คะแนนเกม (game_scores) ----------
+   คะแนนมาจากเครื่องนักเรียน → ใช้ดูว่าใครฝึกถึงไหน อ่อนหัวข้อไหน ไม่ใช่คะแนนสอบ */
+async function drawGames() {
+  const c = S.cur, GL = (S.lessons || []).filter(l => l.game);
+  if (!GL.length) { $('pane').innerHTML = '<div class="card"><div class="empty">ยังไม่มีบทที่มีเกม — แก้บทแล้วเลือกเกม</div></div>'; return; }
+  const L = GL.find(l => l.id === S.gameLid) || GL[0]; S.gameLid = L.id;
+  $('pane').innerHTML = '<div class="skel"></div><div class="skel" style="width:60%"></div>';
+  try {
+    if (!S.gscores) S.gscores = await A.gameScores(c.id);
+    if (!S.students) S.students = await A.enrollments(c.id);
+    if (S.packs[L.id] === undefined) S.packs[L.id] = await A.gamePack(c.id, L.id);
+  } catch (e) { fail(e); $('pane').innerHTML = '<div class="card"><div class="empty">โหลดคะแนนไม่สำเร็จ<div style="margin-top:14px"><button class="btn sm" type="button" data-tab="games">ลองใหม่</button></div></div></div>'; return; }
+  if (S.cur !== c || S.tab !== 'games') return;
+  let topics = [];
+  try { topics = JSON.parse(S.packs[L.id].data).TOPICS || []; } catch (e) { /* ยังไม่มีข้อมูลเกม */ }
+  const parts = (KPC.GAME_PARTS[L.game] || []).map(([id, name, n]) => ({ id, name, max: (n || topics.length) * 3 }));
+  const sum = a => (a || []).reduce((t, x) => t + (x || 0), 0);
+  const byUid = {};
+  S.students.forEach(u => { byUid[u.uid] = { uid: u.uid, name: u.name, email: u.email, sc: null, active: true }; });
+  S.gscores.filter(g => g.lessonId === L.id).forEach(g => { byUid[g.uid] = Object.assign(byUid[g.uid] || { uid: g.uid, name: g.name, email: g.email, active: false }, { sc: g }); });
+  const rows = Object.values(byUid).map(r => {
+    const g = r.sc || {}, st = g.stars || {}, tr = g.tries || {};
+    const per = parts.map(p => ({ got: sum(st[p.id]), max: p.max, tries: sum(tr[p.id]) }));
+    const tp = topics.map(t => ({ t, p: (g.topics || {})[t.n] || 0 }));
+    const weak = r.sc ? tp.slice().sort((a, b) => a.p - b.p).slice(0, 2).filter(x => x.p < 70) : [];
+    return Object.assign(r, { per, tp, weak, xp: g.xp || 0, got: sum(per.map(x => x.got)), tries: sum(per.map(x => x.tries)), at: g.updatedAt || null });
+  }).sort((a, b) => b.xp - a.xp || String(a.name || a.email).localeCompare(String(b.name || b.email), 'th'));
+  S._grows = { rows, parts, topics, L };
+  const played = rows.filter(r => r.sc), maxAll = sum(parts.map(p => p.max));
+  const avgTopic = topics.map(t => played.length ? Math.round(played.reduce((s, r) => s + ((r.sc.topics || {})[t.n] || 0), 0) / played.length) : 0);
+  $('pane').innerHTML = `<div class="stack">
+    ${GL.length > 1 ? `<div class="tabs" role="tablist" style="margin:0">${GL.map(l => `<button type="button" role="tab" data-glid="${esc(l.id)}" class="${l.id === L.id ? 'on' : ''}">${esc(l.title)}</button>`).join('')}</div>` : ''}
+    <div class="stats" style="margin:0">
+      <div class="stat"><small>เล่นแล้ว</small><b>${played.length}<span class="sub" style="font-size:15px"> / ${rows.filter(r => r.active).length}</span></b></div>
+      <div class="stat"><small>XP เฉลี่ย</small><b>${played.length ? Math.round(played.reduce((s, r) => s + r.xp, 0) / played.length) : 0}</b></div>
+      <div class="stat"><small>ดาวเฉลี่ย</small><b>${played.length ? Math.round(played.reduce((s, r) => s + r.got, 0) / played.length) : 0}<span class="sub" style="font-size:15px"> / ${maxAll}</span></b></div>
+      <div class="stat"><small>ยังไม่เล่น</small><b>${rows.filter(r => r.active && !r.sc).length}</b></div>
+    </div>
+    ${S.packs[L.id] ? '' : '<div class="card"><span style="color:var(--warn)">บทนี้ยังไม่มีข้อมูลเกม นักเรียนจะเล่นไม่ได้ — แก้บทแล้วเลือกไฟล์ข้อมูลเกม</span></div>'}
+    <div class="card"><div class="card-h"><h2>ความแม่นรายหัวข้อ</h2><span class="sub">เฉลี่ยจากคนที่เล่นแล้ว · ดาวที่ได้ ÷ ดาวเต็มของด่านในหัวข้อนั้น</span></div>
+      ${topics.map((t, i) => `<div class="lrow"><span class="n">${esc(t.n)}</span><span class="t"><b>${esc(t.name)}</b></span><span class="bar"><i style="width:${avgTopic[i]}%"></i></span><span class="mono" style="width:44px;text-align:right">${avgTopic[i]}%</span></div>`).join('') || '<div class="sub">ยังไม่มีข้อมูลหัวข้อ</div>'}
+    </div>
+    <div class="card"><div class="card-h"><h2>รายคน</h2><span class="sub">ดาวที่ดีที่สุดรายด่าน · ตัวเลขเล็ก = จำนวนครั้งที่เข้าเล่น</span><span class="sp"></span><button class="btn xs" type="button" data-act="games-csv">⬇ ดาวน์โหลด CSV</button></div>
+      ${rows.length ? `<div class="tw"><table><tr><th>นักเรียน</th><th>XP</th>${parts.map(p => `<th>${esc(p.name)}</th>`).join('')}<th>ควรทบทวน</th><th>เล่นล่าสุด</th></tr>
+      ${rows.map(r => `<tr><td><b>${esc(r.name || r.email)}</b>${r.name ? `<br><small>${esc(r.email)}</small>` : ''}${r.active ? '' : ' <span class="pill bad">ไม่มีสิทธิ์แล้ว</span>'}</td>
+        <td class="mono">${r.sc ? r.xp : '—'}</td>
+        ${r.per.map(x => `<td class="mono" style="white-space:nowrap">${r.sc ? `★ ${x.got}/${x.max}${x.tries ? `<br><small>${x.tries} ครั้ง</small>` : ''}` : '—'}</td>`).join('')}
+        <td>${r.sc ? (r.weak.map(w => `<span class="pill warn">${esc(w.t.n)} · ${w.p}%</span>`).join(' ') || '<span class="sub">—</span>') : '<span class="sub">ยังไม่เล่น</span>'}</td>
+        <td><small>${r.sc ? fmtTime(r.at) : '—'}</small></td></tr>`).join('')}</table></div>` : '<div class="empty">ยังไม่มีนักเรียน</div>'}
+    </div></div>`;
+}
+function gamesCsv() {
+  const { rows, parts, topics, L } = S._grows || {}; if (!rows) return;
+  const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+  const lines = [['name', 'email', 'xp', 'stars', 'last_at'].concat(parts.map(p => p.name + ' (/' + p.max + ')'), parts.map(p => p.name + ' ครั้ง'), topics.map(t => 'หัวข้อ ' + t.n + ' %')).map(q).join(',')];
+  rows.forEach(r => lines.push([r.name || '', r.email, r.sc ? r.xp : '', r.sc ? r.got : '', r.at && r.at.toDate ? r.at.toDate().toISOString() : '']
+    .concat(r.per.map(x => r.sc ? x.got : ''), r.per.map(x => r.sc ? x.tries : ''), r.tp.map(x => r.sc ? x.p : '')).map(q).join(',')));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv' }));
+  a.download = 'game-' + S.cur.id + '-' + L.id + '.csv'; a.click();
+}
+
 /* ---------- นำเข้า (courses.js ของต้นแบบ หรือ JSON) ---------- */
 $('importFile').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = '';
@@ -947,7 +1035,7 @@ $('importFile').addEventListener('change', async e => {
 });
 
 /* ===================== ปุ่มต่าง ๆ ===================== */
-async function reloadCourseData() { S.students = null; S.cprog = null; S.invites = null; S.news = null; await refreshAll(); }
+async function reloadCourseData() { S.students = null; S.cprog = null; S.invites = null; S.news = null; S.gscores = null; S.packs = {}; await refreshAll(); }
 document.addEventListener('click', async e => {
   const el = e.target.closest('button'); if (!el) return;
   const d = el.dataset;
@@ -957,6 +1045,7 @@ document.addEventListener('click', async e => {
   if (d.copy !== undefined) { try { await navigator.clipboard.writeText(KPC.user().email); toast('คัดลอกอีเมลแล้ว'); } catch (err) { toast(KPC.user().email); } return; }
   if (d.tab) { S.tab = d.tab; S.editLid = null; return drawMain(); }
   if (d.edit) { S.editLid = d.edit; return drawLessons(); }
+  if (d.glid) { S.gameLid = d.glid; return drawGames(); }
   if (d.slip) {
     const box = document.querySelector(`[data-slipv="${CSS.escape(d.slip)}"]`); if (!box) return;
     if (box.firstChild) { box.innerHTML = ''; el.textContent = 'ดูสลิป'; return; }
@@ -1126,11 +1215,18 @@ document.addEventListener('click', async e => {
     case 'save-lesson': {
       const l = readLessonForm(), lid = d.lid;
       if (!l.title) return toast('ใส่หัวข้อก่อน', true);
+      let pack = null;
+      try { pack = await readPackFile(l.game); } catch (msg) { return toast(String(msg), true); }
+      if (pack && !l.game) l.game = pack.engine;   // เลือกไฟล์แต่ลืมเลือกเกม
       const old = S.lessons.find(x => x.id === lid), next = S.lessons.slice(), row = Object.assign({ id: lid, order: old ? old.order : next.length + 1 }, l);
       if (old) next[next.indexOf(old)] = row; else next.push(row);
       const label = el.textContent;
       el.disabled = true; el.textContent = 'กำลังบันทึก…';
-      try { await commitLessons(S.cur.id, next, { set: lid }, KPC.videoIssue(l.video) ? 'บันทึกบทแล้ว แต่ลิงก์คลิปยังเล่นไม่ได้' : 'บันทึกบทแล้ว'); }
+      try {
+        const cid = S.cur.id;
+        if (pack) { await A.saveGamePack(cid, lid, pack.engine, pack.data); delete S.packs[lid]; }
+        await commitLessons(cid, next, { set: lid }, KPC.videoIssue(l.video) ? 'บันทึกบทแล้ว แต่ลิงก์คลิปยังเล่นไม่ได้' : pack ? 'บันทึกบทและข้อมูลเกมแล้ว' : 'บันทึกบทแล้ว');
+      }
       catch (err) { fail(err); el.disabled = false; el.textContent = label; }
       return;
     }
@@ -1204,6 +1300,7 @@ document.addEventListener('click', async e => {
     }
     case 'migrate': el.disabled = true; await autoMigrate(true); await refreshAll(); route(); return;
     case 'csv': return downloadCsv();
+    case 'games-csv': return gamesCsv();
     case 'm-csv': return membersCsv();
     case 'm-rename': {
       const m = buildMembers().find(x => x.key === d.key), name = $('mRename').value.trim(); if (!m || !name) return;

@@ -18,6 +18,8 @@
 //    course_invites/{code}         { courseId, owner, email ('' = ใครก็ได้), usedBy ('' = ยังไม่ใช้), usedEmail, usedAt?, by, createdAt }
 //    course_revoked/{uid}_{cid}    { uid, email, name, contact?, courseId, owner, reason, by, createdAt }
 //    course_slips/{uid}_{cid}      { uid, courseId, owner, image (data URL JPEG ≤ 500 KB), createdAt }
+//    courses/{cid}/games/{lid}     { engine, data (JSON ข้อความ), by, updatedAt }  ข้อมูลเกมของบท (lessons.game = ชื่อเกม)
+//    game_scores/{uid}_{cid}_{lid} { uid, email, name, courseId, lessonId, owner, engine, stars:{เกม:[ดาวรายด่าน]}, tries:{เกม:[ครั้งที่เล่น]}, xp, topics:{หัวข้อ:%}, updatedAt }
 //    courses/{cid}.price           ราคา (บาท · 0/ไม่มี = ฟรี) · courses/{cid}/meta/pay { promptpay, name, note } อ่านได้เมื่อล็อกอิน
 // ============================================================
 (function (W) {
@@ -426,6 +428,32 @@ KPC.saveProgress = function (c, patch) {
   return col('course_progress').doc(pid(u.uid, c.id)).set(data, { merge: true });
 };
 
+/* ---------- เกมในบทเรียน ----------
+   ตัวเกมอยู่ใน game/<ชื่อเกม>/ (repo สาธารณะ จึงไม่มีคำถาม) · คำถาม/ข้อมูลของเกมอยู่ใน courses/{cid}/games/{lid}
+   คะแนนอยู่ใน game_scores/{uid}_{cid}_{lid} — มาจากเครื่องนักเรียน ใช้ติดตามการฝึก ไม่ใช่คะแนนสอบ */
+KPC.GAMES = { 'motion-lab': 'Motion Lab — การเคลื่อนที่และแรง' };
+// เกมย่อยของแต่ละเกม (หน้าคะแนนในห้องครูใช้): [รหัส, ชื่อ, จำนวนด่าน] · null = ด่านละหัวข้อ (TOPICS ในข้อมูลเกม)
+KPC.GAME_PARTS = { 'motion-lab': [['shoot', 'ยิงให้ถึงเป้า', 6], ['force', 'แล็บแรง', 6], ['orbit', 'ปล่อยเชือก', 6], ['graph', 'สร้างกราฟ v–t', 7], ['spot', 'จับผิดคำ', null], ['cards', 'จับคู่การ์ด', null], ['domino', 'โดมิโนคำถาม', null]] };
+KPC.gameUrl = (engine, cid, lid) => 'game/' + encodeURIComponent(engine) + '/index.html?c=' + encodeURIComponent(cid) + '&l=' + encodeURIComponent(lid);
+KPC.gamePack = async function (cid, lid) {
+  const s = await KPC.read(() => col('courses').doc(cid).collection('games').doc(lid).get());
+  return s.exists ? s.data() : null;
+};
+// null = ยังไม่เคยเล่น · undefined = อ่านไม่สำเร็จ (ห้ามบันทึกทับ)
+KPC.getGameScore = async function (cid, lid) {
+  const uid = KPC.uid(); if (!uid) return null;
+  try {
+    const s = await KPC.read(() => col('game_scores').doc(pid(uid, cid) + '_' + lid).get());
+    return s.exists ? s.data() : null;
+  } catch (e) { return e.code === 'permission-denied' ? null : undefined; }
+};
+// c = เอกสารคอร์ส (ต้องมี owner) · score = { engine, stars, tries, xp, topics }
+KPC.saveGameScore = function (c, lid, score) {
+  const u = KPC.user(); if (!u) return Promise.resolve();
+  const data = Object.assign({ uid: u.uid, email: u.email || '', name: KPC.displayName(), courseId: c.id, lessonId: lid, owner: c.owner || '', updatedAt: FS().serverTimestamp() }, score);
+  return KPC.write(col('game_scores').doc(pid(u.uid, c.id) + '_' + lid).set(data));
+};
+
 /* ---------- คำขอสิทธิ์ ---------- */
 // เหตุผลล่าสุดที่ครูไม่อนุมัติคำขอ หรือถอนสิทธิ์ (kind: 'revoke') · ไม่มี = null
 KPC.getMyRejection = async function (cid) {
@@ -574,6 +602,7 @@ KPC.admin = {
     const batch = db.batch();
     ls.docs.forEach(d => batch.delete(d.ref));
     (await col('courses').doc(cid).collection('announcements').get()).docs.forEach(d => batch.delete(d.ref));
+    (await col('courses').doc(cid).collection('games').get()).docs.forEach(d => batch.delete(d.ref));
     batch.delete(col('courses').doc(cid).collection('meta').doc('pay'));
     batch.delete(col('courses').doc(cid));
     return batch.commit();
@@ -581,6 +610,11 @@ KPC.admin = {
   savePayInfo: (cid, data) => col('courses').doc(cid).collection('meta').doc('pay').set(Object.assign({}, data, { updatedAt: FS().serverTimestamp() })),
   newLessonId: cid => col('courses').doc(cid).collection('lessons').doc().id,
   lessonRef: (cid, lid) => col('courses').doc(cid).collection('lessons').doc(lid),
+  gameRef: (cid, lid) => col('courses').doc(cid).collection('games').doc(lid),
+  // ข้อมูลเกมของบท: data = JSON ข้อความ (Firestore เก็บอาร์เรย์ซ้อนอาร์เรย์ไม่ได้)
+  saveGamePack: (cid, lid, engine, data) => KPC.write(KPC.admin.gameRef(cid, lid).set({ engine, data, by: KPC.email(), updatedAt: FS().serverTimestamp() })),
+  gamePack: async (cid, lid) => { const s = await KPC.read(() => KPC.admin.gameRef(cid, lid).get({ source: 'server' })); return s.exists ? s.data() : null; },
+  gameScores: async cid => docs(await KPC.read(() => mine(col('game_scores')).where('courseId', '==', cid).get({ source: 'server' }))),
 
   // เขียนสารบัญ (outline) ลงเอกสารคอร์ส — ให้คนที่ยังไม่มีสิทธิ์เห็นรายชื่อบท (ไม่มีเนื้อหา)
   syncOutline: async cid => {
@@ -594,7 +628,7 @@ KPC.admin = {
   // lessons = รายการบทหลังเปลี่ยนแล้ว เรียงตามลำดับใหม่ · change = { set: รหัสบทที่เขียนทั้งเอกสาร } หรือ { del: รหัสบทที่ลบ }
   saveLessons: async (cid, lessons, change) => {
     const A = KPC.admin, batch = db.batch(), { set, del } = change || {};
-    if (del) batch.delete(A.lessonRef(cid, del));
+    if (del) { batch.delete(A.lessonRef(cid, del)); batch.delete(A.gameRef(cid, del)); }
     lessons.forEach((l, k) => {
       if (l.id === set) { const data = Object.assign({}, l, { order: k + 1 }); delete data.id; batch.set(A.lessonRef(cid, l.id), data); }
       else if (l.order !== k + 1) batch.update(A.lessonRef(cid, l.id), { order: k + 1 });
@@ -671,6 +705,8 @@ KPC.admin = {
   removeFromCourse: async rid => {
     await col('course_slips').doc(rid).delete().catch(() => {});
     await col('course_progress').doc(rid).delete().catch(() => {});
+    const i = rid.indexOf('_'), uid = rid.slice(0, i), cid = rid.slice(i + 1);
+    for (const d of (await mine(col('game_scores')).where('uid', '==', uid).where('courseId', '==', cid).get()).docs) await d.ref.delete().catch(() => {});
     await col('course_revoked').doc(rid).delete();
   },
 
@@ -696,11 +732,12 @@ KPC.admin = {
       const threads = await col(name).get(); put(threads);
       for (const d of threads.docs) put(await d.ref.collection('messages').get());
     }
-    for (const name of ['staff', 'students', 'courses', 'enrollments', 'course_progress', 'course_requests', 'course_rejections', 'course_revoked', 'course_invites'].concat(withSlips ? ['course_slips'] : [])) put(await col(name).get());
+    for (const name of ['staff', 'students', 'courses', 'enrollments', 'course_progress', 'course_requests', 'course_rejections', 'course_revoked', 'course_invites', 'game_scores'].concat(withSlips ? ['course_slips'] : [])) put(await col(name).get());
     for (const id of Object.keys(out).filter(p => /^courses[/][^/]+$/.test(p)).map(p => p.split('/')[1])) {
       put(await col('courses').doc(id).collection('lessons').get());
       put(await col('courses').doc(id).collection('meta').get());
       put(await col('courses').doc(id).collection('announcements').get());
+      put(await col('courses').doc(id).collection('games').get());
     }
     return out;
   },
@@ -718,7 +755,7 @@ KPC.admin = {
   // ลบข้อมูลของสมาชิกในเว็บคอร์ส (สิทธิ์ · ความคืบหน้า · คำขอ · บัญชีนักเรียน) — บัญชีล็อกอินยังอยู่ ถ้าเข้ามาใหม่จะเริ่มจากว่าง
   deleteMember: async uid => {
     const refs = [col('students').doc(uid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked', 'game_scores']) (await col(name).where('uid', '==', uid).get()).docs.forEach(d => refs.push(d.ref));
     for (const t of (await col('course_threads').where('uid', '==', uid).get()).docs.concat((await col('support_threads').where('uid', '==', uid).get()).docs)) {
       (await t.ref.collection('messages').get()).docs.forEach(d => refs.push(d.ref));
       refs.push(t.ref);
@@ -734,7 +771,7 @@ KPC.admin = {
   reassign: async (cid, owner) => {
     owner = lower(owner);
     const refs = [col('courses').doc(cid)];
-    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked', 'course_invites', 'course_threads']) {
+    for (const name of ['enrollments', 'course_progress', 'course_requests', 'course_slips', 'course_rejections', 'course_revoked', 'course_invites', 'course_threads', 'game_scores']) {
       (await col(name).where('courseId', '==', cid).get()).docs.forEach(d => refs.push(d.ref));
     }
     for (let i = 0; i < refs.length; i += 400) {

@@ -156,6 +156,11 @@
 .player.clip::before{content:"";position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:playerSpin .9s linear infinite}
 @keyframes playerSpin{to{transform:rotate(360deg)}}
 .player.clip iframe{background:transparent}
+.player.game{aspect-ratio:auto;height:min(82vh,860px);min-height:520px;background:#0b0b10}
+.player.game iframe{background:#0b0b10}
+.lpanel .player.game{margin-top:0}
+.game-cap{margin-top:8px;font-size:13.5px;color:var(--muted)}
+.game-cap a{color:var(--link)}
 .player.ph{background:var(--surface);display:grid;place-items:center;text-align:center;padding:20px}
 .player.ph small{display:block;font:600 14px var(--head);color:var(--orange)}
 .player.ph b{font:700 26px/1.3 var(--head)}
@@ -217,6 +222,8 @@
 .toc .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--surface3);display:grid;place-items:center;font:600 11.5px var(--head);color:var(--muted)}
 .toc .on .n{background:var(--accent);color:#fff}
 .toc .done .n{background:var(--ok);color:#fff}
+/* แถบเขียวใต้บทที่เรียนแล้ว · ตั้งแค่ background-image เพื่อไม่ทับสีพื้นของ .on / :hover */
+.toc button.done,.toc button.done:hover{background-image:linear-gradient(var(--ok),var(--ok));background-size:calc(100% - 36px) 3px;background-position:18px 100%;background-repeat:no-repeat}
 .toc .t{flex:1}
 .toc .d{font-size:12.5px;color:var(--muted);white-space:nowrap}
 .toc .d.free{color:var(--orange)}
@@ -461,6 +468,7 @@ body.lesson-dark main,body.lesson-dark footer{position:relative;z-index:1}
 .lesson-dark .toc .n{background:#3a3a3c;color:#d2d2d7}
 .lesson-dark .toc .on .n{background:#0071e3;color:#fff}
 .lesson-dark .toc .done .n{background:#30d158;color:#000}
+.lesson-dark .toc button.done,.lesson-dark .toc button.done:hover{background-image:linear-gradient(#30d158,#30d158);background-size:calc(100% - 36px) 3px;background-position:18px 100%;background-repeat:no-repeat}
 .lesson-dark .toc .d.free{color:#ff9f45}
 .lesson-dark .ring .bg{stroke:#3a3a3c}
 .lesson-dark .empty{background:#1d1d1f;color:var(--on-dark-2)}
@@ -725,7 +733,7 @@ footer a{color:var(--link);text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="firebase-config.js?v=3"></script>
-<script src="course-core.js?v=22"></script>
+<script src="course-core.js?v=23"></script>
 <script>
 (function () {
 const { esc, safeUrl, embedSrc, renderBody, typeset, splitSims, ICON } = KPC;
@@ -1380,16 +1388,22 @@ function viewCourse(c, i, meta, L, ok) {
     const { sims, text } = splitSims(L.body);
     const embSims = sims.filter(s => !KPC.noEmbed(s.url));
     const file = safeUrl(L.file), quiz = safeUrl(L.quiz);
-    const vsrc = KPC.videoSrc(L.video);
-    const player = vsrc ? `<div class="player clip"><iframe src="${esc(vsrc)}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(L.title)}"></iframe></div>`
+    let vsrc = KPC.videoSrc(L.video);
+    if (vsrc.includes('youtube')) vsrc += '&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
+    // เกมของบท: ไม่มีคลิป = เกมอยู่ในจอใหญ่ · มีคลิป = เกมอยู่ในแท็บ “เกม”
+    const gurl = L.game && KPC.GAMES[L.game] ? KPC.gameUrl(L.game, c.id, L.id) : '';
+    const gameBox = gurl ? `<div class="player game"><iframe src="${esc(gurl)}" allow="fullscreen" allowfullscreen title="เกม ${esc(L.title)}"></iframe></div>
+      <div class="game-cap">${KPC.user() ? 'คะแนนบันทึกให้อัตโนมัติ ครูผู้สอนดูได้' : 'ล็อกอินก่อนเล่น ครูจึงจะเห็นคะแนน'} · <a href="${esc(gurl)}" target="_blank" rel="noopener">เปิดเกมเต็มจอ ${ICON.out}</a></div>` : '';
+    const player = gurl && !vsrc ? gameBox : vsrc ? `<div class="player clip"><iframe src="${esc(vsrc)}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="${esc(L.title)}"></iframe></div>`
       : embSims.length ? `<div class="player"><iframe src="${esc(embedSrc(embSims[0].url))}" loading="lazy" allowfullscreen title="${esc(L.title)}"></iframe></div>`
       : `<div class="player ph"><div><small>บทที่ ${i + 1}</small><b>${esc(L.title)}</b>${L.video ? `<p class="ph-note">${esc(KPC.ownsCourse(c) ? KPC.videoIssue(L.video) : 'คลิปบทนี้ยังเปิดไม่ได้ กรุณาแจ้งครูผู้สอน')}</p>` : ''}</div></div>`;
-    const tabs = [['text', 'เนื้อหา', true], ['sim', `Simulation${sims.length > 1 ? ' (' + sims.length + ')' : ''}`, sims.length], ['doc', 'เอกสาร', file], ['quiz', 'แบบทดสอบ', quiz]].filter(t => t[2]);
+    const tabs = [['text', 'เนื้อหา', true], ['sim', `Simulation${sims.length > 1 ? ' (' + sims.length + ')' : ''}`, sims.length], ['game', 'เกม', gurl && vsrc], ['doc', 'เอกสาร', file], ['quiz', 'แบบทดสอบ', quiz]].filter(t => t[2]);
     const first = text ? 'text' : (tabs.find(t => t[0] !== 'text') || ['text'])[0];
     const panel = {
       text: `<div class="prose">${renderBody(text) || '<p style="color:var(--muted)">บทนี้เรียนจากคลิป/ซิมูเลชันด้านบน</p>'}</div>`,
       sim: sims.map((x, j) => `<div class="res"><span class="ri">${L_ICON.sim}</span><span><b>${esc(x.label || 'Simulation ' + (j + 1))}</b><small>${KPC.noEmbed(x.url) ? 'Virtual Lab · เปิดในแท็บใหม่' : 'ซิมูเลชันโต้ตอบ ปรับค่าได้เอง'}</small></span><span class="sp"></span>
         ${KPC.noEmbed(x.url) ? '' : `<button type="button" class="btn sm" data-play="${esc(embedSrc(x.url))}">แสดงบนจอ</button>`}<a class="btn sm" href="${esc(x.url)}" target="_blank" rel="noopener">เต็มจอ ${ICON.out}</a></div>`).join(''),
+      game: gameBox,
       doc: file ? `<div class="embed doc" style="margin-top:0"><iframe src="${esc(embedSrc(file))}" loading="lazy" title="เอกสารประกอบ"></iframe></div><div class="embed-cap"><a href="${esc(file)}" target="_blank" rel="noopener">เปิดเอกสารในแท็บใหม่ ${ICON.out}</a></div>` : '',
       quiz: quiz ? `<div class="res"><span class="ri">${L_ICON.quiz}</span><span><b>แบบทดสอบท้ายบท</b><small>ทำแล้วส่งได้ทันที</small></span><span class="sp"></span><a class="btn sm solid" href="${esc(quiz)}" target="_blank" rel="noopener">ทำแบบทดสอบ ${ICON.out}</a></div>` : '',
     };
@@ -1548,24 +1562,56 @@ document.addEventListener('click', async e => {
   const rl = e.target.closest('[data-reload]');
   if (rl) { rl.disabled = true; rl.textContent = 'กำลังโหลด…'; loadCourses().then(() => loadUserCourseState(S.courses || [])).then(route); return; }
   const dn = e.target.closest('[data-done]');
-  if (dn && CUR) {
-    const c = CUR.c, lid = dn.dataset.done;
-    if (!(c.id in S.progress)) { toast('ยังโหลดความคืบหน้าไม่สำเร็จ กดอีกครั้ง', true); loadUserCourseState([c]); return; }
-    const p = S.progress[c.id] = S.progress[c.id] || { done: [] };
-    const on = !(p.done || []).includes(lid);
-    const list = (p.done || []).filter(x => x !== lid); if (on) list.push(lid);
-    p.done = list;
-    dn.classList.toggle('on', on); dn.setAttribute('aria-pressed', on);
-    dn.querySelector('.lb').textContent = on ? 'เรียนบทนี้แล้ว' : 'ติ๊กว่าเรียนบทนี้แล้ว';
-    if ($('toc')) $('toc').innerHTML = tocHtml(c, CUR.i);
-    if ($('hdrProg')) $('hdrProg').innerHTML = progTxt(c);
-    const all = doneOf(c).length >= (c.outline || []).length;
-    if (on) confetti(all);
-    KPC.saveProgress(c, { done: list, total: (c.outline || []).length })
-      .then(() => { if (on) toast(all ? 'เรียนครบทุกบทแล้ว เก่งมาก!' : 'บันทึกแล้ว ไปบทต่อไปกัน'); })
-      .catch(err => toast('บันทึกไม่สำเร็จ: ' + (err.code || err.message), true));
+  if (dn && CUR) setDone(dn, !doneOf(CUR.c).includes(dn.dataset.done));
+});
+
+/* ติ๊ก/เอาติ๊กออก “เรียนบทนี้แล้ว” · auto = ระบบติ๊กให้เมื่อดูคลิปเกือบจบ */
+function setDone(dn, on, auto) {
+  const c = CUR.c, lid = dn.dataset.done;
+  if (!(c.id in S.progress)) { if (!auto) toast('ยังโหลดความคืบหน้าไม่สำเร็จ กดอีกครั้ง', true); loadUserCourseState([c]); return; }
+  const p = S.progress[c.id] = S.progress[c.id] || { done: [] };
+  const list = (p.done || []).filter(x => x !== lid); if (on) list.push(lid);
+  p.done = list;
+  dn.classList.toggle('on', on); dn.setAttribute('aria-pressed', on);
+  dn.querySelector('.lb').textContent = on ? 'เรียนบทนี้แล้ว' : 'ติ๊กว่าเรียนบทนี้แล้ว';
+  if ($('toc')) $('toc').innerHTML = tocHtml(c, CUR.i);
+  if ($('hdrProg')) $('hdrProg').innerHTML = progTxt(c);
+  const all = doneOf(c).length >= (c.outline || []).length;
+  if (on) confetti(all);
+  KPC.saveProgress(c, { done: list, total: (c.outline || []).length })
+    .then(() => { if (on) toast(all ? 'เรียนครบทุกบทแล้ว เก่งมาก!' : auto ? 'ดูคลิปจบแล้ว บันทึกว่าเรียนบทนี้แล้ว' : 'บันทึกแล้ว ไปบทต่อไปกัน'); })
+    .catch(err => toast('บันทึกไม่สำเร็จ: ' + (err.code || err.message), true));
+}
+
+/* ดูคลิปถึง 90% หรือจบ → ติ๊กว่าเรียนแล้วให้เอง (ครั้งเดียวต่อบท ไม่ติ๊กทับถ้านักเรียนเอาติ๊กออกเอง)
+   Vimeo: รอ ready แล้วขอฟัง timeupdate/ended · YouTube: ส่ง listening แล้วได้ infoDelivery (ต้องมี enablejsapi=1) */
+const autoDone = new Set();
+function clipWatched() {
+  const dn = document.querySelector('.donebtn[data-done]');
+  if (!dn || !CUR || dn.classList.contains('on')) return;
+  const key = CUR.c.id + '/' + dn.dataset.done;
+  if (autoDone.has(key) || !(CUR.c.id in S.progress)) return;
+  autoDone.add(key); setDone(dn, true, true);
+}
+window.addEventListener('message', e => {
+  const f = document.querySelector('.player.clip iframe');
+  if (!f || e.source !== f.contentWindow) return;
+  let d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (_) { return; }
+  if (!d) return;
+  if (e.origin === 'https://player.vimeo.com') {
+    if (d.event === 'ready') ['timeupdate', 'ended'].forEach(value => f.contentWindow.postMessage(JSON.stringify({ method: 'addEventListener', value }), e.origin));
+    // ผู้เล่น Vimeo ส่งชื่อเหตุการณ์แบบเก่ากลับมา (playProgress / finish) จึงรับทั้งสองแบบ
+    else if (/^(ended|finish)$/.test(d.event) || (/^(timeupdate|playProgress)$/.test(d.event) && d.data && d.data.percent >= .9)) clipWatched();
+  } else if (/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(e.origin) && d.event === 'infoDelivery' && d.info) {
+    // ความยาวคลิปมาแค่ในข้อความแรก ๆ จึงจำไว้ที่ iframe
+    if (d.info.duration > 0) f._len = d.info.duration;
+    if (d.info.playerState === 0 || (f._len > 0 && d.info.currentTime / f._len >= .9)) clipWatched();
   }
 });
+document.addEventListener('load', e => {
+  const f = e.target;
+  if (f.tagName === 'IFRAME' && f.closest('.player.clip') && /youtube/.test(f.src)) f.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1 }), '*');
+}, true);
 
 /* ---------- เส้นทาง: #/ · #/courses · #/c/รหัส · #/c/รหัส/บทที่ ---------- */
 function setNav(k, lesson) {
