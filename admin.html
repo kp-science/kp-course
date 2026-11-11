@@ -1018,14 +1018,18 @@ $('importFile').addEventListener('change', async e => {
     try {
       if (old) await A.deleteCourse(cid);
       await A.saveCourse(cid, { title: c.title || cid, subject: c.subject || 'ฟิสิกส์', level: c.level || '', author: c.author || KPC.displayName(), summary: c.summary || '', body: c.body || '',
-        cover: c.cover || '', order: Number(c.order) || 0, published: false, owner: (old && old.owner) || KPC.email(), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-      const batch = db.batch();
+        cover: c.cover || '', order: Number(c.order) || 0, published: false, owner: (old && old.owner) || KPC.email(), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        price: Math.max(0, Math.round(Number(c.price) || 0)), openEnroll: !(Number(c.price) > 0) && c.openEnroll === true });
+      const batch = db.batch(), packs = [];
       (c.lessons || []).forEach((l, i) => {
-        const lid = A.newLessonId(cid);
+        const lid = A.newLessonId(cid), game = KPC.GAMES[l.game] ? l.game : '';
         batch.set(A.lessonRef(cid, lid), { order: i + 1, unit: l.unit || '', title: l.title || '', video: l.video || '', dur: l.dur || '',
-          body: l.body || '', file: l.file || '', quiz: l.quiz || '', free: l.free === true || l.free === 'TRUE' });
+          body: l.body || '', file: l.file || '', quiz: l.quiz || '', free: l.free === true || l.free === 'TRUE', game });
+        // บทเกม: gameData = ข้อมูลเกม (เหมือน data ในไฟล์ motion-lab-pack.json) → courses/{cid}/games/{lid}
+        if (game && l.gameData) packs.push([lid, game, JSON.stringify(l.gameData)]);
       });
       await batch.commit();
+      for (const [lid, game, data] of packs) await A.saveGamePack(cid, lid, game, data);
       await A.syncOutline(cid);
       toast(`นำเข้า "${c.title}" แล้ว (${(c.lessons || []).length} บท · ยังเป็นร่าง)`);
     } catch (err) { fail(err); return; }
