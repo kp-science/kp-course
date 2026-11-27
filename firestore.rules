@@ -395,6 +395,22 @@ service cloud.firestore {
       allow delete: if isAdmin() || isMine(resource.data);
     }
 
+    // ── กระดานอันดับแบบฝึก: id = <uid>_<topicId> ─────
+    // อ่านได้ทุกคนที่ล็อกอิน เพราะเด็กต้องเห็นอันดับของเพื่อนร่วมหัวข้อ
+    // จึงเก็บเฉพาะชื่อ ระดับ แต้ม — ไม่มีอีเมลและไม่มีอะไรที่ระบุตัวคนนอกห้องได้
+    match /drill_rank/{did} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && did == request.auth.uid + '_' + request.resource.data.topicId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'topicId', 'lv', 'points', 'updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60
+        && request.resource.data.topicId is string && request.resource.data.topicId.size() <= 60
+        && request.resource.data.lv is int && request.resource.data.lv >= 0 && request.resource.data.lv <= 50
+        && request.resource.data.points is int && request.resource.data.points >= 0 && request.resource.data.points <= 1000000;
+      allow delete: if isAdmin() || isMine(resource.data);
+    }
+
     // ── คำขอที่ไม่ผ่าน: id = <uid>_<courseId> ─────
     match /course_rejections/{rid} {
       allow read, delete: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
