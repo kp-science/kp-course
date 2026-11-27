@@ -373,6 +373,28 @@ service cloud.firestore {
       allow delete: if isAdmin() || teacherOwns(resource.data);
     }
 
+    // ── แบบฝึกทำโจทย์ www.kpscience.com/drill/ : id = <uid>_<topicId> ─────
+    //    นักเรียนเขียนของตัวเองเท่านั้น · ครูทุกคนและแอดมินอ่านได้ (แบบฝึกเปิดฟรี ไม่ผูกกับคอร์ส)
+    match /drill_scores/{did} {
+      allow get: if isAdmin() || isTeacher() || isMine(resource.data);
+      allow list: if isAdmin() || isTeacher();
+      allow create, update: if signedIn()
+        && did == request.auth.uid + '_' + request.resource.data.topicId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'topicId',
+                                                 'lv', 'm', 'tries', 'points', 'hp', 'downs', 'updatedAt'])
+        && request.resource.data.email == myEmail()
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.topicId is string && request.resource.data.topicId.size() <= 60
+        && request.resource.data.lv is int && request.resource.data.lv >= 0 && request.resource.data.lv <= 50
+        && request.resource.data.m is map && request.resource.data.m.size() <= 40
+        && request.resource.data.tries is map && request.resource.data.tries.size() <= 40
+        && request.resource.data.points is int && request.resource.data.points >= 0 && request.resource.data.points <= 1000000
+        && request.resource.data.hp is int && request.resource.data.hp >= 0 && request.resource.data.hp <= 1000
+        && request.resource.data.downs is int && request.resource.data.downs >= 0 && request.resource.data.downs <= 10000;
+      allow delete: if isAdmin() || isMine(resource.data);
+    }
+
     // ── คำขอที่ไม่ผ่าน: id = <uid>_<courseId> ─────
     match /course_rejections/{rid} {
       allow read, delete: if isAdmin() || isMine(resource.data) || teacherOwns(resource.data);
